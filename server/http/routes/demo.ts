@@ -57,17 +57,15 @@ demoRoutes.post('/enter', async (c) => {
       let deviceId = existing[0]?.id;
       if (!deviceId) {
         deviceId = crypto.randomUUID();
-        await tx
-          .insert(devices)
-          .values({
-            id: deviceId,
-            householdId: DEMO.householdId,
-            name: 'Kitchen wall',
-            kind: 'wall',
-            createdBy: DEMO.sam,
-            createdAt: now,
-            lastSeenAt: now,
-          });
+        await tx.insert(devices).values({
+          id: deviceId,
+          householdId: DEMO.householdId,
+          name: 'Kitchen wall',
+          kind: 'wall',
+          createdBy: DEMO.sam,
+          createdAt: now,
+          lastSeenAt: now,
+        });
         await tx
           .update(households)
           .set({ revision: sql`${households.revision} + 1` })

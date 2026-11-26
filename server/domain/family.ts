@@ -392,16 +392,14 @@ export async function setCalendarDay(ctx: Ctx, input: OpInput<'calendar.setDay'>
     );
   const labels = [...new Set(input.labels)];
   if (labels.length > 0) {
-    await ctx.tx
-      .insert(calendarDays)
-      .values(
-        labels.map((label) => ({
-          householdId: ctx.household.id,
-          localDate: input.date,
-          label,
-          source: 'manual',
-        })),
-      );
+    await ctx.tx.insert(calendarDays).values(
+      labels.map((label) => ({
+        householdId: ctx.household.id,
+        localDate: input.date,
+        label,
+        source: 'manual',
+      })),
+    );
   }
 }
 

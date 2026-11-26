@@ -1,0 +1,217 @@
+/*
+ * The living parts of the house picture. Colours that follow the sky come from custom properties set on the
+ * stage (src/wall/sky.ts); movement is slow, small, and only ever transform or opacity.
+ */
+.house-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.house-stop-sky-top {
+  stop-color: var(--sky-top);
+}
+.house-stop-sky-low {
+  stop-color: var(--sky-low);
+}
+.house-stop-lawn-top {
+  stop-color: var(--lawn-top);
+}
+.house-stop-lawn-low {
+  stop-color: var(--lawn-low);
+}
+.house-stop-pond-a {
+  stop-color: var(--pond-a);
+}
+.house-stop-pond-b {
+  stop-color: var(--pond-b);
+}
+.house-sky-top {
+  fill: var(--sky-top);
+}
+.house-lawn-low {
+  fill: var(--lawn-low);
+}
+.house-hill-far {
+  fill: var(--hill-far);
+}
+.house-hill {
+  fill: var(--hill-near);
+}
+.house-cloud {
+  fill: var(--cloud);
+}
+.house-window {
+  fill: var(--window);
+}
+.house-wall {
+  fill: color-mix(in srgb, #fff6e6 calc(var(--dim, 1) * 100%), #d9c39a);
+}
+.house-stars {
+  opacity: var(--stars, 0);
+}
+/* Lamplight: there by night, gone by day. */
+.house-lamp {
+  opacity: calc(var(--lamps, 0) * 0.45);
+}
+.house-lamp-solid {
+  opacity: var(--lamps, 0);
+}
+
+.house-drift {
+  animation: house-drift 110s linear infinite alternate;
+}
+.house-drift-back {
+  animation: house-drift 150s linear infinite alternate-reverse;
+}
+.house-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: house-sway 7s ease-in-out infinite;
+}
+.house-bob {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: house-bob 5.5s ease-in-out infinite;
+}
+.house-hover {
+  animation: house-hover 3.4s ease-in-out infinite;
+}
+.house-twinkle {
+  animation: house-twinkle 4.5s ease-in-out infinite;
+}
+.house-puff {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  opacity: 0;
+  animation: house-puff 9s ease-out infinite;
+}
+.house-puff-2 {
+  animation-delay: 3s;
+}
+.house-puff-3 {
+  animation-delay: 6s;
+}
+.house-drop {
+  animation: house-fall 1.5s linear infinite;
+}
+.house-drop-1 {
+  animation-delay: 0.35s;
+}
+.house-drop-2 {
+  animation-delay: 0.7s;
+}
+.house-drop-3 {
+  animation-delay: 1.05s;
+}
+.house-flake {
+  animation: house-snow 7s linear infinite;
+}
+.house-flake-1 {
+  animation-delay: 1.7s;
+}
+.house-flake-2 {
+  animation-delay: 3.4s;
+}
+.house-flake-3 {
+  animation-delay: 5.1s;
+}
+.house-fog {
+  animation: house-drift 60s ease-in-out infinite alternate;
+}
+.house-fog-2 {
+  animation-direction: alternate-reverse;
+}
+
+@keyframes house-drift {
+  from {
+    transform: translateX(-70px);
+  }
+  to {
+    transform: translateX(110px);
+  }
+}
+@keyframes house-sway {
+  0%,
+  100% {
+    transform: rotate(-1.4deg);
+  }
+  50% {
+    transform: rotate(1.4deg);
+  }
+}
+@keyframes house-bob {
+  0%,
+  100% {
+    transform: rotate(-1.6deg) translateY(0);
+  }
+  50% {
+    transform: rotate(1.6deg) translateY(-5px);
+  }
+}
+@keyframes house-hover {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+@keyframes house-twinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes house-puff {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-70px) scale(1.25);
+    opacity: 0;
+  }
+}
+@keyframes house-fall {
+  from {
+    transform: translate(0, -60px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(-40px, 160px);
+    opacity: 0;
+  }
+}
+@keyframes house-snow {
+  from {
+    transform: translate(0, -80px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(30px, 240px);
+    opacity: 0;
+  }
+}
+
+/* With motion off, rain and snow would freeze at "invisible": show them still instead. */
+:root[data-motion='still'] .house-drop,
+:root[data-motion='still'] .house-flake,
+:root[data-motion='still'] .house-puff {
+  opacity: 0.85;
+}

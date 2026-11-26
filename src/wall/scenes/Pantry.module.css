@@ -1,0 +1,220 @@
+.pantry {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1.2cqw;
+}
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2cqw;
+}
+.tabs {
+  display: flex;
+  gap: 1cqw;
+}
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.8cqw;
+  min-height: 5cqw;
+  padding: 0.5cqw 1.6cqw 0.5cqw 0.7cqw;
+  border: 0;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 0.6);
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.5cqw;
+}
+.tab[aria-selected='true'] {
+  background: var(--paper);
+  box-shadow:
+    inset 0 0 0 0.3cqw var(--teal-deep),
+    0 0.3cqw 0 rgb(var(--shadow) / 0.12);
+}
+.tabPicture {
+  width: 3.8cqw;
+  aspect-ratio: 1;
+}
+.topButtons {
+  display: flex;
+  align-items: center;
+  gap: 1.2cqw;
+  margin-left: auto;
+}
+.hold {
+  display: flex;
+  align-items: center;
+  gap: 0.7cqw;
+  min-height: 5cqw;
+  padding: 0.5cqw 1.6cqw 0.5cqw 0.6cqw;
+  border-radius: 99px;
+  background: var(--blue-light);
+  font-weight: 700;
+  font-size: 1.2cqw;
+}
+
+.shelf {
+  list-style: none;
+  margin: 0;
+  padding: 1cqw;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12.5cqw, 1fr));
+  gap: 1.4cqw;
+  align-content: start;
+  border-radius: 2cqw;
+  background: rgb(255 255 255 / 0.5);
+}
+.item {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.3cqw;
+  width: 100%;
+  padding: 0.8cqw 0.6cqw 0.9cqw;
+  border: 0;
+  border-radius: 1.4cqw;
+  background: var(--paper);
+  box-shadow: 0 0.36cqw 0 rgb(var(--shadow) / 0.14);
+}
+.item:active {
+  transform: scale(0.96);
+}
+.itemPicture {
+  width: 70%;
+  aspect-ratio: 1;
+}
+.itemText {
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.25cqw;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.item[data-status='checked'] {
+  background: #eef4e6;
+}
+.item[data-status='checked'] .itemPicture {
+  opacity: 0.45;
+}
+.item[data-status='checked'] .itemText {
+  text-decoration: line-through;
+  color: var(--ink-soft);
+}
+.item[data-status='requested'] {
+  background: var(--honey-light);
+}
+.shelf[data-grown='true'] .item {
+  box-shadow:
+    inset 0 0 0 0.26cqw var(--blue-deep),
+    0 0.36cqw 0 rgb(var(--shadow) / 0.14);
+}
+.corner {
+  position: absolute;
+  right: -0.7cqw;
+  top: -0.7cqw;
+  transform: scale(0.85);
+}
+.grownNote {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.3cqw;
+  color: var(--blue-deep);
+}
+.empty {
+  display: grid;
+  place-items: center;
+}
+.emptyPicture {
+  width: 24cqw;
+  opacity: 0.8;
+}
+
+.ask {
+  display: grid;
+  justify-items: center;
+  gap: 1.4cqw;
+}
+.choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 1cqw;
+  width: 100%;
+}
+.choice {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  padding: 0.5cqw;
+  border: 0.24cqw solid var(--line);
+  border-radius: 1.3cqw;
+  background: var(--paper-warm);
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.05cqw;
+}
+.choice:active {
+  transform: scale(0.94);
+}
+.whoWrap {
+  height: 44cqh;
+}
+
+:global([data-shape='tall']) .top {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3cqw;
+}
+:global([data-shape='tall']) .topButtons {
+  margin-left: 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+:global([data-shape='tall']) .tab {
+  font-size: 3.6cqw;
+  min-height: 11cqw;
+  padding: 1cqw 4cqw 1cqw 1.6cqw;
+}
+:global([data-shape='tall']) .tabPicture {
+  width: 8cqw;
+}
+:global([data-shape='tall']) .hold {
+  font-size: 3.2cqw;
+  min-height: 11cqw;
+  padding: 1cqw 3.4cqw 1cqw 1.2cqw;
+}
+:global([data-shape='tall']) .shelf {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3cqw;
+  padding: 2.4cqw;
+  border-radius: 4cqw;
+}
+:global([data-shape='tall']) .item {
+  border-radius: 3cqw;
+  padding: 1.6cqw 1.2cqw;
+}
+:global([data-shape='tall']) .itemText {
+  font-size: 3.1cqw;
+}
+:global([data-shape='tall']) .grownNote {
+  font-size: 3.2cqw;
+}
+:global([data-shape='tall']) .choices {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2.4cqw;
+}
+:global([data-shape='tall']) .choice {
+  font-size: 2.8cqw;
+  border-radius: 3cqw;
+}
+:global([data-shape='tall']) .emptyPicture {
+  width: 50cqw;
+}

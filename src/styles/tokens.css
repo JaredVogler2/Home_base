@@ -1,0 +1,87 @@
+/*
+ * HOMEBASE design tokens. One palette for the wall, the phone and every drawing.
+ * The reasoning for each role is in docs/ART_DIRECTION.md; the same values are in src/art/palette.ts for SVG.
+ */
+:root {
+  /* Ink: every word, every eye. Never a large area. */
+  --ink: #3a2e4d;
+  --ink-soft: #6b5f80;
+  --ink-faint: #9a90ab;
+
+  /* Paper: every surface that carries words. */
+  --paper: #fffaf0;
+  --paper-warm: #fff6e6;
+  --paper-shade: #f3e2c2;
+  --line: #ead9b8;
+
+  /* Honey: the one "this way" colour — stars, the thing to do next, lamplight. */
+  --honey-light: #ffe9a8;
+  --honey: #ffc94d;
+  --honey-deep: #e39a1c;
+
+  /* Terracotta: the roof, warmth, the grown-ups' accents. */
+  --terra-light: #ffd9c7;
+  --terra: #f08a62;
+  --terra-deep: #c9573a;
+
+  /* Sage: growing things, "done". */
+  --sage-light: #e2f1d6;
+  --sage: #8fd08a;
+  --sage-deep: #3f8a55;
+
+  /* Teal: water, calm, the pantry. */
+  --teal-light: #d6efec;
+  --teal: #62bfc4;
+  --teal-deep: #2b7f8f;
+
+  /* Bluebird: Tock, links, focus. */
+  --blue-light: #dff0ff;
+  --blue: #58a8e8;
+  --blue-deep: #2f78c4;
+
+  /* Rose: the piggy bank. */
+  --rose-light: #fde2ea;
+  --rose: #f594b4;
+  --rose-deep: #c9517e;
+
+  /* Lavender: night, bedtime, the photo wall. */
+  --lav-light: #ebe5fb;
+  --lav: #b3a2f2;
+  --lav-deep: #6b5bb5;
+
+  /* Wood: the house's frame, shelves, furniture. */
+  --wood-light: #e8c79b;
+  --wood: #c9976b;
+  --wood-deep: #8d5b36;
+
+  --shadow: 58 46 77; /* ink, as r g b, for tinted shadows — never grey */
+  --focus: #2f78c4;
+
+  --font-display: 'Fredoka Variable', 'Fredoka', ui-rounded, 'Trebuchet MS', system-ui, sans-serif;
+  --font-read: 'Andika', 'Fredoka Variable', ui-rounded, system-ui, sans-serif;
+
+  /* Two speeds: a press, and a change of state. A spring only on things that are glad. */
+  --press: 140ms;
+  --change: 320ms;
+  --ease: cubic-bezier(0.3, 0.7, 0.3, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --radius-s: 10px;
+  --radius-m: 18px;
+  --radius-l: 28px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* High contrast: darker ink, stronger edges, no pale-on-pale. */
+:root[data-contrast='high'] {
+  --ink: #1f1630;
+  --ink-soft: #3a2e4d;
+  --ink-faint: #5a4d70;
+  --line: #8d5b36;
+  --paper-shade: #e3c998;
+  --focus: #1b4f8f;
+}

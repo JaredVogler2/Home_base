@@ -1,0 +1,222 @@
+/*
+ * How a picture moves. A drawing does not carry its own animation: it marks a part with one of these "verbs"
+ * and the part does that — wiggle, scrub, drop in — for as long as the picture is asked to play.
+ *
+ * Rules these keep (docs/ART_DIRECTION.md, "Motion"):
+ *   - only transform and opacity move, so a 4K screen redraws nothing but the part;
+ *   - a loop is 2 to 5 seconds and never faster than once a second;
+ *   - nothing flashes;
+ *   - with no `data-play`, or with motion switched off, every part rests where it was drawn — and a drawing
+ *     at rest already says what to do.
+ */
+.pic {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.pic [class*='pa-'] {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+.pic[data-play='true'] .pa-bob {
+  animation: pa-bob 2.6s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-wiggle {
+  animation: pa-wiggle 2.4s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-scrub {
+  animation: pa-scrub 1.6s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-slide {
+  animation: pa-slide 3.2s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-drop {
+  animation: pa-drop 3.2s cubic-bezier(0.5, 0, 0.6, 1) infinite;
+}
+.pic[data-play='true'] .pa-pop {
+  animation: pa-pop 3s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-rise {
+  animation: pa-rise 4s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-swing {
+  transform-origin: 50% 0%;
+  animation: pa-swing 3s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-tilt {
+  transform-origin: 50% 100%;
+  animation: pa-tilt 3s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-twinkle {
+  animation: pa-twinkle 2.8s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-float {
+  animation: pa-float 3.6s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-pour {
+  transform-origin: 80% 20%;
+  animation: pa-pour 3.4s ease-in-out infinite;
+}
+.pic[data-play='true'] .pa-spin {
+  animation: pa-spin 5s linear infinite;
+}
+/* A second, third and fourth part doing the same thing a beat later. */
+.pic .pa-d1 {
+  animation-delay: 0.35s !important;
+}
+.pic .pa-d2 {
+  animation-delay: 0.7s !important;
+}
+.pic .pa-d3 {
+  animation-delay: 1.05s !important;
+}
+
+@keyframes pa-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6%);
+  }
+}
+@keyframes pa-wiggle {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes pa-scrub {
+  0%,
+  100% {
+    transform: translateX(-7%);
+  }
+  50% {
+    transform: translateX(7%);
+  }
+}
+@keyframes pa-slide {
+  0%,
+  15% {
+    transform: translateX(-28%);
+    opacity: 0;
+  }
+  35%,
+  85% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
+@keyframes pa-drop {
+  0%,
+  10% {
+    transform: translateY(-46%);
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  45%,
+  88% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+@keyframes pa-pop {
+  0%,
+  20% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  40%,
+  85% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+@keyframes pa-rise {
+  0%,
+  10% {
+    transform: translateY(22%);
+  }
+  55%,
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes pa-swing {
+  0%,
+  100% {
+    transform: rotate(-7deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+@keyframes pa-tilt {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-9deg);
+  }
+}
+@keyframes pa-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes pa-float {
+  0% {
+    transform: translateY(8%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-34%);
+    opacity: 0;
+  }
+}
+@keyframes pa-pour {
+  0%,
+  20%,
+  100% {
+    transform: rotate(0deg);
+  }
+  45%,
+  75% {
+    transform: rotate(-28deg);
+  }
+}
+@keyframes pa-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

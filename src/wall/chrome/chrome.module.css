@@ -1,0 +1,243 @@
+/* Sizes are in cqw: hundredths of the sheet's width. On a 1920-wide sheet 1cqw is 19.2px. */
+
+.face {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  aspect-ratio: 1;
+  transition: transform var(--change) var(--spring);
+}
+.faceRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--paper-warm);
+  box-shadow:
+    inset 0 0 0 0.42cqw var(--wood-light),
+    0 0.3cqw 0 rgb(var(--shadow) / 0.2);
+  transition: box-shadow var(--change) var(--ease);
+}
+.facePicture {
+  position: absolute;
+  inset: 7%;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.face[data-active='true'] {
+  transform: translateY(-10%) scale(1.14);
+  z-index: 2;
+}
+.face[data-active='true'] .faceRing {
+  box-shadow:
+    inset 0 0 0 0.5cqw var(--honey),
+    0 0 0 0.3cqw var(--honey-deep),
+    0 0.6cqw 0 rgb(var(--shadow) / 0.22);
+}
+.face[data-quiet='true'] {
+  opacity: 0.72;
+}
+button.face:active {
+  transform: scale(0.94);
+}
+button.face[data-active='true']:active {
+  transform: translateY(-10%) scale(1.06);
+}
+
+.round {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  aspect-ratio: 1;
+  background: var(--honey);
+  box-shadow:
+    inset 0 -0.5cqw 0 rgb(var(--shadow) / 0.16),
+    0 0.34cqw 0 var(--honey-deep);
+  transition: transform var(--press) var(--ease);
+}
+.round svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.round:active {
+  transform: translateY(0.26cqw) scale(0.96);
+}
+.round:disabled {
+  opacity: 0.45;
+}
+.round[data-tone='paper'] {
+  background: var(--paper);
+  box-shadow:
+    inset 0 -0.5cqw 0 rgb(var(--shadow) / 0.08),
+    0 0.34cqw 0 var(--wood);
+}
+.round[data-tone='sage'] {
+  background: var(--sage-deep);
+  box-shadow:
+    inset 0 -0.5cqw 0 rgb(0 0 0 / 0.14),
+    0 0.34cqw 0 #2c6a3f;
+}
+.round[data-tone='terra'] {
+  background: var(--terra);
+  box-shadow:
+    inset 0 -0.5cqw 0 rgb(0 0 0 / 0.12),
+    0 0.34cqw 0 var(--terra-deep);
+}
+.round[data-tone='blue'] {
+  background: var(--blue-light);
+  box-shadow:
+    inset 0 -0.5cqw 0 rgb(var(--shadow) / 0.08),
+    0 0.34cqw 0 var(--blue-deep);
+}
+
+.guide {
+  position: absolute;
+  pointer-events: none;
+  z-index: 6;
+}
+.guideButton {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  pointer-events: auto;
+  border-radius: 40%;
+}
+.bubble {
+  position: absolute;
+  right: 92%;
+  bottom: 46%;
+  width: max-content;
+  max-width: 21cqw;
+  padding: 0.7cqw 1.1cqw;
+  border-radius: 1.3cqw 1.3cqw 0.3cqw 1.3cqw;
+  background: var(--paper);
+  box-shadow: 0 0.22cqw 0 rgb(var(--shadow) / 0.16);
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.22cqw;
+  line-height: 1.25;
+  color: var(--ink);
+  pointer-events: none;
+  animation: bubble-in var(--change) var(--spring);
+}
+.guide[data-side='up'] .bubble {
+  right: 4%;
+  bottom: 100%;
+}
+.guide[data-side='lawn'] .bubble {
+  right: auto;
+  left: 10%;
+  bottom: 97%;
+  border-radius: 1.3cqw 1.3cqw 1.3cqw 0.3cqw;
+}
+.guide[data-side='path'] .bubble {
+  right: 94%;
+  bottom: 72%;
+}
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.4cqw) scale(0.94);
+  }
+}
+
+.hold {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.hold::after {
+  content: '';
+  position: absolute;
+  inset: -6%;
+  border-radius: inherit;
+  border: 0.4cqw solid var(--blue-deep);
+  opacity: 0;
+  transform: scale(0.8);
+}
+.hold:active::after {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    transform var(--hold-ms) linear,
+    opacity 120ms linear;
+}
+
+.label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 0.12cqw 0.9cqw 0.2cqw;
+  border-radius: 99px;
+  background: var(--paper);
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.12cqw;
+  line-height: 1.3;
+  color: var(--ink);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.status {
+  position: absolute;
+  top: 2.2%;
+  left: 1.4%;
+  display: flex;
+  align-items: center;
+  gap: 0.6cqw;
+  padding: 0.4cqw 1cqw 0.4cqw 0.5cqw;
+  border-radius: 99px;
+  background: var(--paper);
+  box-shadow: 0 0.2cqw 0 rgb(var(--shadow) / 0.14);
+  z-index: 30;
+}
+.status svg {
+  width: 3.4cqw;
+  height: auto;
+}
+.statusWords {
+  font-size: 1.05cqw;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+/* On the tall sheet 1cqw is small: scale the parts that carry words. */
+:global([data-shape='tall']) .bubble {
+  font-size: 3cqw;
+  max-width: 54cqw;
+  padding: 1.6cqw 2.4cqw;
+  border-radius: 3cqw 3cqw 0.8cqw 3cqw;
+}
+:global([data-shape='tall']) .guide[data-side='up'] .bubble {
+  max-width: 72cqw;
+}
+:global([data-shape='tall']) .label {
+  font-size: 2.7cqw;
+  padding: 0.3cqw 2cqw 0.5cqw;
+}
+:global([data-shape='tall']) .statusWords {
+  font-size: 2.6cqw;
+}
+:global([data-shape='tall']) .status svg {
+  width: 8cqw;
+}
+:global([data-shape='tall']) .faceRing {
+  box-shadow:
+    inset 0 0 0 1cqw var(--wood-light),
+    0 0.7cqw 0 rgb(var(--shadow) / 0.2);
+}
+:global([data-shape='tall']) .face[data-active='true'] .faceRing {
+  box-shadow:
+    inset 0 0 0 1.2cqw var(--honey),
+    0 0 0 0.7cqw var(--honey-deep),
+    0 1.2cqw 0 rgb(var(--shadow) / 0.22);
+}

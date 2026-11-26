@@ -1,0 +1,104 @@
+.tock {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.tock-body,
+.tock-eyes,
+.tock-crest {
+  transform-box: fill-box;
+}
+.tock-body {
+  transform-origin: 50% 100%;
+  animation: tock-breathe 4.2s ease-in-out infinite;
+}
+.tock-eyes {
+  transform-origin: 50% 50%;
+  animation: tock-blink 5.6s infinite;
+}
+/* The tail and the wings turn about a point given in the drawing's own units. */
+.tock-tail {
+  transform-box: view-box;
+  transform-origin: 64px 152px;
+  animation: tock-tail 3.6s ease-in-out infinite;
+}
+.tock-wing {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transform: rotate(-6deg);
+  transition: transform var(--change) var(--spring);
+}
+
+/* Poses. A negative turn lifts a wing out and up, on either side (the left wing is the right one mirrored). */
+.tock[data-pose='wave'] .tock-wing-r {
+  transform: rotate(-132deg);
+  animation: tock-wave 1.5s ease-in-out infinite;
+}
+.tock[data-pose='point'] .tock-wing-l {
+  transform: rotate(-122deg) scale(1.1);
+}
+.tock[data-pose='cheer'] .tock-wing {
+  transform: rotate(-140deg);
+  animation: tock-wave 0.9s ease-in-out 4;
+}
+.tock[data-pose='cheer'] .tock-body {
+  animation: tock-hop 0.9s var(--ease) 3;
+}
+.tock[data-pose='think'] .tock-body {
+  transform: rotate(-6deg);
+  animation: none;
+}
+.tock[data-pose='listen'] .tock-body {
+  transform: rotate(5deg);
+  animation: none;
+}
+.tock[data-pose='sleep'] .tock-body {
+  animation-duration: 6.5s;
+}
+@keyframes tock-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.012, 0.988);
+  }
+}
+@keyframes tock-blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes tock-tail {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(6deg);
+  }
+}
+@keyframes tock-wave {
+  0%,
+  100% {
+    transform: rotate(-118deg);
+  }
+  50% {
+    transform: rotate(-150deg);
+  }
+}
+@keyframes tock-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-9%);
+  }
+}

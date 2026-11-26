@@ -1,0 +1,41 @@
+.who {
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  gap: 4cqw;
+}
+.choice {
+  width: 17cqw;
+  display: grid;
+  justify-items: center;
+  gap: 1cqw;
+}
+.choice > :first-child {
+  width: 100%;
+}
+.name {
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 2cqw;
+}
+.none {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 1.6cqw;
+  font-weight: 700;
+  padding: 0 10%;
+}
+:global([data-shape='tall']) .choice {
+  width: 36cqw;
+}
+:global([data-shape='tall']) .name {
+  font-size: 5cqw;
+}
+:global([data-shape='tall']) .none {
+  font-size: 4.4cqw;
+}

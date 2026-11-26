@@ -1,0 +1,149 @@
+.calendar {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 24cqw;
+  gap: 2cqw;
+}
+.week {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1.7fr repeat(6, 1fr);
+  gap: 1cqw;
+  align-items: stretch;
+}
+.day {
+  min-width: 0;
+}
+.dayButton {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 0.8cqw;
+  padding: 0;
+  border: 0;
+  border-radius: 1.6cqw;
+  background: var(--paper);
+  box-shadow: 0 0.4cqw 0 rgb(var(--shadow) / 0.14);
+  overflow: hidden;
+}
+.dayName {
+  padding: 0.7cqw 0.4cqw;
+  background: var(--terra);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.35cqw;
+}
+.day[data-today='true'] .dayName {
+  background: var(--honey);
+  color: var(--ink);
+  font-size: 2cqw;
+}
+.day[data-today='true'] .dayButton {
+  box-shadow:
+    inset 0 0 0 0.4cqw var(--honey),
+    0 0.5cqw 0 var(--honey-deep);
+}
+.dayPictures {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6cqw;
+  padding: 0 0.6cqw 0.8cqw;
+  min-height: 0;
+}
+.dayPictures > svg {
+  width: 90%;
+  height: auto;
+  aspect-ratio: 1;
+  flex: none;
+}
+.day[data-today='true'] .dayPictures > svg {
+  width: 78%;
+}
+.dayPictures[data-count='2'] > svg,
+.dayPictures[data-count='3'] > svg {
+  width: 62%;
+}
+.day[data-today='true'] .dayPictures[data-count='2'] > svg,
+.day[data-today='true'] .dayPictures[data-count='3'] > svg {
+  width: 48%;
+}
+.plain {
+  opacity: 0.7;
+}
+
+.native {
+  display: flex;
+  flex-direction: column;
+  gap: 1cqw;
+  padding: 1.4cqw;
+  border-radius: 1.8cqw;
+  background: rgb(255 255 255 / 0.7);
+  font-size: 1.2cqw;
+  line-height: 1.3;
+}
+.native h2 {
+  font-size: 1.7cqw;
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.8cqw;
+}
+.steps li {
+  display: grid;
+  grid-template-columns: 5cqw 1fr;
+  align-items: center;
+  gap: 1cqw;
+  font-weight: 700;
+}
+.fine {
+  color: var(--ink-soft);
+  font-size: 1.05cqw;
+}
+
+:global([data-shape='tall']) .calendar {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 3cqw;
+}
+:global([data-shape='tall']) .week {
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 2.4cqw;
+}
+:global([data-shape='tall']) .day[data-today='true'] {
+  grid-column: span 3;
+}
+:global([data-shape='tall']) .dayName,
+:global([data-shape='tall']) .day[data-today='true'] .dayName {
+  font-size: 3.8cqw;
+  padding: 1.4cqw;
+}
+:global([data-shape='tall']) .day[data-today='true'] .dayPictures {
+  flex-direction: row;
+}
+:global([data-shape='tall']) .day[data-today='true'] .dayPictures > svg {
+  max-width: 30%;
+}
+:global([data-shape='tall']) .native {
+  font-size: 3cqw;
+  padding: 3cqw;
+  border-radius: 4cqw;
+}
+:global([data-shape='tall']) .native h2 {
+  font-size: 4.4cqw;
+}
+:global([data-shape='tall']) .steps li {
+  grid-template-columns: 11cqw 1fr;
+}
+:global([data-shape='tall']) .fine {
+  font-size: 2.7cqw;
+}

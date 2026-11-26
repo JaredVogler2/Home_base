@@ -1,0 +1,270 @@
+.bank {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 34% 1fr;
+  gap: 2.4cqw;
+}
+.mine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1cqw;
+  min-height: 0;
+}
+.piggy {
+  width: 76%;
+  height: auto;
+}
+.trays {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6cqw;
+  width: 100%;
+}
+.tray {
+  width: 15cqw;
+  height: auto;
+}
+.more {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 3cqw;
+}
+.count {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 3cqw;
+  line-height: 1;
+}
+.goal {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  max-width: 100%;
+  padding: 0.6cqw 1.2cqw 0.6cqw 0.6cqw;
+  border: 0.24cqw dashed var(--rose-deep);
+  border-radius: 1.6cqw;
+  background: var(--paper);
+}
+.goalPicture {
+  width: 5cqw;
+  aspect-ratio: 1;
+  flex: none;
+}
+
+.shop {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4cqw;
+  min-height: 0;
+  padding: 1.6cqw;
+  border-radius: 2.2cqw;
+  background: rgb(255 255 255 / 0.55);
+  overflow: hidden;
+}
+.rewards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.5cqw, 1fr));
+  gap: 1.4cqw;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-content: start;
+  padding: 0.4cqw 0.4cqw 1cqw;
+}
+.reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4cqw;
+  width: 100%;
+  height: 100%;
+  padding: 1cqw 0.8cqw 1.1cqw;
+  border: 0;
+  border-radius: 1.5cqw;
+  background: var(--paper);
+  box-shadow: 0 0.4cqw 0 rgb(var(--shadow) / 0.16);
+  transition: transform var(--press) var(--ease);
+}
+.reward:active {
+  transform: scale(0.96);
+}
+/* Enough stars: the card is lit, as a lamp is. */
+.reward[data-can='true'] {
+  background: #fff8dc;
+  box-shadow:
+    inset 0 0 0 0.3cqw var(--honey),
+    0 0.4cqw 0 var(--honey-deep);
+}
+.reward[data-goal='true'] {
+  outline: 0.24cqw dashed var(--rose-deep);
+  outline-offset: 0.2cqw;
+}
+.rewardPicture {
+  display: block;
+  width: 74%;
+  aspect-ratio: 1;
+}
+.rewardTitle {
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.25cqw;
+  line-height: 1.15;
+  text-align: center;
+}
+.none {
+  margin: auto;
+  font-weight: 700;
+  font-size: 1.6cqw;
+}
+
+.asked {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1cqw;
+}
+.askedCard {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  padding: 0.6cqw 1.2cqw 0.6cqw 0.6cqw;
+  border-radius: 1.4cqw;
+  background: var(--honey-light);
+}
+.askedCard[data-status='approved'] {
+  background: var(--sage-light);
+}
+.askedCard[data-status='declined'] {
+  background: var(--paper-shade);
+}
+.askedPicture {
+  width: 4.6cqw;
+  aspect-ratio: 1;
+  flex: none;
+}
+.askedWords {
+  display: grid;
+  font-size: 1.2cqw;
+  line-height: 1.25;
+}
+.askedBadge {
+  transform: scale(0.8);
+}
+.changeMind {
+  padding: 0.6cqw 1.2cqw;
+  border: 0.2cqw solid var(--ink-soft);
+  border-radius: 99px;
+  background: var(--paper);
+  font-weight: 700;
+  font-size: 1.15cqw;
+  min-height: 3.6cqw;
+}
+
+.sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 2.4cqw;
+  align-items: center;
+}
+.show {
+  aspect-ratio: 1;
+  padding: 1.4cqw;
+  border-radius: 2cqw;
+  background: var(--rose-light);
+}
+.side {
+  display: grid;
+  gap: 1.3cqw;
+  justify-items: start;
+}
+.heading {
+  font-size: 2.8cqw;
+}
+.reachWords {
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.7cqw;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.2cqw;
+}
+
+:global([data-shape='tall']) .bank {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 3cqw;
+}
+:global([data-shape='tall']) .piggy {
+  width: 44%;
+}
+:global([data-shape='tall']) .tray {
+  width: 36cqw;
+}
+:global([data-shape='tall']) .count {
+  font-size: 7cqw;
+}
+:global([data-shape='tall']) .goalPicture {
+  width: 12cqw;
+}
+:global([data-shape='tall']) .shop {
+  padding: 3cqw;
+  border-radius: 5cqw;
+}
+:global([data-shape='tall']) .rewards {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3cqw;
+}
+:global([data-shape='tall']) .reward {
+  border-radius: 3.4cqw;
+  padding: 2.4cqw 1.6cqw;
+}
+:global([data-shape='tall']) .rewardTitle {
+  font-size: 3.4cqw;
+}
+:global([data-shape='tall']) .askedWords {
+  font-size: 3.2cqw;
+}
+:global([data-shape='tall']) .askedPicture {
+  width: 11cqw;
+}
+:global([data-shape='tall']) .changeMind {
+  font-size: 3.2cqw;
+  min-height: 10cqw;
+  padding: 1.4cqw 3cqw;
+}
+:global([data-shape='tall']) .sheet {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+:global([data-shape='tall']) .show {
+  width: 60%;
+}
+:global([data-shape='tall']) .side {
+  justify-items: center;
+  text-align: center;
+  gap: 2.6cqw;
+}
+:global([data-shape='tall']) .heading {
+  font-size: 6cqw;
+}
+:global([data-shape='tall']) .reachWords {
+  font-size: 4cqw;
+}
+:global([data-shape='tall']) .actions {
+  justify-content: center;
+  gap: 2.4cqw;
+}
+:global([data-shape='tall']) .none {
+  font-size: 4.2cqw;
+}

@@ -1,0 +1,129 @@
+@import './fonts.css';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* A wall is touched, not scrolled or pinched; a stray gesture must not move the page. */
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: var(--font-read);
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+a {
+  color: var(--blue-deep);
+}
+
+/* One focus ring everywhere: thick, dark, outside the thing, visible on every background. */
+:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The first paint, before any script has run: sky, and the outline of a house. */
+.boot {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(#a9daf5, #f1faff 70%, #9fd98a 70%);
+}
+
+.boot-house {
+  width: min(28vmin, 220px);
+  aspect-ratio: 1;
+  background: #fff6e6;
+  clip-path: polygon(50% 4%, 96% 42%, 86% 42%, 86% 96%, 14% 96%, 14% 42%, 4% 42%);
+  opacity: 0.9;
+}
+
+.noscript {
+  position: fixed;
+  inset: auto 0 12% 0;
+  text-align: center;
+  font-weight: 700;
+}
+
+/*
+ * Motion. `data-motion="still"` is set when the family chooses calm, when the device asks for less motion, and
+ * during quiet hours. It stops every animation and transition in one place; nothing that matters is carried by
+ * movement alone, so nothing is lost.
+ */
+:root[data-motion='still'] *,
+:root[data-motion='still'] *::before,
+:root[data-motion='still'] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

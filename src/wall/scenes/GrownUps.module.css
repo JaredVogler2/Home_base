@@ -1,0 +1,306 @@
+/* A grown-up's corner: words are fine here. Sizes still follow the sheet, and nothing is smaller than a thumb. */
+.gate,
+.panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2cqw;
+  font-size: 1.35cqw;
+}
+.gate {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.gate h2,
+.panel h2 {
+  font-size: 2.4cqw;
+}
+.lead {
+  font-size: 1.6cqw;
+  max-width: 44cqw;
+}
+.link {
+  margin-left: 1cqw;
+  padding: 0.3cqw 0.8cqw;
+  border: 0;
+  background: none;
+  color: var(--blue-deep);
+  text-decoration: underline;
+  font-size: 1.2cqw;
+  min-height: 3cqw;
+}
+.members {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 2cqw;
+}
+.member {
+  display: grid;
+  justify-items: center;
+  gap: 0.6cqw;
+  padding: 1cqw 1.6cqw;
+  border: 0.24cqw solid var(--line);
+  border-radius: 1.6cqw;
+  background: var(--paper);
+  font-weight: 700;
+  font-size: 1.5cqw;
+}
+.memberFace {
+  width: 7cqw;
+  aspect-ratio: 1;
+}
+.pinArea {
+  display: grid;
+  justify-items: center;
+  gap: 1cqw;
+}
+.dots {
+  display: flex;
+  gap: 1cqw;
+  height: 2cqw;
+}
+.dots span {
+  width: 1.8cqw;
+  height: 1.8cqw;
+  border-radius: 50%;
+  border: 0.26cqw solid var(--ink-soft);
+}
+.dots span[data-on='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.problem {
+  color: var(--terra-deep);
+  font-weight: 700;
+  max-width: 40cqw;
+}
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, 6.4cqw);
+  gap: 0.9cqw;
+}
+.key {
+  height: 5.2cqw;
+  border: 0;
+  border-radius: 1.3cqw;
+  background: var(--paper);
+  box-shadow: 0 0.34cqw 0 var(--wood);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 2.2cqw;
+}
+.key:active {
+  transform: translateY(0.26cqw);
+  box-shadow: 0 0.08cqw 0 var(--wood);
+}
+.key[data-kind='go'] {
+  background: var(--sage-deep);
+  color: #fff;
+  box-shadow: 0 0.34cqw 0 #2c6a3f;
+  font-size: 1.7cqw;
+}
+.key[data-kind='aux'] {
+  background: var(--paper-shade);
+}
+.key:disabled {
+  opacity: 0.45;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2cqw;
+}
+.lock {
+  min-height: 4cqw;
+  padding: 0.6cqw 2cqw;
+  border: 0;
+  border-radius: 99px;
+  background: var(--terra);
+  box-shadow: 0 0.3cqw 0 var(--terra-deep);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.6cqw;
+}
+.columns {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 2cqw;
+}
+.column {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.2cqw 1.4cqw;
+  border-radius: 1.6cqw;
+  background: rgb(255 255 255 / 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9cqw;
+}
+.column h3 {
+  font-size: 1.7cqw;
+}
+.child h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.6cqw;
+  margin: 0.4cqw 0;
+  font-family: var(--font-display);
+  font-size: 1.4cqw;
+}
+.childFace {
+  width: 2.6cqw;
+  aspect-ratio: 1;
+}
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7cqw;
+}
+.row {
+  display: grid;
+  grid-template-columns: 4.4cqw minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9cqw;
+  padding: 0.6cqw 0.8cqw;
+  border-radius: 1.1cqw;
+  background: var(--paper);
+  box-shadow: 0 0.2cqw 0 rgb(var(--shadow) / 0.1);
+}
+.row[data-size='small'] {
+  grid-template-columns: 3cqw minmax(0, 1fr) auto;
+}
+.rowPicture {
+  aspect-ratio: 1;
+}
+.rowWords {
+  display: grid;
+  line-height: 1.25;
+}
+.rowWords span {
+  color: var(--ink-soft);
+  font-size: 1.1cqw;
+}
+.buttons,
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6cqw;
+  justify-content: flex-end;
+}
+.choices {
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+}
+.yes,
+.no,
+.choice {
+  min-height: 3.6cqw;
+  padding: 0.4cqw 1.3cqw;
+  border: 0;
+  border-radius: 99px;
+  font-weight: 700;
+  font-size: 1.25cqw;
+}
+.yes {
+  background: var(--sage-deep);
+  color: #fff;
+}
+.no,
+.choice {
+  background: var(--paper-shade);
+}
+.quiet {
+  color: var(--ink-soft);
+  font-size: 1.15cqw;
+}
+
+:global([data-shape='tall']) .gate,
+:global([data-shape='tall']) .panel {
+  font-size: 3.4cqw;
+  gap: 3cqw;
+}
+:global([data-shape='tall']) .gate h2,
+:global([data-shape='tall']) .panel h2 {
+  font-size: 6cqw;
+}
+:global([data-shape='tall']) .lead {
+  font-size: 4cqw;
+  max-width: 86cqw;
+}
+:global([data-shape='tall']) .pad {
+  grid-template-columns: repeat(3, 20cqw);
+  gap: 2.4cqw;
+}
+:global([data-shape='tall']) .key {
+  height: 15cqw;
+  border-radius: 3.4cqw;
+  font-size: 6cqw;
+}
+:global([data-shape='tall']) .key[data-kind='go'] {
+  font-size: 4.6cqw;
+}
+:global([data-shape='tall']) .dots span {
+  width: 4.6cqw;
+  height: 4.6cqw;
+  border-width: 0.6cqw;
+}
+:global([data-shape='tall']) .dots {
+  height: 5cqw;
+  gap: 2.6cqw;
+}
+:global([data-shape='tall']) .columns {
+  grid-template-columns: 1fr;
+}
+:global([data-shape='tall']) .column h3 {
+  font-size: 4.4cqw;
+}
+:global([data-shape='tall']) .row,
+:global([data-shape='tall']) .row[data-size='small'] {
+  grid-template-columns: 11cqw minmax(0, 1fr);
+  padding: 2cqw;
+  border-radius: 3cqw;
+}
+:global([data-shape='tall']) .buttons {
+  grid-column: 1 / -1;
+}
+:global([data-shape='tall']) .rowWords span,
+:global([data-shape='tall']) .quiet {
+  font-size: 3cqw;
+}
+:global([data-shape='tall']) .yes,
+:global([data-shape='tall']) .no,
+:global([data-shape='tall']) .choice,
+:global([data-shape='tall']) .lock {
+  min-height: 10cqw;
+  font-size: 3.4cqw;
+  padding: 1cqw 3.4cqw;
+}
+:global([data-shape='tall']) .member {
+  font-size: 4cqw;
+  padding: 2.6cqw 4cqw;
+  border-radius: 4cqw;
+}
+:global([data-shape='tall']) .memberFace {
+  width: 18cqw;
+}
+:global([data-shape='tall']) .child h4 {
+  font-size: 3.8cqw;
+}
+:global([data-shape='tall']) .childFace {
+  width: 7cqw;
+}
+:global([data-shape='tall']) .link {
+  font-size: 3.2cqw;
+  min-height: 9cqw;
+}

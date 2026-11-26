@@ -485,38 +485,37 @@ async function seedPast(ctx: Ctx, today: LocalDate, timeZone: string): Promise<v
       actor: 'seed',
     });
   }
-  const spent: [string, number, string][] = [
-    [DEMO.june, 20, 'Playground trip'],
-    [DEMO.june, 10, 'Family game'],
-    [DEMO.june, 15, 'Bake together'],
-    [DEMO.milo, 8, 'New stickers'],
-    [DEMO.milo, 5, 'Pick the story'],
-    [DEMO.milo, 10, 'Family game'],
-  ];
-  for (const [index, [profileId, price, title]] of spent.entries()) {
+  // …and what had already been spent on rewards before today, so that the bank looks like a real one: a few
+  // stars on the tray, not a hoard.
+  const keep = new Map<string, number>([
+    [DEMO.june, 17],
+    [DEMO.milo, 8],
+  ]);
+  for (const [profileId, left] of keep) {
     const balance = await ctx.tx
       .select({ available: wallets.available })
       .from(wallets)
       .where(eq(wallets.profileId, profileId))
       .limit(1);
-    if ((balance[0]?.available ?? 0) < price + 6) continue;
+    const spent = (balance[0]?.available ?? 0) - left;
+    if (spent <= 0) continue;
     await post(ctx, {
       profileId,
       kind: 'reserve',
-      available: -price,
-      reserved: price,
+      available: -spent,
+      reserved: spent,
       source: 'redemption',
-      key: `seed:spend:${index}:reserve`,
-      note: title,
+      key: `seed:spent:${profileId}:reserve`,
+      note: 'Rewards chosen before today',
       actor: 'seed',
     });
     await post(ctx, {
       profileId,
       kind: 'spend',
-      reserved: -price,
+      reserved: -spent,
       source: 'redemption',
-      key: `seed:spend:${index}:spend`,
-      note: title,
+      key: `seed:spent:${profileId}:spend`,
+      note: 'Rewards chosen before today',
       actor: 'seed',
     });
   }
