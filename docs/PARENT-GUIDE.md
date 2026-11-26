@@ -51,7 +51,8 @@ then the words, who it is for, which days, and how many stars. Two choices matte
 **Plan → Routines** are steps in order — a morning, a bedtime. A new routine starts from the usual steps for its
 kind; reorder with the arrows. On the wall a child sees *now*, *next*, and beads for how far along they are. No
 countdown is ever shown to a child. Routines earn no stars unless you decide otherwise (*Family → Stars and
-missions*): getting dressed is part of the day, not a job.
+missions*): getting dressed is part of the day, not a job. **Print**, in a routine, makes a sheet of the same
+pictures in order with a ring to tick for each day — for the bathroom mirror, where no screen is needed.
 
 **Plan → Rewards** are things to save for: choosing the story, a family game, an outing. Food, sleep, comfort
 and time with you are things no child should have to earn; if a reward's words sound like one of those,

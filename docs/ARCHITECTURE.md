@@ -139,9 +139,12 @@ sequenceDiagram
 
 Step by step:
 
-1. **Dispatch.** `SyncStore.dispatch` (`src/sync/store.ts`) makes an envelope `{ id: newId(), type, at, input }`,
-   appends it to the in-memory outbox, writes it to IndexedDB (`addToOutbox` in `src/sync/cache.ts`), redraws, and
-   calls `sync()`. The id is a client-made UUID (`shared/ids.ts`).
+1. **Dispatch.** `SyncStore.dispatch` (`src/sync/store.ts`) makes an envelope `{ id: newId(), type, at, input }`
+   and writes it to IndexedDB first (`addToOutbox` in `src/sync/cache.ts`, which resolves when the write has
+   committed). Only then is it appended to the in-memory outbox, drawn, and sent (`sync()`): whatever a screen
+   shows as "sent" has been kept on the device, so a reload a moment later cannot lose it. The wait is a few
+   milliseconds and is capped at 150 ms so that slow or broken storage never holds a child up
+   (`tests/server/store.test.ts`; `e2e/offline.spec.ts`). The id is a client-made UUID (`shared/ids.ts`).
 2. **Optimistic view.** The view drawn is `applyAll(snapshot, outbox)` (`src/sync/optimistic.ts`). For
    `occurrence.submit` the guess is status `submitted`, never `approved`, and wallets are not moved, so a child is
    never shown stars the server has not given. (On a grown-up's screen `occurrence.approve` and

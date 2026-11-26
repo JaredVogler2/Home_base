@@ -13,8 +13,8 @@ against a hosted database** — those are listed at the end.
 | Unit and integration tests, built-in database | `npm test` | **456 passed**, 1 skipped (34 files) |
 | Server tests on real PostgreSQL 16 | `npm run test:pg` | **252 passed** (21 files), including backup and restore — on the long-lived local server and again on a brand-new one |
 | Production build | `npm run build` | Built: 1.4 MB on disk, 43 files in the offline shell |
-| Browser tests, four screen sizes | `npm run test:e2e` | **29 passed**, 1 skipped (needs a built app) |
-| The skipped one, against the built app | `E2E_SERVER=production npx playwright test e2e/offline.spec.ts` | **2 passed** |
+| Browser tests, four screen sizes | `npm run test:e2e` | **30 passed**, 1 skipped (needs a built app) |
+| The skipped one, against the built app | `E2E_SERVER=production npx playwright test e2e/offline.spec.ts` | **2 passed** (and 6 of 6 when repeated three times) |
 | A deployment, checked from outside | `npm run verify:deployment -- http://127.0.0.1:4173` | 20 checks, "All as it should be" |
 | The wall, measured | `npm run measure` | Table below |
 | Continuous integration on GitHub | `.github/workflows/ci.yml` | See [`PROGRESS.md`](PROGRESS.md) for the latest run |
@@ -66,6 +66,7 @@ Browser tests (`e2e/`, Playwright, each starting its own server with an in-memor
 | `a11y.spec.ts` | axe scans of the wall and the grown-ups' side with no rule switched off; keyboard reaches every room; Escape goes home |
 | `auth.spec.ts` | Sign up, recovery codes shown once, sign out and in, a wrong password, an invitation |
 | `tour.spec.ts` | The first-visit showing-round appears once, never catches a tap, and does not run in quiet hours |
+| `print.spec.ts` | A routine as a sheet to print: its steps and rings; on paper only the sheet; Escape puts it away |
 
 ## Fewest taps for what a child does
 
@@ -135,6 +136,12 @@ seen HOMEBASE before:
   happen once and be survived.
 - **A backup made with a newer `pg_dump` than the database could not be put back.** The test now insists the two
   match, CI's database matches its `pg_dump`, and the deployment guide says so.
+
+And one that only a slower machine than this one shows:
+
+- **A tap was shown as "sent" a few thousandths of a second before the device had finished writing it down.**
+  On GitHub's runner the offline test reloaded the page inside that gap, and the mission came back as "to do".
+  A request is now written to the device first and shown after, so "sent" on the screen always means "kept".
 
 ## What is not tested, and why
 

@@ -41,6 +41,9 @@ const PACE_MS: Record<Pace, number> = {
 
 const BACKOFF_MS = [2_000, 4_000, 8_000, 16_000, 30_000];
 
+/** The longest a screen waits for the device to write a request down before showing it anyway. */
+const KEEP_WAIT_MS = 150;
+
 export interface Notice {
   id: string;
   type: OpType;
@@ -212,15 +215,38 @@ export class SyncStore {
 
   // --- asking for changes ----------------------------------------------------------------------------------------------
 
-  /** Ask for a change. Returns at once; the screen shows the likely result straight away. */
+  /**
+   * Ask for a change. Returns at once. The request is written to the device first and only then shown and sent:
+   * whatever a screen shows as "sent" has been kept, so a reload or a power cut a moment later cannot lose it.
+   * Writing takes a few thousandths of a second; storage that is slow or broken must not hold a child up, so
+   * the wait is capped and the screen carries on regardless.
+   */
   dispatch<T extends OpType>(type: T, input: OpInput<T>): string {
     const op: OpEnvelope<T> = { id: newId(), type, at: new Date(this.serverNow()).toISOString(), input };
-    this.outbox = [...this.outbox, op as OpEnvelope];
-    void this.cache.addToOutbox(op as OpEnvelope, ++this.seq).catch(() => undefined);
-    this.redraw();
-    void this.sync();
+    const epoch = this.epoch;
+    const written = this.cache.addToOutbox(op as OpEnvelope, ++this.seq).catch(() => undefined);
+    const kept = Promise.race([written, new Promise<void>((resolve) => setTimeout(resolve, KEEP_WAIT_MS))]);
+    // One after another, in the order they were asked for.
+    this.keeping = this.keeping
+      .then(() => kept)
+      .then(() => {
+        // Signed out, or switched off, in the meantime: there is nobody to do it for.
+        if (epoch !== this.epoch) return;
+        this.outbox = [...this.outbox, op as OpEnvelope];
+        this.redraw();
+        void this.sync();
+      });
     return op.id;
   }
+
+  /** Resolves when everything asked for so far has been written down and shown. */
+  settled(): Promise<void> {
+    return this.keeping;
+  }
+
+  private keeping: Promise<void> = Promise.resolve();
+  /** Counts up whenever this browser stops being who it was, so that work begun before is dropped. */
+  private epoch = 0;
 
   /** Ask for a change and wait to hear how it went. For a grown-up's screen, where "saved" should mean saved. */
   async request<T extends OpType>(type: T, input: OpInput<T>): Promise<OpOutcome> {
@@ -349,6 +375,7 @@ export class SyncStore {
     try {
       await api('POST', '/demo/enter', { as });
       // What was asked of the old server is gone with it; start from what the new one says.
+      this.epoch += 1;
       this.outbox = [];
       for (const waiter of this.waiting.values()) waiter({ id: '', status: 'retry' });
       this.waiting.clear();
@@ -366,6 +393,7 @@ export class SyncStore {
 
   /** This browser is not signed in (any more): forget everything it had kept. */
   private async becomeStranger(): Promise<void> {
+    this.epoch += 1;
     this.outbox = [];
     for (const waiter of this.waiting.values()) waiter({ id: '', status: 'retry' });
     this.waiting.clear();
@@ -375,6 +403,7 @@ export class SyncStore {
 
   /** After signing in or pairing: start afresh as whoever this browser now is. */
   async reset(): Promise<void> {
+    this.epoch += 1;
     this.outbox = [];
     await this.cache.wipe().catch(() => undefined);
     this.set({ phase: 'starting', snapshot: null, view: null, pending: 0, pendingIds: NO_IDS });

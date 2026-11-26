@@ -1,0 +1,146 @@
+/* A routine on paper. On the screen it is a white page over everything; printed, it is the only thing there. */
+.paper {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: auto;
+  background: #fff;
+  color: #1c1626;
+}
+.bar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--paper-warm);
+  border-bottom: 1px solid var(--line);
+}
+.tip {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.sheet {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #1c1626;
+}
+.head h1 {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1.1;
+}
+.headPicture {
+  width: 72px;
+  height: 72px;
+  flex: none;
+}
+/* A line to write a name on, by hand. */
+.name {
+  width: 150px;
+  align-self: flex-end;
+  border-bottom: 2px solid #1c1626;
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.step {
+  display: grid;
+  grid-template-columns: 34px 92px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #c9c2d3;
+  break-inside: avoid;
+}
+.number {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+}
+.picture {
+  width: 92px;
+  height: 92px;
+}
+.words strong {
+  display: block;
+  font-family: var(--font-read);
+  font-size: 22px;
+  line-height: 1.2;
+}
+.words em {
+  font-style: normal;
+  font-size: 15px;
+  color: #4a4358;
+}
+.rings {
+  display: grid;
+  grid-template-columns: repeat(7, 28px);
+  gap: 5px;
+}
+/* A ring to tick, with the day's letter under it. */
+.ring {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  font-size: 10px;
+  line-height: 1;
+  color: #4a4358;
+}
+.ring::before {
+  content: '';
+  width: 26px;
+  height: 26px;
+  box-sizing: border-box;
+  border: 2px solid #1c1626;
+  border-radius: 50%;
+}
+@media (max-width: 560px) {
+  .step {
+    grid-template-columns: 26px 64px 1fr;
+  }
+  .picture {
+    width: 64px;
+    height: 64px;
+  }
+  .rings {
+    grid-column: 2 / -1;
+    padding-bottom: 12px;
+  }
+}
+@media print {
+  .paper {
+    position: static;
+    overflow: visible;
+  }
+  .sheet {
+    max-width: none;
+    padding: 0;
+  }
+  /* On paper the rows are always laid out wide, whatever the phone was. */
+  .step {
+    grid-template-columns: 34px 92px 1fr auto;
+  }
+  .picture {
+    width: 92px;
+    height: 92px;
+  }
+  .rings {
+    grid-column: auto;
+    padding-bottom: 0;
+  }
+}

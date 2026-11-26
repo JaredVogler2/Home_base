@@ -87,7 +87,6 @@ the work of co-ordinating a family. In the order they seem worth it:
 
 | Idea | What it would be | Trade-off |
 | --- | --- | --- |
-| **Printable picture routines** | The morning or bedtime as a sheet of the same drawings, to stick by the bathroom mirror | Takes the routine *off* the screen, which is the point; small to build (the drawings are vectors already) |
 | **A family garden** | The garden beside the house grows a little with things the family did *together* — never one child's tally | Charming and collective; must never become a streak or a scoreboard |
 | **Packing by pictures** | A trip list as pictures a child can tick: toothbrush, teddy, wellies | A second kind of list; the shopping list's machinery would serve |
 | **Seasonal touches** | The tree already wears the season; a little more of that for the family's own festivals | Purely decoration; cheap; easy to overdo |
@@ -95,8 +94,10 @@ the work of co-ordinating a family. In the order they seem worth it:
 | Checklists for trips and emergencies | Grown-ups' lists | Useful, but it is a different product creeping in |
 | A bulletin of fridge magnets | A place for a drawing or a note | Free-form content on a child's screen needs moderation rules first |
 
-Two things were built in this spirit already: **keepsake badges** for things that add up (never for days in a
-row), and the parents' **moments worth keeping**.
+Three things were built in this spirit already: **printable picture routines** (*Plan → Routines →* a routine
+*→ Print*: the same drawings in order with a ring to tick for each day, for the bathroom mirror — a routine
+that needs no screen at all), **keepsake badges** for things that add up (never for days in a row), and the
+parents' **moments worth keeping**.
 
 ## What will not be done
 

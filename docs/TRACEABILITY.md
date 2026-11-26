@@ -4,7 +4,8 @@ Every requirement, invariant and prohibition in the brief (`README.md` as first 
 `prompt-series/`), and what the code at commit **`ad4c5e4`** actually does about it. First written 2026-11-26
 against `5479df1`; refreshed the same day after the fixes that audit led to (merge `ef906d2`, then `9d866c0`, then
 `ad4c5e4`, which adds `README.md` and `docs/PROGRESS.md` only). Two changes made after that refresh are folded in
-by hand: the "Saving up" section in History (row 11.22) and CI keeping a trace of any failing browser test.
+by hand: the "Saving up" section in History (row 11.22), CI keeping a trace of any failing browser test, and
+printable picture routines (row 14.26).
 Statuses come from reading the code and the tests; other documents were used as a map and checked where they
 made claims.
 
@@ -54,8 +55,8 @@ sentences (one row per separately testable promise), which is why there are more
 | 11 Parent studio, history | 26 | 17 | 8 | 0 | 0 | 0 | 0 | 1 | 0 |
 | 12 AI copilot | 29 | 17 | 2 | 3 | 0 | 1 | 1 | 5 | 0 |
 | 13 Deployment, device | 40 | 23 | 4 | 2 | 5 | 3 | 0 | 3 | 0 |
-| 14 Quality and release | 33 | 18 | 4 | 1 | 1 | 2 | 0 | 7 | 0 |
-| **Total** | **424** | **268** | **74** | **9** | **21** | **13** | **5** | **31** | **3** |
+| 14 Quality and release | 33 | 19 | 4 | 1 | 1 | 2 | 0 | 6 | 0 |
+| **Total** | **424** | **269** | **74** | **9** | **21** | **13** | **5** | **30** | **3** |
 
 ## What is not done
 
@@ -92,8 +93,8 @@ says it is missing.
     (none are committed) (02); `history.forget` has no screen; the core/bonus ribbon, the routine screens and the Academy
     import page have no browser test.
 14. **Optional enhancements in file 14** not built: adventure map (ROADMAP's "family garden"), family bulletin,
-    packing wizard, trip/emergency checklists, printable routines, milestone cards on the wall — all listed with
-    trade-offs in ROADMAP §6.
+    packing wizard, trip/emergency checklists, milestone cards on the wall — all listed with trade-offs in
+    ROADMAP §6. (Printable picture routines are built.)
 15. **Deliberate deviations**: Vite SPA not Next.js (§1); polling not managed realtime (§2, §4); CSS/SVG only, no
     skeletal animation (§10); plain HTTPS not the providers' SDKs (§18); unencrypted device cache (§23).
 
@@ -598,7 +599,7 @@ the stale claims listed in the last section.
 | 14.23 | Enhancement: rotating themed home worlds | built, not tested here | Seasonal decor only (`decor` in `src/wall/sky.ts`) |
 | 14.24 | Enhancement: non-competitive collaborative projects | verified | Shared family missions (05.20) |
 | 14.25 | Enhancement: household checklists for trips/emergencies | not built | Trip routine exists; nothing for emergencies |
-| 14.26 | Enhancement: printable picture routines | not built | — |
+| 14.26 | Enhancement: printable picture routines | verified | `src/parent/pages/PrintRoutine.tsx`; `e2e/print.spec.ts`: `shows the routine’s steps as a sheet; on paper only the sheet is there; Escape puts it away` |
 | 14.27 | Explain enhancement tradeoffs; prioritised backlog | verified | Inspected `docs/ROADMAP.md` §6: each enhancement with a trade-off, ordered |
 | 14.28 | Avoid bloat, ads, punitive mechanics, endless engagement, surveillance, subscriptions | built, not tested here | 00.19–00.23; COSTS.md |
 | 14.29 | Deliver: production setup guide, explicit limitations, documented costs, parent handoff | verified | Inspected DEPLOYMENT, INTEGRATIONS, THREAT-MODEL "Things not done", COSTS, PARENT-GUIDE |

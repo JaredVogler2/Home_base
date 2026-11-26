@@ -156,6 +156,13 @@ const SHOTS: Shot[] = [
     size: PHONE,
     taps: [t('routine-Morning')],
   },
+  {
+    name: 'parent-routine-print',
+    as: 'guardian',
+    path: '/parent/plan/routines',
+    size: [820, 1180, 2],
+    taps: [t('routine-Morning'), t('print-routine-open')],
+  },
   { name: 'parent-rewards', as: 'guardian', path: '/parent/plan/rewards', size: PHONE, fullPage: true },
   {
     name: 'parent-reward-editor',

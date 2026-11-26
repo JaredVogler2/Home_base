@@ -27,7 +27,9 @@ async function askOnWall(page: Page, title: string): Promise<void> {
   const bank = page.getByTestId('scene-bank');
   await press(bank.getByTestId(`reward-${title}`));
   await press(page.getByTestId('reward-sheet').getByTestId('ask-for-it'));
-  await expect(bank.getByTestId(`asked-${title}`)).toHaveAttribute('data-status', 'requested');
+  // The same reward can be on the shelf twice for a moment: one just agreed to ("Yes!", until the wall next hears
+  // from the server that it was handed over) and the one asked for now. It is the new one that is looked for.
+  await expect(bank.locator(`[data-testid="asked-${title}"][data-status="requested"]`)).toBeVisible();
 }
 
 test.describe('rewards between the wall and a phone', { tag: '@w1080' }, () => {

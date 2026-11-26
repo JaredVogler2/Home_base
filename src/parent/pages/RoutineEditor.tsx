@@ -21,6 +21,7 @@ import {
   Toggle,
   useToast,
 } from '../ui/kit';
+import { PrintRoutine } from './PrintRoutine';
 import styles from './pages.module.css';
 
 /**
@@ -144,6 +145,8 @@ export function RoutineEditor({ routine, onClose }: { routine: Routine | null; o
 
   const open = steps.find((step) => step.id === stepOpen) ?? null;
   const minutes = Math.round(steps.reduce((sum, step) => sum + (step.seconds ?? 0), 0) / 60);
+  const [printing, setPrinting] = useState(false);
+  if (routine && printing) return <PrintRoutine routine={routine} onClose={() => setPrinting(false)} />;
 
   return (
     <Sheet
@@ -179,6 +182,9 @@ export function RoutineEditor({ routine, onClose }: { routine: Routine | null; o
                 }}
               >
                 Copy
+              </Button>
+              <Button tone="quiet" onClick={() => setPrinting(true)} testId="print-routine-open">
+                Print
               </Button>
             </>
           )}

@@ -88,8 +88,20 @@ describe('the screen’s store', () => {
     const mission = occurrenceOf(store.getState().view!, task, kit);
     expect(mission.status).toBe('available');
 
+    // Hold the server's answer back for a moment, to look at what the screen shows in between.
+    let letThrough: () => void = () => {};
+    const held = new Promise<void>((resolve) => (letThrough = resolve));
+    const passing = globalThis.fetch;
+    globalThis.fetch = (async (...args: Parameters<typeof fetch>) => {
+      if (args[1]?.method === 'POST') await held;
+      return passing(...args);
+    }) as typeof fetch;
+
     store.dispatch('occurrence.submit', { occurrenceId: mission.id, profileId: kit });
-    // At once: the screen shows it sent — and does not claim the stars before the server has given them.
+    // Nothing is shown until the device has written the request down…
+    expect(store.getState().pending).toBe(0);
+    await store.settled();
+    // …then at once the screen shows it sent — and does not claim the stars before the server has given them.
     const shown = occurrenceOf(store.getState().view!, task, kit);
     expect(shown.status).toBe('submitted');
     expect(shown.credited).toBe(false);
@@ -97,6 +109,7 @@ describe('the screen’s store', () => {
     expect(store.getState().pending).toBe(1);
     expect(store.getState().pendingIds.has(mission.id)).toBe(true);
 
+    letThrough();
     await store.sync();
     const settled = store.getState();
     expect(settled.pending).toBe(0);
@@ -114,6 +127,9 @@ describe('the screen’s store', () => {
 
     network.up = false;
     store.dispatch('occurrence.submit', { occurrenceId: mission.id, profileId: kit });
+    await store.settled();
+    // Written to the device before it is shown as sent: a reload a moment later would still have it.
+    expect((await cache.loadOutbox()).map((op) => op.type)).toEqual(['occurrence.submit']);
     await store.sync();
     expect(store.getState().online).toBe(false);
     expect(store.getState().pending).toBe(1);
@@ -183,6 +199,7 @@ describe('the screen’s store', () => {
     await family.parent.do('device.revoke', { deviceId: device.id });
 
     store.dispatch('occurrence.submit', { occurrenceId: mission.id, profileId: kit });
+    await store.settled();
     await store.sync();
     const state = store.getState();
     expect(state.phase).toBe('stranger');
