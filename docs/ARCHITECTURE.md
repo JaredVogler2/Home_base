@@ -242,7 +242,11 @@ All tables are in the Postgres schema `homebase` (`server/db/schema.ts`, `pgSche
 `server/db/migrations/0000_init.sql` (tables) and `0001_security.sql` (role, row-level security, grants, ledger
 trigger); they are embedded into `server/db/migrations.generated.ts` and applied by `migrate()` in
 `server/db/migrate.ts` inside one transaction under `pg_advisory_xact_lock`, with a checksum per migration so an
-edited migration is refused. `migrate()` also creates `homebase.schema_migrations`.
+edited migration is refused. `migrate()` also creates `homebase.schema_migrations`. That lock covers one
+database; the restricted role belongs to the whole database server, so two databases set up on a new server at
+the same moment can both try to create it. `migrate()` recognises exactly that failure (`isSharedRoleRace`) and
+tries again, up to six times (`tests/shared/migrate.test.ts`; proven on a fresh PostgreSQL, where the server's
+log shows the collision happening and being survived).
 
 Every household table has `household_id → households.id ON DELETE CASCADE`, so deleting a household removes
 everything of it.
