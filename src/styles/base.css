@@ -118,6 +118,15 @@ a {
   scroll-behavior: auto !important;
 }
 
+/*
+ * `data-motion="light"` is what the wall chooses for itself when the display cannot draw the ambient movement
+ * smoothly (src/wall/pace.ts). The movement inside the drawings — clouds, smoke, the guide's breathing — stops;
+ * what answers a tap (a room opening, a card pressing in, the sparkles) still moves.
+ */
+:root[data-motion='light'] svg * {
+  animation: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

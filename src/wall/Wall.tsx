@@ -13,6 +13,7 @@ import { childById, gladTidings, wearFor } from './derive';
 import { Home } from './home/Home';
 import { Tour, tourSeen } from './home/Tour';
 import type { Box } from './home/layout';
+import { keepsUp, sampleFrames } from './pace';
 import { Pair } from './Pair';
 import { cameBackFromAcademy } from './scenes/Academy';
 import { Scenes } from './scenes/Scenes';
@@ -112,15 +113,36 @@ function WallReady({
   const reducedMotion = useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
   const still = settings.calm || quiet || reducedMotion;
 
+  // A display that cannot draw the ambient movement smoothly does without it (see ./pace). Judged once the
+  // house has been up for a few seconds, and again later in case the first look was during start-up.
+  const [light, setLight] = useState(false);
+  useEffect(() => {
+    if (still || light) return;
+    let sample: ReturnType<typeof sampleFrames> | null = null;
+    const look = () => {
+      sample = sampleFrames(3_000);
+      void sample.done.then((frames) => {
+        if (keepsUp(frames) === false) setLight(true);
+      });
+    };
+    const first = window.setTimeout(look, 5_000);
+    const second = window.setTimeout(look, 60_000);
+    return () => {
+      window.clearTimeout(first);
+      window.clearTimeout(second);
+      sample?.cancel();
+    };
+  }, [still, light]);
+
   useEffect(() => {
     const root = document.documentElement;
-    root.dataset.motion = still ? 'still' : 'full';
+    root.dataset.motion = still ? 'still' : light ? 'light' : 'full';
     root.dataset.contrast = settings.contrast;
     return () => {
       delete root.dataset.motion;
       delete root.dataset.contrast;
     };
-  }, [still, settings.contrast]);
+  }, [still, light, settings.contrast]);
 
   useEffect(() => {
     configureVoice(settings.voice, quiet);

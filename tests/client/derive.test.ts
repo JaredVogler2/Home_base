@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Occurrence, Redemption, Snapshot, Weather } from '../../shared/model';
 import { gladTidings, wearFor } from '../../src/wall/derive';
+import { keepsUp, summarise } from '../../src/wall/pace';
 
 const weather = (patch: Partial<Weather>): Weather => ({
   state: 'clear',
@@ -141,5 +142,28 @@ describe('glad tidings', () => {
       { kind: 'reward-done', title: 'Park trip' },
     ]);
     expect(gladTidings(after, after, KIT)).toEqual([]);
+  });
+});
+
+describe('whether the display keeps up', () => {
+  const steady = (ms: number, count = 120) => Array.from({ length: count }, () => ms);
+
+  it('is happy with a display that draws sixty or thirty frames a second', () => {
+    expect(keepsUp(summarise(steady(16.7)))).toBe(true);
+    expect(keepsUp(summarise(steady(33.4)))).toBe(true);
+  });
+
+  it('gives up the ambient movement on a display that cannot manage thirty', () => {
+    expect(keepsUp(summarise(steady(50)))).toBe(false);
+    expect(keepsUp(summarise(steady(120, 25)))).toBe(false);
+  });
+
+  it('is not fooled by a few slow frames among many good ones', () => {
+    expect(keepsUp(summarise([...steady(16.7, 100), 250, 180, 90]))).toBe(true);
+  });
+
+  it('does not judge on too little: a page in the background draws nothing', () => {
+    expect(keepsUp(summarise([]))).toBeNull();
+    expect(keepsUp(summarise(steady(200, 5)))).toBeNull();
   });
 });

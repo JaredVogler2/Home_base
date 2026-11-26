@@ -45,10 +45,18 @@
     opacity: 0;
   }
 }
-/* Calm mode and quiet hours: the sparkles are simply there for a moment, in a ring, and do not move. */
-:global(:root[data-motion='still']) .spark {
+/*
+ * Calm mode and quiet hours — and a display that cannot keep up (light motion): the sparkles are simply there
+ * for a moment, in a ring, and do not move.
+ */
+:global(:root[data-motion='still']) .spark,
+:global(:root[data-motion='light']) .spark {
+  animation: none;
   transform: translateY(-14cqw);
   opacity: 0.9;
+}
+:global(:root[data-motion='light']) .celebration {
+  animation: none;
 }
 :global([data-shape='tall']) .spark {
   left: -4.5cqw;

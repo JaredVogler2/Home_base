@@ -268,6 +268,7 @@ export class SyncStore {
       this.failures = 0;
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
+        if (await this.reenterDemo()) return;
         await this.becomeStranger();
         return;
       }
@@ -331,6 +332,36 @@ export class SyncStore {
       this.again = true;
     }
   }
+
+  /**
+   * The demo with no database of its own lives in the server's memory, and a hosted server may be replaced by a
+   * fresh one at any moment — which knows the same made-up family and nothing of this browser. Rather than drop
+   * a visitor back at the front door, walk in again the way they came. Only ever for the demo, and at most once
+   * a minute, so that a real "you are signed out" is never papered over.
+   */
+  private async reenterDemo(): Promise<boolean> {
+    const had = this.state.snapshot;
+    if (!had?.household.demo || this.now() - this.reentered < 60_000) return false;
+    this.reentered = this.now();
+    const as =
+      had.viewer.kind === 'device' ? 'wall' : had.viewer.access === 'caregiver' ? 'caregiver' : 'guardian';
+    try {
+      await api('POST', '/demo/enter', { as });
+      // What was asked of the old server is gone with it; start from what the new one says.
+      this.outbox = [];
+      for (const waiter of this.waiting.values()) waiter({ id: '', status: 'retry' });
+      this.waiting.clear();
+      await this.cache.wipe().catch(() => undefined);
+      this.redraw(null);
+      await this.pull();
+      this.failures = 0;
+      return this.state.snapshot !== null;
+    } catch {
+      return false;
+    }
+  }
+
+  private reentered = -Infinity;
 
   /** This browser is not signed in (any more): forget everything it had kept. */
   private async becomeStranger(): Promise<void> {

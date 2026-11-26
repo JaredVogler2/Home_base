@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import type { Config } from '../config.js';
+import { describeError } from '../log.js';
 import { migrate, type MigrationReport } from './migrate.js';
 import * as schema from './schema.js';
 import type { Db, Tx } from './types.js';
@@ -35,7 +36,7 @@ async function openPostgres(config: Config): Promise<{ db: Db; close: () => Prom
     connectionTimeoutMillis: 10_000,
     ssl: config.databaseSsl ? { rejectUnauthorized: true } : undefined,
   });
-  pool.on('error', (error) => console.error('[db] idle connection error:', error.message));
+  pool.on('error', (error) => console.error(`[db] idle connection error: ${describeError(error)}`));
   if (config.onVercel) {
     // Lets the platform close idle connections before it freezes the function.
     const { attachDatabasePool } = await import('@vercel/functions');
