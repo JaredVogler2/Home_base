@@ -6,6 +6,7 @@ import type { Deps } from './deps.js';
 import type { AppEnv } from './http/env.js';
 import { HttpError } from './http/errors.js';
 import { academyRoutes } from './http/routes/academy.js';
+import { aiRoutes } from './http/routes/ai.js';
 import { authRoutes } from './http/routes/auth.js';
 import { exportRoutes, familyRoutes, historyRoutes } from './http/routes/history.js';
 import { cronRoutes } from './http/routes/cron.js';
@@ -156,6 +157,7 @@ export function createApp(deps: Deps): Hono<AppEnv> {
   app.route('/media', mediaRoutes);
   app.route('/shortcuts', shortcutRoutes);
   app.route('/shopping', shoppingRoutes);
+  app.route('/ai', aiRoutes);
 
   return app;
 }

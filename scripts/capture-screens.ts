@@ -161,6 +161,14 @@ const SHOTS: Shot[] = [
     fullPage: true,
     wait: 900,
   },
+  {
+    name: 'parent-helper',
+    as: 'guardian',
+    path: '/parent/more/helper',
+    size: PHONE,
+    fullPage: true,
+    wait: 900,
+  },
   { name: 'parent-today-wide', as: 'guardian', path: '/parent', size: SMALL },
   {
     name: 'wall-quest-phone',
