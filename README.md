@@ -47,10 +47,10 @@ iPhone, a real deployment or a real child — and the documents say so wherever 
 
 | | |
 | --- | --- |
-| Works here, with automated proof | The wall and its eight rooms; missions, stars and rewards, routines, the shopping list; the grown-ups' side; looking back, export and deletion; pairing a wall; offline use; the real-sky daylight and weather; photos; the Siri key; bringing in Training Academy progress; the optional planning helper (against faked providers) |
+| Works here, with automated proof | The wall and its eight rooms; missions, stars and rewards, routines, the shopping list with its favourites; the grown-ups' side; looking back (including where a routine tends to wait), export, correction and deletion; how each connection is doing; pairing a wall; offline use; the real-sky daylight and weather; photos; the Siri key; bringing in Training Academy progress; the optional planning helper (against faked providers) |
 | Waiting for the display | Kiosk behaviour, voices, reach, glare, real smoothness, the display's own Calendar Mode and screen saver — [`docs/DEVICE-CHECKLIST.md`](docs/DEVICE-CHECKLIST.md) |
 | Waiting for accounts and a say-so | Putting it on the internet (Vercel and a database; about half an hour, nothing paid) — [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
-| Optional, not built | A calendar glance inside HOMEBASE, four more planning-helper jobs, some enhancements — [`docs/ROADMAP.md`](docs/ROADMAP.md) |
+| Optional, not built | A calendar glance inside HOMEBASE, four more planning-helper jobs, routines that branch, some enhancements — [`docs/ROADMAP.md`](docs/ROADMAP.md) |
 
 The full account: [`docs/PROGRESS.md`](docs/PROGRESS.md). Every requirement of the brief and where it stands:
 [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md).
@@ -98,7 +98,9 @@ docs/     everything above                design/  the three directions that wer
 npm run verify
 ```
 
-Formatting, lint, types, 450-odd unit and integration tests, the production build and the browser tests. See
+Formatting, lint, types, nearly 500 unit and integration tests, the production build and the browser tests. On
+every pull request CI also runs the server tests on a real PostgreSQL, the grown-ups' browser tests in WebKit
+(Safari's engine), and a check of what ships against published security advisories. See
 [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md) for what they cover and what they cannot.
 
 ## The brief

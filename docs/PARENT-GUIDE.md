@@ -84,6 +84,11 @@ nothing is out of reach by accident.
 Tick things off in the shop; both phones and the wall keep in step within a few seconds. **Share** hands the
 list to Messages, Notes or anything else as plain text.
 
+**Favourites** are the things you always buy. Tap a thing on the list, switch on *A favourite*, and it sits on a
+shelf above the list from then on; one tap on the shelf puts it back on the list, with its picture and aisle. A
+favourite that is already on the list shows a tick instead. *Change* on the shelf takes things off it. The shelf
+holds forty, both parents share it, and it never adds or buys anything by itself.
+
 On the wall, the pantry shows the list as pictures. A child can ask for something by tapping its picture; it
 waits for you. Nothing is ever bought, and no shop is ever opened.
 
@@ -131,11 +136,29 @@ missed.
 ## Looking back
 
 *History* shows each child's weeks side by side with their own earlier weeks — how many missions out of how
-many, where a hand was asked for, stars in and out. They are counts, not a judgement, and children are never
-compared with each other. At the bottom of *History*, **Moments worth keeping** is for your own notes — the day
-the shoes went on without help — with a date, a picture and whose it was. Only grown-ups see them and nothing
-is counted. *Family → Records* says exactly what is kept and for how long, lets you switch the look-back off,
-download everything, or delete a child's records or the whole household for good.
+many, where a hand was asked for, stars in and out, and what each child is saving for. They are counts, not a
+judgement, and children are never compared with each other.
+
+For each **routine** it also says how the steps were done (on their own, together, left out), when in the day it
+was finished, and **where it tends to wait**: the usual minutes from the first tap to the last, and the step
+with the longest usual gap before its tick. That is about the routine — every go at it, whoever's — and never
+about a child. It needs three finished goes before it says anything, uses the middle one so that a single slow
+morning does not count for much, and leaves out a go that was set aside and finished hours later. They are
+minutes between taps on the wall: a child who does everything and then ticks it all at once looks instant. Use
+it to plan the morning, not to hurry anybody.
+
+At the bottom of *History*, **Moments worth keeping** is for your own notes — the day the shoes went on without
+help — with a date, a picture and whose it was. Only grown-ups see them and nothing is counted.
+
+*Family → Records* says exactly what is kept and for how long, lets you switch the look-back off, download
+everything, or delete a child's records or the whole household for good. It also shows **the day-by-day
+record** itself, newest first; if a line is simply wrong, *Forget* takes it out of the record and the export.
+(Stars are a record of their own: put those right on the child's page.)
+
+*Family → Connections* is one page for everything HOMEBASE talks to — the weather, the planning helper, the
+Academy, Siri, the screens — with how each is doing now and a short account of what has happened: a weather
+service that stopped answering and came back, a screen added or switched off, a request from a screen that was
+turned down. "Off" there is never a fault; everything works with all of it off.
 
 ## When something goes wrong
 
@@ -148,6 +171,7 @@ download everything, or delete a child's records or the whole household for good
 | The owner forgot theirs and lost the codes | — | Whoever runs the server can make a reset code ([`DEPLOYMENT.md`](DEPLOYMENT.md) §9) |
 | A mission was marked done by mistake | — | *Today* → tap it → *Take it back*. The stars are removed with a line in the record that says why |
 | A child's stars look wrong | — | *Family → Children →* the child → *The record of stars* shows every line; *Put a mistake right* adds a correcting line |
+| The sky has stopped following the weather | The weather service is not answering | Nothing. The sky carries on by the clock and the sun. *Family → Connections* says when it was last heard from, and when it comes back |
 | A tablet is lost | — | *Family → Screens → switch it off*. From that moment the server tells it nothing. Its screen forgets the family the next time it asks: at once if anyone touches it, within half a minute otherwise by day, within a quarter of an hour at night |
 
 ## What HOMEBASE will not do

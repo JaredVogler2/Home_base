@@ -41,7 +41,12 @@ When a reading crosses 90 minutes or 6 hours, the next screen check-in also coun
 screens are told straight away rather than at the next regular time.
 
 A failure of any kind (no answer within 4 seconds, an error status, an answer that is too large, not JSON, or not
-the expected shape) is noted in `weather_cache.failures` and never reaches the screens or the person using them.
+the expected shape) is counted in `weather_cache.failures` and never reaches a child's screen. A parent can see
+it: when the service has failed three times in a row (about a quarter of an hour), one line is written to the
+household's set-up record, and one more when it answers again — not a line for every try. *Family →
+Connections* shows both, and when the weather was last heard from. The lines say that it happened and how many
+tries were missed; they never hold the family's position (`tests/server/health.test.ts`: `notes a weather
+service going quiet once, and coming back once — not every failed try`).
 
 ## Which services
 

@@ -10,7 +10,8 @@ important parts are repeated here where they shape a step.
 ## Before you start
 
 - The display in **Android Mode** (Calendar settings → *Go to Section* → *Default Launcher*), on your Wi-Fi.
-- Your HOMEBASE address, and a parent's phone signed in to it.
+- Your HOMEBASE address, and a parent's phone signed in to it. (Nothing hosted yet? A computer on the same
+  Wi-Fi can serve the demo to the display for a first look: [`DEPLOYMENT.md`](DEPLOYMENT.md) §0.)
 - Ten minutes for part A; half an hour for the rest.
 
 ## A. Does it run? (do these first)
@@ -64,6 +65,7 @@ watching over a day.
 | C5 | Turn the Wi-Fi off for a minute while using a room, then on | A small cloud says "out of touch"; taps are kept and sent when it returns; nothing is lost or doubled | |
 | C6 | Unplug the display and plug it in again | Does Chrome come back to the house by itself? Almost certainly not — see D | |
 | C7 | Leave it running for 24 hours, used normally | Still responsive; no blank page. Note anything strange and the time | |
+| C8 | After the screen saver (or Calendar Mode) has covered the house for a few minutes, come back to it | The house is as it was and carries on moving from where it stopped, with nothing said into an empty room meanwhile. HOMEBASE holds still while the browser says the page is hidden; whether this display's browser says so under its screen saver is the thing to find out (open `/studio/device` first, let the screen saver cover it, come back: does "Hidden just now" say *yes: for…*?) | |
 
 ## D. Making it come back to the house by itself (choose one)
 

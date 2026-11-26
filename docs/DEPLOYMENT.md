@@ -25,6 +25,23 @@ Open the address it prints. With nothing configured this is a **demo** with a ma
 house) kept in a folder called `.data/`. "Open the demo wall" and "Look around the demo as a parent" let you
 see both sides. Nothing leaves your computer.
 
+**To see it on the wall display before anything is hosted**, let the computer answer the rest of your home
+network, then open its address on the display:
+
+```bash
+npm run build
+```
+
+```bash
+HOMEBASE_DEMO=1 HOST=0.0.0.0 PORT=4173 npm start
+```
+
+On the display, go to `http://` followed by the computer's address on your network and `:4173` (for example
+`http://192.168.1.20:4173`). This is plain http, which is fine for a first look at home and for nothing else:
+anyone on the same Wi-Fi could read it, and a browser will not install the offline shell from it, so the wall
+needs the computer to stay on. Everything else works — taps, the sync between screens, the demo family. (This
+was tried in a browser at a network address; it has not been tried on the display.)
+
 ## 1. What you will set up
 
 | Piece | What it is | Free plan is enough? |
@@ -212,5 +229,7 @@ for one family on one machine if you back the folder up. This path has been run 
 
 ## 12. What runs on every pull request
 
-`.github/workflows/ci.yml`: formatting, lint, types, every test on the built-in database, the production
-build; the server tests again on PostgreSQL 16; and the browser tests.
+`.github/workflows/ci.yml`, five jobs: formatting, lint, types, every test on the built-in database and the
+production build; the server tests again on PostgreSQL 17; the browser tests in Chromium, with the offline pair
+against the built app; the browser tests of the grown-ups' side again in WebKit (Safari's engine); and a check
+of the packages that ship against published security advisories.

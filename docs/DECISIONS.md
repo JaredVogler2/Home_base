@@ -270,6 +270,11 @@ decoration before it gives up responsiveness. Measured headless at 3840×2160 wi
 processor slowed four times, the idle house went from about 20 frames a second to about 60 once it had made
 that choice (`npm run measure`). **The real display is still to be measured** (`docs/DEVICE-CHECKLIST.md`).
 
+**What "too slowly" means** was sharpened by measuring twice. Judged by the middle frame alone, a display that
+drew most frames on time and a good many late — 22 a second in all — passed. The wall now needs both the middle
+frame and the average frame to be quick enough: the average catches the uneven display, and the middle frame
+keeps a few long hiccups among many good frames from counting as a display that cannot keep up.
+
 ## 22. What a child has finished never disappears
 
 **Chosen.** The mission board shows a few missions at a time (a parent's setting), to-do first. A finished
@@ -298,6 +303,72 @@ the offline shell never stores anything from `/api`); it is wiped on sign-out an
 device is no longer welcome; and a parent's phone relies on the phone's own storage encryption. If (b) ever
 becomes worth the trade — say, a wall in a shared building — it is a contained change in `src/sync/cache.ts`.
 
+## 24. A routine's minutes are about the routine, never about a child
+
+**The brief** asks that history "reports where routines take longer or require assistance without treating it
+as a clinical assessment", with denominators and with missing data flagged, and elsewhere that there be no
+rankings and no mandatory countdown. Minutes are the most easily misread number in the house: a timed child is
+a judged child.
+
+**Considered.** (a) Minutes for each child, beside their own earlier weeks. Honest about who, but it puts a
+stopwatch on a four-year-old and invites the comparison the brief forbids. (b) No minutes at all — what the
+look-back did until now; it meets "no judgement" and fails "where routines take longer". (c) Minutes for the
+routine as a whole, all its goes together.
+
+**Chosen.** (c). For each routine over four weeks the look-back says when in the day it was finished, the usual
+minutes from the first tap to the last, and the step that usually has the longest gap before its tick
+(`routineTiming` in `server/domain/history.ts`). Four rules keep it honest:
+
+- **The middle go, not the average**, so one slow Tuesday cannot colour a month.
+- **Nothing from fewer than three goes**, and the page says how many it has.
+- **A go set aside and finished more than two hours later is left out** and counted as left out.
+- **It is called what it is**: minutes between taps on a screen, to the nearest minute. A child who does
+  everything and then ticks it all at once looks instant, and the page says so.
+
+What a parent gets from it is a planning fact — "the morning usually waits at breakfast" — and nothing about how
+quick anybody is.
+
+## 25. Favourites are kept with the household's settings, not in a table of their own
+
+**The brief** lists favourites among the shopping list's features.
+
+**Considered.** (a) A table of favourites, with its own row-level-security policy and migration. (b) A flag on a
+list item — but items are archived and deleted, and a favourite must outlive the line it came from. (c) A short
+list inside the household's settings.
+
+**Chosen.** (c): up to forty entries of words, a picture and an aisle (`settings.shopping.favourites`), changed
+through a request of their own (`shopping.favourite`) that a helper may make, not only a parent. Requests about
+one household never run at the same moment (the household's row is locked), so two phones starring different
+things both keep theirs. It travels with the settings: every screen has it, the export has it, deleting the
+household deletes it — with no new table to secure. The picture and aisle are stored as plain words and
+checked where they are shown, and a damaged shelf reads as an empty shelf, so that one bad entry can never make
+a household's whole settings unreadable.
+
+A child's screen is not sent the shelf: like the label of the family's location, it is left out of the copy of
+the settings a wall receives (`server/domain/snapshot.ts`), because a wall has no use for it.
+
+## 26. Connections are read from what is already kept — and no Background Sync — **Part deviation**
+
+**The brief** asks history to keep "integration health, sync errors and device changes", and the app to use
+"background sync where supported plus foreground reconnect fallback".
+
+**Connections.** Almost everything a parent needs to see is already kept for another reason: the answer given to
+every request a screen makes (a month, so that a retry finds its first answer), the helper's own account of what
+it spent, the record of set-up changes (thirteen months). So the Connections page reads those
+(`server/domain/health.ts`) rather than keeping a second log beside them. Only two things are newly written
+down, because nothing else would remember them: a weather service that has gone quiet for about a quarter of an
+hour, and when it came back (one line each, not one per failed try); and a request the server itself could not
+carry out (once a day for each screen and kind of request — a screen retrying every few seconds must not fill
+the record). An ordinary "no" — not enough stars yet — is counted and not listed: that is the house working.
+Nothing in the account is anything a family typed: a screen's name, a part of the house, a kind of problem.
+
+**Background Sync is not used.** *Deviation.* Safari on an iPhone does not have it, so the parents' side could
+not rely on it; the wall is always in front, so it never needs it; and a service worker replaying the queue
+would be a second copy of the sync rules (order, sign-in, what to do when refused) to keep in step with the
+first. The queue is kept on the device and sent when the page is next in front and has a signal, which is
+tested (`e2e/offline.spec.ts`, `tests/server/store.test.ts`). The cost: a phone that queued something offline
+and was then closed sends it the next time HOMEBASE is opened, not before.
+
 ---
 
 ## Smaller choices
@@ -314,3 +385,6 @@ becomes worth the trade — say, a wall in a shared building — it is a contain
 | A first-visit tour that never catches a tap | Tock points at each thing in turn; any tap ends the tour *and* does what was tapped, so a child who already knows is never made to wait |
 | The wall rests at 15 minutes, not 3 | Long enough for a sleep-when-idle database to sleep; any touch asks the server at once, so nobody ever waits for it |
 | Adding "2 milk" to a list that has milk keeps one line and takes the new amount | One thing, one line; the amount just said is the amount |
+| A finished routine stays in front until the child taps | "All done!" is the reward of a routine; it must be seen and heard, not flicked away |
+| A wall that cannot be seen holds its animations, and stops talking and turning photographs | Nothing is drawn or said for nobody; it carries on exactly where it was |
+| Ids are made by hand where the browser withholds `crypto.randomUUID` | A wall tried at a plain http address on the home network must still work |
