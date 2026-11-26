@@ -65,7 +65,7 @@ async function snapshotFor(c: C, since: number | null, seenAccess: string | null
 }
 
 /** The chores that belong to no household: yesterday's counters, codes that ran out, sessions that ended. */
-async function sweepSystem(c: C): Promise<void> {
+export async function sweepSystem(c: C): Promise<void> {
   const now = c.get('now');
   const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();

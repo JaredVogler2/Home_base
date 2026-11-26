@@ -26,6 +26,9 @@ export interface Config {
   openaiKey: string | null;
   anthropicModel: string | null;
   openaiModel: string | null;
+  /** "input,output" in US dollars per million tokens, for whichever model each provider uses. See server/ai/pricing.ts. */
+  aiPriceAnthropic: string | null;
+  aiPriceOpenai: string | null;
   /** Never reach an outside service (weather, calendars, models): for tests and for the demo. */
   offline: boolean;
   /** Hosts the Academy may be opened at, beyond its own public address. */
@@ -77,6 +80,8 @@ export function readConfig(env: Record<string, string | undefined> = process.env
     openaiKey: text(env.OPENAI_API_KEY),
     anthropicModel: text(env.HOMEBASE_AI_ANTHROPIC_MODEL),
     openaiModel: text(env.HOMEBASE_AI_OPENAI_MODEL),
+    aiPriceAnthropic: text(env.HOMEBASE_AI_PRICE_ANTHROPIC),
+    aiPriceOpenai: text(env.HOMEBASE_AI_PRICE_OPENAI),
     offline: flag(env.HOMEBASE_OFFLINE),
     academyHosts: (env.HOMEBASE_ACADEMY_HOSTS ?? '')
       .split(',')

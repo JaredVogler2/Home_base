@@ -8,6 +8,7 @@ import { HttpError } from './http/errors.js';
 import { academyRoutes } from './http/routes/academy.js';
 import { authRoutes } from './http/routes/auth.js';
 import { exportRoutes, familyRoutes, historyRoutes } from './http/routes/history.js';
+import { cronRoutes } from './http/routes/cron.js';
 import { demoRoutes } from './http/routes/demo.js';
 import { mediaRoutes } from './http/routes/media.js';
 import { pairRoutes, wallRoutes } from './http/routes/pair.js';
@@ -147,6 +148,7 @@ export function createApp(deps: Deps): Hono<AppEnv> {
   app.route('/wall', wallRoutes);
   app.route('/sync', syncRoutes);
   app.route('/demo', demoRoutes);
+  app.route('/cron', cronRoutes);
   app.route('/history', historyRoutes);
   app.route('/export', exportRoutes);
   app.route('/family', familyRoutes);

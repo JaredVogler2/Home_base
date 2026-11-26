@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
@@ -25,8 +27,39 @@ function homebaseApi(): Plugin {
   };
 }
 
+/**
+ * The service worker, written at build time with the list of the app's own files in it, so that a wall which
+ * has loaded once can draw the house with no signal. Only the build knows the files' names (their contents are
+ * in them); the worker's logic is in src/sw/sw.template.js.
+ */
+function homebaseServiceWorker(): Plugin {
+  return {
+    name: 'homebase-service-worker',
+    apply: 'build',
+    generateBundle(_options, bundle) {
+      const files = Object.keys(bundle)
+        // Scripts and styles, and the fonts for the letters the app itself uses; other alphabets are fetched
+        // (and then kept) only if a family's own words need them.
+        .filter((name) => /\.(js|css)$/.test(name) || /-latin-(wght|\d+)-normal-.*\.woff2$/.test(name))
+        .map((name) => `/${name}`)
+        .sort();
+      const shell = ['/index.html', '/manifest.webmanifest', '/favicon.svg', '/icons/icon-192.png', ...files];
+      const version = createHash('sha256').update(shell.join('\n')).digest('hex').slice(0, 12);
+      const template = readFileSync(
+        fileURLToPath(new URL('./src/sw/sw.template.js', import.meta.url)),
+        'utf8',
+      );
+      this.emitFile({
+        type: 'asset',
+        fileName: 'sw.js',
+        source: template.replace('__VERSION__', version).replace('__SHELL__', JSON.stringify(shell)),
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), homebaseApi()],
+  plugins: [react(), homebaseApi(), homebaseServiceWorker()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

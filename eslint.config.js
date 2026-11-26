@@ -79,5 +79,10 @@ export default tseslint.config(
     files: ['scripts/**', 'tests/**', 'e2e/**', '*.config.*'],
     rules: { 'no-console': 'off' },
   },
+  {
+    // The service worker's source: it runs in a worker, and the build fills in the list of files it keeps.
+    files: ['src/sw/*.js'],
+    languageOptions: { globals: { ...globals.serviceworker, __SHELL__: 'readonly' } },
+  },
   prettier,
 );

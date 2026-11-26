@@ -220,7 +220,12 @@ function WallReady({
         {scene !== 'home' && <Scenes origin={origin} />}
         <StatusCloud online={online} pending={pending} />
         {quiet && settings.quietHours.dim && (
-          <div className={styles.night} aria-hidden="true" style={{ '--shade': '0.3' } as CSSProperties} />
+          <div
+            className={styles.night}
+            aria-hidden="true"
+            style={{ '--shade': '0.3' } as CSSProperties}
+            data-testid="night"
+          />
         )}
       </Stage>
     </WallContext.Provider>
