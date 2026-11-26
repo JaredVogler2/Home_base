@@ -1,0 +1,48 @@
+# Integrations: what is built, what is possible, what is not
+
+Each integration the brief asks about, with one of four statuses:
+
+- **built and tested** — code exists and automated tests in this repository exercise it;
+- **built, needs the real device/account to verify** — code (or the app as it stands) is there, but the part that
+  matters can only be shown on the real wall display, a real iPhone, a real deployment or a real account;
+- **not built (possible)** — no code yet; nothing recorded says it cannot be done;
+- **not possible (and why)** — a recorded fact rules it out, with the source in
+  [`research/PROVIDER-FACTS.md`](research/PROVIDER-FACTS.md).
+
+Detailed guides: [`integrations/ACADEMY.md`](integrations/ACADEMY.md),
+[`integrations/SHORTCUTS.md`](integrations/SHORTCUTS.md), [`integrations/WEATHER.md`](integrations/WEATHER.md).
+
+## Matrix
+
+| Integration | Status | Code / doc | Notes and sources |
+| --- | --- | --- | --- |
+| **Apolosign native Calendar Mode** — opening it from HOMEBASE | **not possible (and why)** | `src/wall/scenes/Calendar.tsx` (an aside, "The family calendar", shows how to get there by hand) | No intent, deep link, URL scheme or package name is documented, and the calendar "does not support web access directly" (PROVIDER-FACTS §1, H/54712690547481). Switching the default home screen between Calendar Mode and Android Mode is a device setting (§1, H/54586764561177). Calendar Mode itself works on the device without HOMEBASE |
+| **Apolosign screen saver with Google Photos** — HOMEBASE starting, stopping or configuring it | **not possible (and why)** | — | No API or intent for the screen saver is documented (PROVIDER-FACTS §1). It is set up on the device (Android Mode, "ScreenSaver" app). Whether it starts over a browser or another app is **not documented** (§1) — check on the device. It only runs without a screen lock, except with Google Photos (§1, H/56804488060825) |
+| **HOMEBASE's own photo slideshow** — upload, storage, serving | **built and tested** | `server/http/routes/media.ts`, `src/lib/photos.ts`, `tests/server/media.test.ts`, `tests/client/photos.test.ts` | Parent uploads from the phone; the phone re-encodes (dropping camera metadata) into up to three widths; stored in Postgres; locked wall sees only slideshow photos |
+| HOMEBASE's own photo slideshow — on the wall | **built, needs the real device/account to verify** | `src/wall/scenes/Memories.tsx`, `src/wall/Wall.tsx` (starts after `slideshowAfterMinutes`, default 10) | The browser tests touch it (`e2e/non-reader.spec.ts`, `every room has the same way home, and the photos go home at a touch`); decode time and memory on the RK3576 / 4 GB device are unmeasured |
+| **Training Academy launch** | **built, needs the real device/account to verify** | `shared/settings.ts` (`checkAcademyUrl`), `server/domain/family.ts` (`patchSettings`), `src/wall/scenes/Academy.tsx` (`window.location.assign`) | The address allow-list is tested (`tests/server/isolation.test.ts`, `will not let settings be bent into something else`); the navigation is tested in a browser with the Academy's address intercepted (`e2e/non-reader.spec.ts`: one tap requests exactly the configured address and nothing else). Coming back is by the browser's back gesture or reopening HOMEBASE; an installed web app keeps its window with a bar naming the other site (PROVIDER-FACTS §7) — to check on the wall |
+| **Academy progress import** (parent moves an export file) | **built and tested** | `shared/academy.ts`, `server/domain/academy.ts`, `server/http/routes/academy.ts`, `src/parent/pages/AcademyPage.tsx`; tests `tests/shared/academy.test.ts`, `tests/server/academy.test.ts` | Server and file checks are tested with synthetic exports built the Academy's way. An export from the live Academy has **not** been tried. The parent page (`AcademyPage.tsx`) has no automated test of its own |
+| **Academy live sync** | **not built (possible)** | proposal only: [`integrations/ACADEMY.md`](integrations/ACADEMY.md), "Phase B" | Needs changes to the Academy repository, which is its owner's decision. The Academy cannot be framed (its own headers, recorded in ACADEMY.md) |
+| **Weather** | **built and tested** | `server/weather/*`, `tests/server/weather.test.ts`, `tests/server/weather-codes.test.ts` | Tested against recorded real answers; live calls were made once by hand (WEATHER.md). `waitUntil` on a real Vercel deployment is **not** verified |
+| **Daylight / moon** (the sky follows the real sun) | **built and tested** | `shared/sun.ts`, `src/wall/sky.ts`, `tests/shared/colour-sky.test.ts` | Computed on the wall from the rounded location; no outside service |
+| **Siri / Apple Shortcuts** ("add to shopping list") | **built, needs the real device/account to verify** | `server/http/routes/shortcuts.ts`, `src/parent/pages/Shortcuts.tsx`, `tests/server/shortcuts.test.ts`, [`integrations/SHORTCUTS.md`](integrations/SHORTCUTS.md) | The endpoint, keys, parsing and revocation are tested. Building and running the Shortcut on a physical iPhone, and Apple's exact action names, are **not** verified. Shortcuts offers Get Contents of URL and runs by Siri or the share sheet (PROVIDER-FACTS §6) |
+| **iOS share sheet target** (HOMEBASE itself in the Share menu) | **not possible (and why)** | workaround: the "Show in Share Sheet" Shortcut in SHORTCUTS.md | Home Screen web apps on iPhone have **no Web Share Target** (PROVIDER-FACTS §6, `webkit.org` / WebKit bug 194593). The Shortcut route is built (as above) |
+| **Apple Notes** (keep a Note and the list in step) | **not possible (and why)** | one-way copy: `src/parent/pages/Lists.tsx` hands a list to the phone's share sheet as text (`navigator.share`, else clipboard) | Apple Notes has no API (PROVIDER-FACTS §6, developer forum thread 813810). A person can share a copy into Notes; it does not stay in step |
+| **Apple Reminders** | **not built (possible)** | one-way copy as for Notes is built (`Lists.tsx`) | PROVIDER-FACTS records nothing about a Reminders API or Shortcuts' Reminders actions, so neither a two-way link nor its impossibility is established. Sharing a list as text into Reminders by hand is what exists |
+| **Calendar glance, read-only** (iCloud / CalDAV, Google, Microsoft) | **not built (possible)** | groundwork only: `connections` table (`provider = 'calendar_ics'`), `calendar_rules` and the `calendar.rule.*` ops, `seal()`/`unseal()` in `server/auth/crypto.ts`; nothing fetches a calendar | Read-only feeds exist: Google's "Secret address in iCal format" (resettable) and iCloud's public read-only share link (PROVIDER-FACTS §6); Outlook is offered to the Apolosign as a published ICS link (§1). iCloud CalDAV needs an app-specific password (§6). Today a parent sets day pictures by hand (`calendar.setDay`, `src/parent/pages/CalendarDays.tsx`; not covered by a test) |
+| **Google Photos Picker import** | **not built (possible)** | — | Possible with limits: the Picker session must be opened outside a frame, picks expire (`baseUrl` lasts 60 minutes and needs the OAuth token), and an unverified app in Testing has 100 test users with consent expiring after 7 days (PROVIDER-FACTS §5). Following an album automatically is **not possible**: since 2025-03-31 the Library API reaches only what the app created (§5) |
+| **Kiosk mode with Fully Kiosk Browser** | **built, needs the real device/account to verify** | nothing kiosk-specific in the code (no `fully.*` calls); the wall is an ordinary web page at `/wall` | Free features include start URL, URL allow-list, reload on idle and launch on boot; kiosk lock-down, scheduled sleep/wake and the JavaScript interface need PLUS (PROVIDER-FACTS §4). Kiosk mode needs the default-Home and several other permissions (§4). One third-party report says Wi-Fi turns off with the screen under Fully Kiosk (§1). Kiosk, start-on-boot and pinning are not documented by Apolosign (§1) |
+| **AI providers** (Anthropic, OpenAI) | **built, needs the real device/account to verify** | `server/ai/*`, `server/http/routes/ai.ts`, `shared/ai.ts`, `src/parent/pages/Helper.tsx`; tests `tests/server/ai.test.ts`, `tests/server/ai-units.test.ts`; [`integrations/AI.md`](integrations/AI.md) | Everything up to the provider is tested against a mock provider, including the request shapes for both APIs (`Anthropic: Messages API, documented headers, JSON outputs, no tools`; `OpenAI: Responses API, bearer key, strict JSON schema, not stored, no tools`). No live call to either provider has been made by the tests; that needs a real API key. Off by default. No provider facts are recorded in PROVIDER-FACTS, so no limits or prices are given here; see [`THREAT-MODEL.md`](THREAT-MODEL.md) row 25 and [`COSTS.md`](COSTS.md) |
+
+## Related device facts that shape the wall
+
+From PROVIDER-FACTS §1 and §7, for whoever sets up the wall (the full on-device checklist is
+[`DEVICE-CHECKLIST.md`](DEVICE-CHECKLIST.md); deployment steps are in [`DEPLOYMENT.md`](DEPLOYMENT.md)):
+
+- A swipe up from the bottom edge shows Android's navigation bar, so the bottom strip is not for child controls.
+- Screen Wake Lock is supported by Chrome on Android and released when the app is left (§7). **The code does not
+  use it**: the only mention is the device check page (`src/app/Device.tsx`, at `/studio/device`), which reports
+  whether the browser supports it. Keeping the screen on is left to device settings or a kiosk app.
+- Sound on iPhone needs a tap first (§6); the wall unlocks its sound on the first touch (`unlockSound` in
+  `src/wall/Wall.tsx`).
+- A web page cannot open the native calendar; HOMEBASE does not pretend to.
