@@ -584,16 +584,14 @@ authRoutes.post('/join', async (c) => {
     let userId = existing[0]?.id;
     if (!userId) {
       userId = crypto.randomUUID();
-      await tx
-        .insert(users)
-        .values({
-          id: userId,
-          email: body.email,
-          displayName: body.displayName,
-          avatar: body.avatar,
-          passwordHash,
-          createdAt: now,
-        });
+      await tx.insert(users).values({
+        id: userId,
+        email: body.email,
+        displayName: body.displayName,
+        avatar: body.avatar,
+        passwordHash,
+        createdAt: now,
+      });
       await makeRecoveryCodes(tx, userId);
     }
     await tx

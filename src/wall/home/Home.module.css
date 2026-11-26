@@ -1,0 +1,80 @@
+.home {
+  position: absolute;
+  inset: 0;
+}
+
+.rooms {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* A room is one whole button: the picture is the label, and the picture is the news. */
+.room {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: hidden;
+  pointer-events: auto;
+  border-radius: 0.3cqw;
+  transition:
+    transform var(--press) var(--ease),
+    filter var(--press) var(--ease);
+}
+.room > svg {
+  display: block;
+}
+.room:active {
+  transform: scale(0.97);
+  filter: brightness(0.96);
+}
+.room:focus-visible {
+  outline-offset: -0.5cqw;
+  z-index: 3;
+}
+
+.lamplight {
+  position: absolute;
+  background: #ffb84d;
+  opacity: calc(var(--lamps, 0) * 0.13);
+  pointer-events: none;
+}
+
+.boat {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 12%;
+  transition: transform var(--press) var(--ease);
+}
+.boat:active {
+  transform: scale(0.96);
+}
+
+.attic {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+}
+.attic svg {
+  display: block;
+  width: 62%;
+  height: 62%;
+  margin: 19%;
+}
+.attic:active {
+  transform: scale(0.94);
+}
+
+.faces {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.faces > * {
+  pointer-events: auto;
+}

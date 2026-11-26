@@ -1,0 +1,20 @@
+.waiting {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(#a9daf5, #f1faff 70%, #9fd98a 70%);
+  font-weight: 700;
+}
+
+/* Quiet hours: a soft dark veil over everything. Still tappable: a grown-up may need the wall at night. */
+.night {
+  position: fixed;
+  inset: 0;
+  background: #1a1c3a;
+  opacity: var(--shade, 0.3);
+  pointer-events: none;
+  z-index: 50;
+}

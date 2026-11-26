@@ -1,0 +1,101 @@
+.tock {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.tock-body,
+.tock-wing,
+.tock-tail,
+.tock-eyes,
+.tock-crest {
+  transform-box: fill-box;
+}
+.tock-body {
+  transform-origin: 50% 100%;
+  animation: tock-breathe 4.2s ease-in-out infinite;
+}
+.tock-eyes {
+  transform-origin: 50% 50%;
+  animation: tock-blink 5.6s infinite;
+}
+.tock-tail {
+  transform-origin: 80% 90%;
+  animation: tock-tail 3.6s ease-in-out infinite;
+}
+.tock-wing {
+  transform-origin: 8% 85%;
+  transition: transform var(--change) var(--spring);
+}
+/* Poses: a wing, mostly. */
+.tock[data-pose='idle'] .tock-wing,
+.tock[data-pose='think'] .tock-wing,
+.tock[data-pose='sleep'] .tock-wing,
+.tock[data-pose='listen'] .tock-wing {
+  transform: rotate(62deg) scale(0.86);
+}
+.tock[data-pose='wave'] .tock-wing {
+  animation: tock-wave 1.6s ease-in-out infinite;
+}
+.tock[data-pose='point'] .tock-wing {
+  transform: rotate(-14deg) scale(1.08);
+}
+.tock[data-pose='cheer'] .tock-wing {
+  animation: tock-wave 1.1s ease-in-out 3;
+}
+.tock[data-pose='cheer'] .tock-body {
+  animation: tock-hop 1.1s var(--ease) 2;
+}
+.tock[data-pose='think'] .tock-body {
+  transform: rotate(-7deg);
+  animation: none;
+}
+.tock[data-pose='sleep'] .tock-body {
+  animation-duration: 6.5s;
+}
+@keyframes tock-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.012, 0.988);
+  }
+}
+@keyframes tock-blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes tock-tail {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-5deg);
+  }
+}
+@keyframes tock-wave {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(-30deg);
+  }
+}
+@keyframes tock-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-9%);
+  }
+}

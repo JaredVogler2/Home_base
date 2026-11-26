@@ -1,0 +1,130 @@
+.stars {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--star) * 0.12);
+}
+.stars svg {
+  width: calc(var(--star) * var(--star-scale, 1));
+  height: calc(var(--star) * var(--star-scale, 1));
+  flex: none;
+}
+:global([data-shape='tall']) .stars {
+  --star-scale: 2.4;
+}
+/* A little air after every fifth: five and five, the way hands count. */
+.fifth {
+  margin-right: calc(var(--star) * 0.45);
+}
+
+.big {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3cqw;
+  min-width: 11cqw;
+  padding: 0.9cqw 1.8cqw 1cqw;
+  border: 0;
+  border-radius: 2cqw;
+  background: var(--paper-warm);
+  box-shadow:
+    inset 0 -0.5cqw 0 rgb(var(--shadow) / 0.08),
+    0 0.4cqw 0 var(--wood);
+  transition: transform var(--press) var(--ease);
+}
+.big svg {
+  width: 5.6cqw;
+  height: 5.6cqw;
+}
+.big:active {
+  transform: translateY(0.3cqw) scale(0.97);
+}
+.big:disabled {
+  opacity: 0.4;
+}
+.big[data-tone='go'] {
+  min-width: 17cqw;
+  background: var(--sage-deep);
+  color: #fff;
+  box-shadow:
+    inset 0 -0.6cqw 0 rgb(0 0 0 / 0.14),
+    0 0.5cqw 0 #2c6a3f;
+}
+.big[data-tone='go'] svg {
+  width: 8cqw;
+  height: 8cqw;
+}
+.big[data-tone='honey'] {
+  min-width: 17cqw;
+  background: var(--honey);
+  box-shadow:
+    inset 0 -0.6cqw 0 rgb(var(--shadow) / 0.12),
+    0 0.5cqw 0 var(--honey-deep);
+}
+.big[data-tone='honey'] svg {
+  width: 8cqw;
+  height: 8cqw;
+}
+.big[data-tone='soft'] {
+  background: transparent;
+  box-shadow: inset 0 0 0 0.24cqw var(--line);
+}
+.word {
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.5cqw;
+  line-height: 1.15;
+}
+
+.badge {
+  display: block;
+  width: 3.4cqw;
+  height: 3.4cqw;
+  border-radius: 50%;
+  background: var(--honey);
+  box-shadow: 0 0 0 0.3cqw var(--paper);
+}
+.badge svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.badge[data-kind='done'] {
+  background: var(--sage-deep);
+}
+.badge[data-kind='adult'],
+.badge[data-kind='help'] {
+  background: var(--blue-light);
+}
+.badge[data-kind='saving'] {
+  background: var(--paper-shade);
+}
+
+:global([data-shape='tall']) .big {
+  min-width: 26cqw;
+  padding: 2cqw 3.5cqw;
+  border-radius: 4.5cqw;
+}
+:global([data-shape='tall']) .big svg {
+  width: 12cqw;
+  height: 12cqw;
+}
+:global([data-shape='tall']) .big[data-tone='go'],
+:global([data-shape='tall']) .big[data-tone='honey'] {
+  min-width: 40cqw;
+}
+:global([data-shape='tall']) .big[data-tone='go'] svg,
+:global([data-shape='tall']) .big[data-tone='honey'] svg {
+  width: 17cqw;
+  height: 17cqw;
+}
+:global([data-shape='tall']) .word {
+  font-size: 3.6cqw;
+}
+:global([data-shape='tall']) .badge {
+  width: 8cqw;
+  height: 8cqw;
+  box-shadow: 0 0 0 0.7cqw var(--paper);
+}

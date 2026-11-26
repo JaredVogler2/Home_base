@@ -1,0 +1,141 @@
+.frame {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  background: var(--wallpaper);
+  transform-origin: var(--from-x, 50%) var(--from-y, 50%);
+  animation: room-in 420ms var(--ease) both;
+  --wallpaper: var(--paper);
+  --wallpaper-deep: var(--paper-shade);
+}
+.frame[data-tone='sage'] {
+  --wallpaper: var(--sage-light);
+  --wallpaper-deep: #d3e8c4;
+}
+.frame[data-tone='honey'] {
+  --wallpaper: #fdf0cc;
+  --wallpaper-deep: #f9e3a8;
+}
+.frame[data-tone='rose'] {
+  --wallpaper: var(--rose-light);
+  --wallpaper-deep: #f9d0dc;
+}
+.frame[data-tone='teal'] {
+  --wallpaper: var(--teal-light);
+  --wallpaper-deep: #bfe3df;
+}
+.frame[data-tone='lav'] {
+  --wallpaper: var(--lav-light);
+  --wallpaper-deep: #d9d0f4;
+}
+.frame[data-tone='cream'] {
+  --wallpaper: #fdf3dc;
+  --wallpaper-deep: #f3e2b8;
+}
+.frame[data-tone='pond'] {
+  --wallpaper: #d9f1f5;
+  --wallpaper-deep: #b6e2ea;
+}
+/* The floor: a wooden strip along the bottom, where the way home and Tock stand. */
+.frame[data-floor='true']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 13.5%;
+  background: linear-gradient(var(--wood) 0 6%, var(--wood-light) 6% 100%);
+  z-index: 0;
+}
+@keyframes room-in {
+  from {
+    transform: scale(var(--from-s, 0.9));
+    opacity: 0.35;
+  }
+}
+
+.content {
+  position: absolute;
+  inset: 3.5% 3% 15.5% 3%;
+  z-index: 1;
+}
+
+.homeButton {
+  position: absolute;
+  left: 2%;
+  bottom: 2.2%;
+  width: 6.4%;
+  z-index: 5;
+}
+.sayButton {
+  position: absolute;
+  right: 2%;
+  bottom: 2.2%;
+  width: 5.6%;
+  z-index: 5;
+}
+.who {
+  position: absolute;
+  left: 9.6%;
+  bottom: 2.6%;
+  width: 5.6%;
+  z-index: 5;
+}
+
+.veil {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: rgb(var(--shadow) / 0.38);
+  animation: veil-in 200ms linear both;
+}
+.sheet {
+  width: min(86%, 150cqh);
+  max-height: 92%;
+  padding: 2.2cqw;
+  border-radius: 2.4cqw;
+  background: var(--paper);
+  box-shadow: 0 0.6cqw 0 rgb(var(--shadow) / 0.22);
+  animation: sheet-in var(--change) var(--spring) both;
+}
+@keyframes veil-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(3%) scale(0.94);
+    opacity: 0;
+  }
+}
+
+:global([data-shape='tall']) .content {
+  inset: 2.5% 4% 13% 4%;
+}
+:global([data-shape='tall']) .frame[data-floor='true']::after {
+  height: 11%;
+}
+:global([data-shape='tall']) .homeButton {
+  width: 15%;
+  bottom: 1.6%;
+  left: 4%;
+}
+:global([data-shape='tall']) .sayButton {
+  width: 13%;
+  bottom: 1.8%;
+  right: 4%;
+}
+:global([data-shape='tall']) .who {
+  width: 13%;
+  left: 22%;
+  bottom: 1.9%;
+}
+:global([data-shape='tall']) .sheet {
+  width: 92%;
+  padding: 4.5cqw;
+  border-radius: 5cqw;
+}

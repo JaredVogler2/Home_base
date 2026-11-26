@@ -1,0 +1,9 @@
+/*
+ * Two families, both under the SIL Open Font License, both bundled (nothing is fetched from anyone):
+ *   Fredoka  rounded and friendly, for names and buttons — the same family the Training Academy uses.
+ *   Andika   drawn for people learning to read: a one-storey a and g, an l that is not an I. For every label a
+ *            child might try to read, and for body text.
+ */
+@import '@fontsource-variable/fredoka/index.css';
+@import '@fontsource/andika/latin-400.css';
+@import '@fontsource/andika/latin-700.css';

@@ -1,0 +1,22 @@
+.viewport {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  /* What shows around the sheet on a screen of another shape: more sky above, more lawn below. */
+  background: linear-gradient(var(--sky-top, #a9daf5) 0 50%, var(--lawn-low, #6fbf68) 50% 100%);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.stage {
+  position: relative;
+  width: min(100vw, calc(100vh * var(--ratio)));
+  width: min(100dvw, calc(100dvh * var(--ratio)));
+  container-type: size;
+  /* Nothing is clipped: the backdrop is allowed to run past the sheet into the space around it. */
+  overflow: visible;
+}

@@ -1,0 +1,234 @@
+.board {
+  height: 100%;
+  padding: 2.2cqw;
+  border-radius: 2.4cqw;
+  background: #ecc793;
+  box-shadow:
+    0 0 0 1.1cqw var(--wood-deep),
+    inset 0 0.5cqw 0 rgb(var(--shadow) / 0.08);
+  margin: 1.1cqw;
+  height: calc(100% - 2.2cqw);
+}
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2cqw;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+}
+.cards > li {
+  width: 15.5cqw;
+  transform: rotate(var(--tilt, 0deg));
+}
+.cards[data-count='1'] > li,
+.cards[data-count='2'] > li,
+.cards[data-count='3'] > li {
+  width: 20cqw;
+}
+.cards[data-count='4'] > li {
+  width: 18cqw;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5cqw;
+  width: 100%;
+  padding: 1.6cqw 1cqw 1.2cqw;
+  border: 0;
+  border-radius: 1.4cqw;
+  background: var(--paper);
+  box-shadow: 0 0.45cqw 0 rgb(var(--shadow) / 0.18);
+  transition: transform var(--press) var(--ease);
+}
+.card:active {
+  transform: scale(0.96);
+}
+.card[data-state='done'] {
+  background: #f1f6ea;
+}
+.card[data-state='done'] .picture {
+  opacity: 0.55;
+}
+.pin {
+  position: absolute;
+  top: 0.5cqw;
+  left: 50%;
+  width: 1.3cqw;
+  height: 1.3cqw;
+  margin-left: -0.65cqw;
+  border-radius: 50%;
+  background: var(--terra-deep);
+  box-shadow: 0 0.15cqw 0 rgb(var(--shadow) / 0.25);
+}
+.picture {
+  display: block;
+  width: 86%;
+  aspect-ratio: 1;
+  margin-top: 0.6cqw;
+}
+.title {
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.3cqw;
+  line-height: 1.15;
+  text-align: center;
+  min-height: 2.9cqw;
+  display: grid;
+  place-items: center;
+}
+.corner {
+  position: absolute;
+  right: -0.9cqw;
+  bottom: -0.9cqw;
+}
+
+.empty {
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+.emptyPicture {
+  width: 30cqw;
+  aspect-ratio: 1;
+}
+
+/* The mission, opened up. */
+.sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 2.4cqw;
+  align-items: center;
+}
+.show {
+  position: relative;
+  aspect-ratio: 1;
+  padding: 1.2cqw;
+  border-radius: 2cqw;
+  background: var(--sage-light);
+}
+.show[data-done='true'] > svg {
+  opacity: 0.6;
+}
+.bigBadge {
+  position: absolute;
+  right: 4%;
+  bottom: 4%;
+  transform: scale(2.2);
+  transform-origin: 100% 100%;
+}
+.side {
+  display: grid;
+  gap: 1.2cqw;
+  justify-items: start;
+}
+.heading {
+  font-size: 2.8cqw;
+}
+.kind,
+.note,
+.status {
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.6cqw;
+}
+.note {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+}
+.status {
+  padding: 0.6cqw 1.4cqw;
+  border-radius: 99px;
+  background: var(--sage-light);
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 1cqw;
+}
+.step {
+  display: grid;
+  justify-items: center;
+  gap: 0.2cqw;
+  width: 7.4cqw;
+  padding: 0.5cqw;
+  border: 0.24cqw solid var(--line);
+  border-radius: 1.2cqw;
+  background: var(--paper-warm);
+  font-size: 1.1cqw;
+  font-weight: 700;
+}
+.step[data-on='true'] {
+  border-color: var(--sage-deep);
+  background: var(--sage-light);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.2cqw;
+  margin-top: 0.6cqw;
+}
+
+:global([data-shape='tall']) .cards {
+  gap: 4cqw;
+}
+:global([data-shape='tall']) .cards > li,
+:global([data-shape='tall']) .cards[data-count] > li {
+  width: 38cqw;
+}
+:global([data-shape='tall']) .card {
+  padding: 4cqw 2cqw 3cqw;
+  border-radius: 3.4cqw;
+}
+:global([data-shape='tall']) .title {
+  font-size: 3.4cqw;
+  min-height: 8cqw;
+}
+:global([data-shape='tall']) .pin {
+  width: 3cqw;
+  height: 3cqw;
+  margin-left: -1.5cqw;
+  top: 1.2cqw;
+}
+:global([data-shape='tall']) .sheet {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+:global([data-shape='tall']) .show {
+  width: 62%;
+}
+:global([data-shape='tall']) .side {
+  justify-items: center;
+  text-align: center;
+  gap: 2.4cqw;
+}
+:global([data-shape='tall']) .heading {
+  font-size: 6cqw;
+}
+:global([data-shape='tall']) .kind,
+:global([data-shape='tall']) .note,
+:global([data-shape='tall']) .status {
+  font-size: 3.8cqw;
+}
+:global([data-shape='tall']) .actions {
+  justify-content: center;
+  gap: 2.4cqw;
+}
+:global([data-shape='tall']) .step {
+  width: 18cqw;
+  font-size: 2.8cqw;
+}
+:global([data-shape='tall']) .emptyPicture {
+  width: 60cqw;
+}
