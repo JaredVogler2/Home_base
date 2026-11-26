@@ -168,6 +168,9 @@ function Runner({
   }, [step?.id]);
 
   if (!step) {
+    // The step ticked last, in the routine's own order: the one a slip of the finger would have been on.
+    const lastDone =
+      [...run.steps].reverse().find((candidate) => run.done[candidate.id] !== undefined) ?? null;
     return (
       <div className={styles.finished} data-testid="routine-finished">
         <div className={styles.finishedPicture}>
@@ -178,9 +181,33 @@ function Runner({
         </div>
         <Beads steps={run.steps} run={run} />
         <p className={styles.finishedWords}>All done!</p>
-        <BigButton tone="soft" word="Back" testId="routine-leave" onTap={onLeave}>
-          <CloseGlyph />
-        </BigButton>
+        <div className={styles.finishedActions}>
+          {lastDone && (
+            <BigButton
+              tone="soft"
+              word="Oops, back"
+              testId="routine-undo"
+              onTap={() => {
+                // The last tick was a slip: it is taken back like any other, and the routine carries on.
+                wall.sound('oops');
+                wall.ask('run.step', { runId: run.id, stepId: lastDone.id, state: 'undo' });
+                wall.tell('That is all right. One more to do.', 'idle');
+              }}
+            >
+              <path
+                d="M72 50 h-44 M42 34 l-16 16 l16 16"
+                fill="none"
+                stroke={P.ink}
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </BigButton>
+          )}
+          <BigButton tone="soft" word="Back" testId="routine-leave" onTap={onLeave}>
+            <CloseGlyph />
+          </BigButton>
+        </div>
       </div>
     );
   }

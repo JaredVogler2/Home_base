@@ -65,6 +65,20 @@ test.describe('a child’s routine and extras', { tag: '@w1080' }, () => {
     await expect(page.getByText('All done! Well done.').first()).toBeVisible();
     await page.waitForTimeout(1_500);
     await expect(finished).toBeVisible();
+
+    // The last tick can be taken back like any other: the routine is under way again at its last step…
+    await press(finished.getByTestId('routine-undo'));
+    await expect(runner).toBeVisible();
+    await expect(runner.getByLabel('That is the last one')).toBeVisible();
+    await expect
+      .poll(async () => {
+        const snap = await snapshot(context);
+        return snap.runs.find((entry) => entry.profileId === DEMO.june && entry.date === snap.today)?.status;
+      })
+      .toBe('active');
+    // …and one tap finishes it again.
+    await press(runner.getByTestId('step-done'));
+    await expect(finished).toBeVisible();
     await press(finished.getByTestId('routine-leave'));
     await expect(scene.getByTestId('routine-chooser')).toBeVisible();
     await expect(scene.getByTestId('routine-chooser').locator('[data-finished="true"]')).toHaveCount(1);

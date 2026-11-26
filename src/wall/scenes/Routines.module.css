@@ -210,6 +210,11 @@
   font-weight: 600;
   font-size: 5cqw;
 }
+.finishedActions {
+  display: flex;
+  gap: 2cqw;
+  justify-content: center;
+}
 .finishedPicture {
   position: relative;
   width: 20cqw;

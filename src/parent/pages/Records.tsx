@@ -267,12 +267,9 @@ export function Records() {
                       })}
                     </td>
                     <td>
-                      {child
-                        ? `${child.nickname} ${words}`
-                        : subject && event.kind === 'shopping.bought'
-                          ? `“${subject}” ${words}`
-                          : words}
-                      {subject && event.kind !== 'shopping.bought' ? `: ${subject}` : ''}
+                      {event.kind === 'shopping.bought'
+                        ? `${subject ? `“${subject}”` : 'Something'} ${words}`
+                        : `${child?.nickname ?? 'Someone'} ${words}${subject ? `: ${subject}` : ''}`}
                     </td>
                     <td>
                       <ConfirmButton

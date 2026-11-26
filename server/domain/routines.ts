@@ -4,6 +4,7 @@ import type { OpInput } from '../../shared/ops.js';
 import type { ActionPictureId } from '../../shared/pictures.js';
 import { coarse, isLocalTime, weekdayOf, type LocalDate, type LocalTime } from '../../shared/time.js';
 import {
+  events,
   profiles,
   routineRuns,
   routineStepEvents,
@@ -450,6 +451,20 @@ export async function stepRun(ctx: Ctx, input: OpInput<'run.step'>): Promise<Ste
         .update(routineRuns)
         .set({ status: 'active', completedAt: null, updatedAt: ctx.now })
         .where(eq(routineRuns.id, loaded.run.id));
+      // The go is not finished after all, so the look-back must not go on saying that it was: finishing it
+      // again writes the line afresh, and a routine is never counted as finished twice in a day. (Any stars a
+      // family gives for finishing stay — nothing is taken back from a child — and are not given a second time.)
+      await ctx.tx
+        .delete(events)
+        .where(
+          and(
+            eq(events.householdId, ctx.household.id),
+            inArray(events.kind, ['routine.completed', 'routine.closed']),
+            eq(events.profileId, loaded.run.profileId),
+            eq(events.subjectId, loaded.run.routineId),
+            eq(events.localDate, loaded.run.localDate),
+          ),
+        );
     }
     return { changed: removed.length > 0, completed: false, starsGiven: 0 };
   }
