@@ -139,6 +139,27 @@ The display's chip is modest (RK3576, 4 GB). The house is flat vector art with a
 On a computer, `npm run measure` records frame times and memory for the same scenes in a headless browser
 (see [`TEST_RESULTS.md`](TEST_RESULTS.md)); that is a guide, not a substitute for H1–H4.
 
+## I. Ten minutes with a child (when you can arrange it)
+
+Nothing in HOMEBASE has been tried by a real child yet. The automated tests walk the wall by pictures alone,
+but a test is not a four-year-old. If a child is willing — and stops being willing the moment it is not fun —
+stand beside them, say only what is in the "Say" column, and write down what happened. Do not film or
+photograph the child; a pencil is enough.
+
+| # | Say | Fewest taps | What to note |
+| --- | --- | :-: | --- |
+| I1 | Nothing. Let the house sit for a moment on a screen that has not been used | — | Did Tock's showing-round help, or get in the way? What did they tap first? |
+| I2 | "Can you find your missions?" | 2 | Found their own face? The right room? How many taps, and where did they stop to think? |
+| I3 | "Can you do one?" (a real one — shoes in the basket) | 2 more | Did they understand the picture? Go and do it? Come back and tap the tick? |
+| I4 | "How many stars have you got?" | 2 | Did they go to the pig? Could they tell you without a number? |
+| I5 | "Is there something you'd like to save up for?" | 2 more | Did they understand they were asking, not buying? |
+| I6 | "Can you go back to the house?" | 1 | From any room. Did they find the house button by themselves? |
+| I7 | "What did the bird say?" | 1 | Did they find the loudspeaker to hear it again? Could they hear and understand the voice? |
+| I8 | (If it suits) "We need milk — can you tell the house?" | 3 or 4 | The pantry, the plus, the picture — and their own face, if the house does not know yet who is asking |
+
+Afterwards: what did they try to do that the wall could not? What did they reach for and could not reach?
+Those two answers are worth more than everything else on this page.
+
 ## When you have filled this in
 
 Send it back (or open an issue with the findings — **no photos of the family, no addresses, no calendar

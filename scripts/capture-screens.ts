@@ -108,6 +108,16 @@ const SHOTS: Shot[] = [
   { name: 'wall-home-phone', as: 'wall', path: '/wall?at=10:30', size: PHONE },
   { name: 'wall-home-phone-who', as: 'wall', path: '/wall?at=16:40', size: PHONE, taps: [t('face-June')] },
   { name: 'wall-home-golden', as: 'wall', path: '/wall?at=16:40', size: WIDE },
+  // The display's own size, one picture to one pixel; and a tablet held upright.
+  { name: 'wall-home-4k', as: 'wall', path: '/wall?at=10:30', size: [3840, 2160, 1] },
+  {
+    name: 'wall-quest-4k',
+    as: 'wall',
+    path: '/wall?at=16:30',
+    size: [3840, 2160, 1],
+    taps: [t('room-quest'), june],
+  },
+  { name: 'wall-home-tall', as: 'wall', path: '/wall?at=10:30', size: [820, 1180, 2] },
   { name: 'wall-home-dawn', as: 'wall', path: '/wall?at=06:50', size: WIDE },
   { name: 'wall-tour', as: 'wall', path: '/wall?at=10:30', size: WIDE, firstVisit: true, wait: 5600 },
   { name: 'wall-tour-phone', as: 'wall', path: '/wall?at=10:30', size: PHONE, firstVisit: true, wait: 10200 },
