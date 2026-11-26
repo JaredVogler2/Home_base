@@ -5,6 +5,7 @@ import { hasAccess, type AccessLevel } from '../../shared/model.js';
 import { isOpType, OPS, type OpOutcome, type OpType, type Rejection } from '../../shared/ops.js';
 import { inHousehold, type Database } from '../db/client.js';
 import { operations } from '../db/schema.js';
+import { awardBadges, BADGE_OPS } from '../domain/badges.js';
 import { bumpRevision, lockHousehold, makeCtx, Reject, type Actor, type Deploy } from '../domain/context.js';
 import { HANDLERS, type Done } from './handlers.js';
 
@@ -158,6 +159,8 @@ async function applyOne(
           );
           stored = { status: done.changed ? 'applied' : 'noop', data: done.data ?? {} };
           if (done.changed) {
+            // A keepsake for something that has just added up, written in the same breath as the thing itself.
+            if (BADGE_OPS.has(type)) await awardBadges(ctx);
             await bumpRevision(ctx);
             grownUp = hasAccess(spec.level, 'caregiver');
           }

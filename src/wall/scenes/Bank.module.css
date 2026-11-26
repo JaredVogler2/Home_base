@@ -268,3 +268,57 @@
 :global([data-shape='tall']) .none {
   font-size: 4.2cqw;
 }
+
+/* The keepsake shelf: how far a child has come, and the badges earned on the way. Nothing here is ever lost. */
+.shelf {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5cqw;
+  width: 100%;
+  min-height: 4.6cqw;
+  padding: 0.5cqw 0.8cqw 0.3cqw;
+  border-radius: 1.4cqw;
+  background: rgb(255 255 255 / 0.5);
+}
+.keepsake {
+  position: relative;
+  width: 4.2cqw;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 30%;
+  transition: transform var(--press) var(--ease);
+}
+.keepsake:active {
+  transform: scale(0.92);
+}
+.levelBar {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -0.2cqw;
+  height: 0.42cqw;
+  border-radius: 99px;
+  background: var(--paper-shade);
+  overflow: hidden;
+}
+.levelBar > span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--honey-deep);
+}
+:global([data-shape='tall']) .shelf {
+  min-height: 11cqw;
+  gap: 1.2cqw;
+  padding: 1.2cqw 1.6cqw 1cqw;
+}
+:global([data-shape='tall']) .keepsake {
+  width: 10cqw;
+}
+:global([data-shape='tall']) .levelBar {
+  height: 1cqw;
+  bottom: -0.6cqw;
+}

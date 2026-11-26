@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
 import { newId } from '../../../shared/ids';
-import { DECLINE_REASONS, type Redemption, type Reward } from '../../../shared/model';
+import { BADGES } from '../../../shared/badges';
+import {
+  DECLINE_REASONS,
+  levelFor,
+  starsForLevel,
+  type Redemption,
+  type Reward,
+} from '../../../shared/model';
 import { REWARD_PICTURES } from '../../../shared/pictures';
+import { BadgeArt, LevelRosette } from '../../art/badges';
 import { Piggy, StarTray } from '../../art/house/rooms';
 import { P } from '../../art/palette';
 import { RewardPicture } from '../../art/pictures';
@@ -41,6 +49,12 @@ export function Bank({ origin }: { origin: Box | null }) {
   );
   const [openId, setOpenId] = useState<string | null>(null);
   const open = rewards.find((reward) => reward.id === openId) ?? null;
+  const lifetime = view.wallets.find((wallet) => wallet.profileId === who)?.lifetime ?? 0;
+  const level = levelFor(lifetime);
+  const toNext = starsForLevel(level + 1) - starsForLevel(level);
+  const intoLevel = lifetime - starsForLevel(level);
+  // The newest keepsakes first; a shelf holds six.
+  const keepsakes = view.badges.filter((earned) => earned.profileId === who).reverse();
   const trays = Math.max(1, Math.min(5, Math.ceil(stars / 10)));
 
   useEffect(() => {
@@ -63,6 +77,42 @@ export function Bank({ origin }: { origin: Box | null }) {
       ) : (
         <div className={styles.bank}>
           <section className={styles.mine} aria-label={`${child.nickname}'s stars: ${stars}`}>
+            <div className={styles.shelf} data-testid="keepsakes">
+              <button
+                type="button"
+                className={styles.keepsake}
+                data-testid="level"
+                data-level={level}
+                aria-label={`Level ${level}. ${intoLevel} of ${toNext} stars towards the next.`}
+                onClick={() => {
+                  wall.sound('tap');
+                  wall.tell(
+                    `This shows how far you have come, ${child.nickname}. It only ever grows.`,
+                    'point',
+                  );
+                }}
+              >
+                <LevelRosette level={level} showNumber={child.prefs.showNumbers} />
+                <span className={styles.levelBar} aria-hidden="true">
+                  <span style={{ width: `${Math.min(100, (intoLevel / toNext) * 100)}%` }} />
+                </span>
+              </button>
+              {keepsakes.slice(0, 6).map((earned) => (
+                <button
+                  key={earned.badge}
+                  type="button"
+                  className={styles.keepsake}
+                  aria-label={BADGES[earned.badge].label}
+                  data-testid={`badge-${earned.badge}`}
+                  onClick={() => {
+                    wall.sound('tap');
+                    wall.tell(BADGES[earned.badge].say, 'cheer');
+                  }}
+                >
+                  <BadgeArt id={earned.badge} />
+                </button>
+              ))}
+            </div>
             <svg
               className={styles.piggy}
               viewBox="20 40 200 170"

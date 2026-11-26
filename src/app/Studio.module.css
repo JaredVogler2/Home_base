@@ -87,3 +87,34 @@
   border-radius: 14px;
   overflow: hidden;
 }
+
+.facts {
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 16px;
+}
+.facts th,
+.facts td {
+  padding: 6px 12px 6px 0;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.facts th {
+  white-space: nowrap;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+.voices {
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.voices li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

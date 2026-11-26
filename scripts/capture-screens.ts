@@ -24,6 +24,8 @@ interface Shot {
   taps?: string[];
   fullPage?: boolean;
   wait?: number;
+  /** Leave the first-visit showing-round on, as a screen that has never been used would. */
+  firstVisit?: boolean;
 }
 
 const WIDE: [number, number, number] = [1920, 1080, 2];
@@ -87,6 +89,9 @@ const SHOTS: Shot[] = [
   { name: 'wall-home-phone-who', as: 'wall', path: '/wall?at=16:40', size: PHONE, taps: [t('face-June')] },
   { name: 'wall-home-golden', as: 'wall', path: '/wall?at=16:40', size: WIDE },
   { name: 'wall-home-dawn', as: 'wall', path: '/wall?at=06:50', size: WIDE },
+  { name: 'wall-tour', as: 'wall', path: '/wall?at=10:30', size: WIDE, firstVisit: true, wait: 5600 },
+  { name: 'wall-tour-phone', as: 'wall', path: '/wall?at=10:30', size: PHONE, firstVisit: true, wait: 10200 },
+  { name: 'wall-home-wear', as: 'wall', path: '/wall?at=15:00&sky=rain', size: WIDE },
   { name: 'front-door', as: null, path: '/', size: PHONE },
   { name: 'parent-signin', as: null, path: '/parent', size: PHONE },
   { name: 'parent-today', as: 'guardian', path: '/parent', size: PHONE, fullPage: true },
@@ -214,6 +219,15 @@ for (const shot of SHOTS) {
     hasTouch: true,
   });
   try {
+    if (!shot.firstVisit) {
+      await context.addInitScript(() => {
+        try {
+          window.localStorage.setItem('homebase.tour-seen', '1');
+        } catch {
+          // A page with no storage shows no tour anyway.
+        }
+      });
+    }
     await enter(context, shot.as);
     const problems = await take(await context.newPage(), shot);
     console.log(

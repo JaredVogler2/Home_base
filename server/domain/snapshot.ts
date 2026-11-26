@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { hasAccess, type Snapshot, type Viewer, type Wallet } from '../../shared/model.js';
 import { wallets } from '../db/schema.js';
+import { listBadges } from './badges.js';
 import { listGoals, listRedemptions, listRewards } from './bank.js';
 import type { Ctx } from './context.js';
 import {
@@ -61,6 +62,7 @@ export async function buildSnapshot(ctx: Ctx, viewer: Viewer): Promise<Snapshot>
     calendar: await listCalendar(ctx),
     media: ctx.household.settings.memories.hidden && !grownUp ? [] : await listMedia(ctx, !grownUp),
     members: await listMembers(ctx),
+    badges: await listBadges(ctx),
     weather: await readWeather(ctx),
   };
   if (grownUp) {

@@ -180,3 +180,56 @@ export function neededItems(view: Snapshot, listId: string): ShoppingItem[] {
 export function reach(price: number, stars: number): { canHave: boolean; more: number } {
   return { canHave: stars >= price, more: Math.max(0, price - stars) };
 }
+
+/**
+ * What to put on before going out, from the weather: rain gear when it is wet, a coat when it is cold or
+ * snowing, a sun hat when it is hot and bright. Null when the weather is not known or asks for nothing special.
+ */
+export function wearFor(weather: Snapshot['weather']): ActionPictureId | null {
+  if (!weather || weather.stale) return null;
+  if (weather.state === 'rain' || weather.state === 'drizzle' || weather.state === 'storm') return 'umbrella';
+  if (weather.state === 'snow') return 'coat';
+  if (weather.temperature === null) return null;
+  const celsius = weather.units === 'us' ? ((weather.temperature - 32) * 5) / 9 : weather.temperature;
+  if (celsius <= 7) return 'coat';
+  if (celsius >= 27 && (weather.state === 'clear' || weather.state === 'partly')) return 'hat';
+  return null;
+}
+
+/** What has just happened for a child between two views of the household, worth a small cheer. */
+export type Glad =
+  | { kind: 'stars'; stars: number }
+  | { kind: 'badge'; badge: Snapshot['badges'][number]['badge'] }
+  | { kind: 'reward-yes'; title: string }
+  | { kind: 'reward-done'; title: string };
+
+export function gladTidings(before: Snapshot, after: Snapshot, who: string | null): Glad[] {
+  if (!who || before.household.id !== after.household.id) return [];
+  const glad: Glad[] = [];
+  const had = new Set(
+    before.badges.filter((earned) => earned.profileId === who).map((earned) => earned.badge),
+  );
+  for (const earned of after.badges) {
+    if (earned.profileId === who && !had.has(earned.badge)) glad.push({ kind: 'badge', badge: earned.badge });
+  }
+  // A grown-up said yes to a mission that was waiting: its stars have really arrived. (A mission that needs no
+  // grown-up also passes through "waiting" for the moment before the server answers; that is not this.)
+  let stars = 0;
+  for (const now of after.occurrences) {
+    if (now.verification !== 'guardian') continue;
+    if (now.status !== 'approved' || !now.credited || (now.profileId ?? now.doneBy) !== who) continue;
+    const was = before.occurrences.find((occurrence) => occurrence.id === now.id);
+    if (was && was.status === 'submitted') stars += now.stars;
+  }
+  if (stars > 0) glad.push({ kind: 'stars', stars });
+  for (const now of after.redemptions) {
+    if (now.profileId !== who) continue;
+    const was = before.redemptions.find((redemption) => redemption.id === now.id);
+    if (!was) continue;
+    if (was.status === 'requested' && now.status === 'approved')
+      glad.push({ kind: 'reward-yes', title: now.title });
+    if (was.status === 'approved' && now.status === 'fulfilled')
+      glad.push({ kind: 'reward-done', title: now.title });
+  }
+  return glad;
+}

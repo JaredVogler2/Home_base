@@ -14,6 +14,7 @@ import {
 import { Tock, type TockPose } from '../art/guide/Tock';
 import { ActionPicture, Avatar, DayPicture, RewardPicture, ShoppingPicture } from '../art/pictures';
 import { SAMPLE_COUNT, SamplePicture } from '../art/samples';
+import { Device } from './Device';
 import styles from './Studio.module.css';
 
 /**
@@ -99,6 +100,7 @@ export function Studio({ view }: { view: string }) {
           </ul>
         </section>
       )}
+      {view === 'device' && <Device />}
       {(view === 'all' || view === 'samples') && (
         <section className={styles.sheet} data-sheet="samples">
           <h2>Sample photographs (the demo only)</h2>

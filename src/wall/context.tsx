@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 import type { Snapshot } from '../../shared/model';
 import type { OpInput, OpType } from '../../shared/ops';
+import type { ActionPictureId } from '../../shared/pictures';
 import type { TockPose } from '../art/guide/Tock';
 import type { Layout } from './home/layout';
 import type { Sound } from './sound';
@@ -36,6 +37,12 @@ export interface Wall {
   /** What Tock last said, for "say it again". */
   said: { words: string; pose: TockPose };
   sound(name: Sound): void;
+  /** A small gladness on the screen, gone in under two seconds. */
+  celebrate(): void;
+  /** Have Tock show a newcomer round the front of the house. */
+  tour(): void;
+  /** What the weather says to put on before going out, if it says anything. */
+  wear: ActionPictureId | null;
   /** Quiet hours: dim, silent. */
   quiet: boolean;
   /** Nothing moves that does not have to. */

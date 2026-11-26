@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import type { SkyState, Snapshot } from '../../shared/model';
+import { BADGES } from '../../shared/badges';
+import type { SkyState, Snapshot, Weather } from '../../shared/model';
 import type { OpInput, OpType } from '../../shared/ops';
 import { instantOf, inWindow, isLocalTime, zonedParts } from '../../shared/time';
 import type { TockPose } from '../art/guide/Tock';
 import { useSync } from '../sync/hooks';
 import { store } from '../sync/store';
+import { Celebration } from './Celebration';
 import { StatusCloud } from './chrome/chrome';
-import { WallContext, type Scene, type Wall as WallApi } from './context';
-import { childById } from './derive';
+import { useWall, WallContext, type Scene, type Wall as WallApi } from './context';
+import { childById, gladTidings, wearFor } from './derive';
 import { Home } from './home/Home';
+import { Tour, tourSeen } from './home/Tour';
 import type { Box } from './home/layout';
 import { Pair } from './Pair';
+import { cameBackFromAcademy } from './scenes/Academy';
 import { Scenes } from './scenes/Scenes';
 import { lookOfSky } from './sky';
 import { configureSound, play, unlockSound, type Sound } from './sound';
@@ -80,6 +84,8 @@ function WallReady({
   const [realNowMs, setNowMs] = useState(() => store.serverNow());
   const lastTouch = useRef(0);
   const [idle, setIdle] = useState(false);
+  const [glad, setGlad] = useState({ count: 0, showing: false });
+  const [touring, setTouring] = useState(false);
 
   // The clock, by the minute: enough for a sky and for "is it bedtime".
   useEffect(() => {
@@ -166,6 +172,19 @@ function WallReady({
     store.setPace(quiet ? 'asleep' : idle ? 'idle' : 'active');
   }, [quiet, idle]);
 
+  // The weather the wall goes by: what the server last heard, if the family has switched the weather on.
+  const weather: Weather | null = override.weather
+    ? {
+        state: override.weather,
+        temperature: null,
+        units: 'metric',
+        at: new Date(nowMs).toISOString(),
+        stale: false,
+      }
+    : settings.sky.weather
+      ? view.weather
+      : null;
+
   const look = useMemo(
     () =>
       lookOfSky({
@@ -206,6 +225,9 @@ function WallReady({
     tell,
     said,
     sound: (name: Sound) => play(name),
+    celebrate: () => setGlad((value) => ({ count: value.count + 1, showing: true })),
+    wear: wearFor(weather),
+    tour: () => setTouring(true),
     quiet,
     still,
     online,
@@ -218,6 +240,11 @@ function WallReady({
       <Stage layout={layout} vars={look.vars}>
         <Home look={look} />
         {scene !== 'home' && <Scenes origin={origin} />}
+        {scene === 'home' && touring && !quiet && <Tour onDone={() => setTouring(false)} />}
+        {glad.showing && (
+          <Celebration key={glad.count} onDone={() => setGlad((value) => ({ ...value, showing: false }))} />
+        )}
+        <Watcher view={view} onFirstVisit={() => setTouring(true)} />
         <StatusCloud online={online} pending={pending} />
         {quiet && settings.quietHours.dim && (
           <div
@@ -230,4 +257,42 @@ function WallReady({
       </Stage>
     </WallContext.Provider>
   );
+}
+
+/**
+ * Notices what has just happened and has Tock be glad about it: a grown-up said yes on their phone, a badge
+ * was reached, a reward was agreed. It also greets a child coming home from the Academy, and starts the
+ * showing-round the first time a screen is used.
+ */
+function Watcher({ view, onFirstVisit }: { view: Snapshot; onFirstVisit: () => void }) {
+  const wall = useWall();
+  const before = useRef<Snapshot | null>(null);
+
+  useEffect(() => {
+    if (cameBackFromAcademy()) wall.tell('Welcome home!', 'wave');
+    else if (!tourSeen() && !wall.quiet) onFirstVisit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const earlier = before.current;
+    before.current = view;
+    if (!earlier || wall.quiet) return;
+    const tidings = gladTidings(earlier, view, wall.who);
+    const first = tidings[0];
+    if (!first) return;
+    wall.celebrate();
+    wall.sound(first.kind === 'badge' ? 'star' : 'done');
+    if (first.kind === 'badge') wall.tell(BADGES[first.badge].say, 'cheer');
+    else if (first.kind === 'stars')
+      wall.tell(
+        first.stars === 1 ? 'A grown-up said yes. A star for you!' : 'A grown-up said yes. Stars for you!',
+        'cheer',
+      );
+    else if (first.kind === 'reward-yes') wall.tell(`Yes! ${first.title}.`, 'cheer');
+    else wall.tell(`${first.title}. Enjoy!`, 'cheer');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
+
+  return null;
 }

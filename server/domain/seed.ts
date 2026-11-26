@@ -30,6 +30,7 @@ import {
   users,
   wallets,
 } from '../db/schema.js';
+import { awardBadges } from './badges.js';
 import { createReward, requestRedemption, setGoal } from './bank.js';
 import { makeCtx, readHousehold, SYSTEM_ACTOR, type Ctx } from './context.js';
 import { post } from './ledger.js';
@@ -814,6 +815,8 @@ export async function seedDemo(database: Database, options: SeedOptions): Promis
 
     // The past is written once the plan exists, because it is a record of that plan being followed.
     await seedPast(ctx, today, timeZone);
+    // …and the keepsakes those weeks would have earned.
+    await awardBadges(ctx);
 
     await tx.insert(shoppingLists).values([
       {

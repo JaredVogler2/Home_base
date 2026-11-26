@@ -173,6 +173,7 @@ function MissionSheet({
     wall.ask('occurrence.submit', { occurrenceId: mission.id, profileId });
     if (mission.verification === 'auto') {
       wall.sound(mission.stars > 0 ? 'star' : 'done');
+      wall.celebrate();
       wall.tell('You did it!', 'cheer');
     } else {
       wall.sound('sent');

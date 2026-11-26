@@ -52,6 +52,7 @@ export function WallSettings() {
   const parent = useParent();
   const [settings, set, guardian] = useSettings();
   const [guide, setGuide] = useState(settings.guideName);
+  const [voice, setVoice] = useState(settings.voice.voiceName ?? '');
   return (
     <>
       <PageHead title="The wall" onBack={() => parent.go('more')} />
@@ -83,6 +84,28 @@ export function WallSettings() {
                   { value: 'quick', label: 'Quicker' },
                 ]}
               />
+            )}
+            {settings.voice.enabled && (
+              <Field
+                label="The wall’s voice (optional)"
+                hint="Empty uses the display’s own default. To choose another, open /studio/device on the wall: it lists the voices that display has, with a button to hear each. Type the name exactly."
+              >
+                <Line>
+                  <div style={{ flex: 1 }}>
+                    <TextInput
+                      value={voice}
+                      onChange={(event) => setVoice(event.target.value)}
+                      maxLength={120}
+                    />
+                  </div>
+                  <Button
+                    disabled={!guardian || voice.trim() === (settings.voice.voiceName ?? '')}
+                    onClick={() => set({ voice: { voiceName: voice.trim() === '' ? null : voice.trim() } })}
+                  >
+                    Use
+                  </Button>
+                </Line>
+              </Field>
             )}
             <Toggle
               label="Little sounds"
