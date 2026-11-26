@@ -184,7 +184,8 @@ export function GrownUps() {
       <Line>
         <Button
           onClick={() => {
-            void store.signOut();
+            // Whoever signs in next starts at Today, not on the page this was left on.
+            void store.signOut().then(() => parent.go('today'));
           }}
           testId="sign-out"
         >

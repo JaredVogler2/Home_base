@@ -167,10 +167,12 @@ function WallReady({
     };
   }, [settings.wall.idleHomeSeconds, settings.wall.slideshowAfterMinutes, settings.memories.hidden]);
 
-  // Ask the server often while someone is here, seldom when nobody is, and hardly at all at night.
+  // Ask the server often while someone is here (at any hour), seldom when nobody is, and only now and then when
+  // nobody is and there is nothing to keep fresh: at night, or while the photos are showing.
+  const resting = quiet || scene === 'memories';
   useEffect(() => {
-    store.setPace(quiet ? 'asleep' : idle ? 'idle' : 'active');
-  }, [quiet, idle]);
+    store.setPace(!idle ? 'active' : resting ? 'asleep' : 'idle');
+  }, [resting, idle]);
 
   // The weather the wall goes by: what the server last heard, if the family has switched the weather on.
   const weather: Weather | null = override.weather

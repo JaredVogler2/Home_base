@@ -151,7 +151,7 @@ export function Pantry({ origin }: { origin: Box | null }) {
                 </BigButton>
               ) : (
                 <HoldButton
-                  label="Grown-ups: tick things off"
+                  label="Grown-ups: hold to tick off"
                   className={styles.hold}
                   testId="grown-hold"
                   onHeld={keepGrown}

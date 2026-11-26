@@ -190,7 +190,7 @@ export function More({ rest }: { rest: string[] }) {
         </Rows>
       </Section>
 
-      <Button onClick={() => void store.signOut()} testId="sign-out-main">
+      <Button onClick={() => void store.signOut().then(() => parent.go('today'))} testId="sign-out-main">
         Sign out of this phone
       </Button>
     </>

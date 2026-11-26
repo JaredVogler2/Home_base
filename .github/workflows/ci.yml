@@ -59,8 +59,9 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # The same server tests again, against a real PostgreSQL, as a role that is not a superuser: this is
-      # what proves row-level security does the isolating and not the tests' own good manners.
+      # The same server tests again, against a real PostgreSQL. Work done for a household steps down to the
+      # restricted role (homebase_app) there exactly as in production, so this is what proves row-level
+      # security does the isolating and not the tests' own good manners.
       - run: npm run test:pg
 
   browser:
@@ -76,6 +77,12 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      # The offline shell is installed by a service worker, which only a built app has: those tests again,
+      # against the production server.
+      - run: npm run build
+      - run: npx playwright test e2e/offline.spec.ts --trace off
+        env:
+          E2E_SERVER: production
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

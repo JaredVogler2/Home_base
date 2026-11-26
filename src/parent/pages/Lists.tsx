@@ -312,6 +312,7 @@ export function Lists({ rest }: { rest: string[] }) {
               {needed.length} to get{bought.length > 0 ? ` · ${bought.length} bought` : ''}
             </span>
             <Select
+              label="How the list is grouped"
               value={grouping}
               onChange={setGrouping}
               options={[
@@ -384,11 +385,12 @@ function ItemRow({ item, onEdit }: { item: ShoppingItem; onEdit: () => void }) {
       >
         <span className={styles.checkBox}>{checked && Glyph.tick}</span>
       </button>
-      <button type="button" className={styles.itemMain} onClick={onEdit} aria-label={`Edit ${item.text}`}>
+      <button type="button" className={styles.itemMain} onClick={onEdit} data-testid={`edit-${item.text}`}>
         <span className={styles.itemText}>
           {item.priority && !checked ? '★ ' : ''}
           {describeItem(item)}
         </span>
+        <span className="visually-hidden">, edit</span>
         {(item.note || item.store || item.url || item.alsoAsked > 0) && (
           <span className={styles.itemNote}>
             {[

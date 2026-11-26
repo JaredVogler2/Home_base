@@ -21,22 +21,24 @@ import { Who } from './Who';
 
 const sayOf = (mission: Occurrence): string => mission.say ?? ACTION_PICTURES[mission.picture].say;
 
+/** How many finished missions the tray shows (the latest ones). */
+const TRAY = 8;
+
 export function Quest({ origin }: { origin: Box | null }) {
   const wall = useWall();
   const { view, who, nowMs } = wall;
   const child = childById(view, who);
   const [openId, setOpenId] = useState<string | null>(null);
   const missions = who ? missionsFor(view, who, nowMs) : [];
-  const limit = view.household.settings.quest.showAtOnce;
-  // What is still to do comes first; what is done stays on the board, quietly, so the day's work can be seen.
-  const shown = [...missions.filter((mission) => !isDone(mission)), ...missions.filter(isDone)].slice(
-    0,
-    Math.max(limit, 3),
-  );
-  const open =
-    shown.find((mission) => mission.id === openId) ??
-    missions.find((mission) => mission.id === openId) ??
-    null;
+  const limit = Math.max(view.household.settings.quest.showAtOnce, 3);
+  // What is still to do is on the board, a few at a time. What is done is never lost sight of: while there is
+  // more to do it moves to the tray along the bottom, each with its tick; when everything is done the finished
+  // cards have the board to themselves.
+  const finished = missions.filter(isDone);
+  const waiting = missions.filter((mission) => !isDone(mission));
+  const shown = waiting.length > 0 ? waiting.slice(0, limit) : finished.slice(0, limit);
+  const tray = waiting.length > 0 ? finished.slice(-TRAY) : [];
+  const open = missions.find((mission) => mission.id === openId) ?? null;
   const toDo = missions.filter(isToDo).length;
 
   useEffect(() => {
@@ -87,6 +89,30 @@ export function Quest({ origin }: { origin: Box | null }) {
               </li>
             ))}
           </ul>
+          {tray.length > 0 && (
+            <ul className={styles.tray} data-testid="done-tray" aria-label="Done today">
+              {tray.map((mission) => (
+                <li key={mission.id}>
+                  <button
+                    type="button"
+                    className={styles.stamp}
+                    aria-label={`${mission.title}: done`}
+                    data-testid={`done-${mission.title}`}
+                    onClick={() => {
+                      wall.sound('tap');
+                      setOpenId(mission.id);
+                      wall.tell(`${mission.title}. Done!`, 'cheer');
+                    }}
+                  >
+                    <ActionPicture id={mission.picture} />
+                    <span className={styles.stampTick}>
+                      <Badge kind="done" />
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
       {open && child && <MissionSheet mission={open} profileId={child.id} onClose={() => setOpenId(null)} />}

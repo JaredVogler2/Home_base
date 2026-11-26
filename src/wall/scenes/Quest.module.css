@@ -9,11 +9,17 @@
   margin: 1.1cqw;
   height: calc(100% - 2.2cqw);
 }
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2cqw;
+}
 .cards {
   list-style: none;
   margin: 0;
   padding: 0;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 2cqw;
@@ -88,6 +94,50 @@
   position: absolute;
   right: -0.9cqw;
   bottom: -0.9cqw;
+}
+
+/* What is done today, while there is still more to do: small stamps along the bottom of the board. */
+.tray {
+  list-style: none;
+  margin: 0;
+  padding: 0.8cqw 1.2cqw;
+  display: flex;
+  gap: 1.2cqw;
+  justify-content: center;
+  border-radius: 1.6cqw;
+  background: rgb(var(--shadow) / 0.08);
+}
+.stamp {
+  position: relative;
+  display: block;
+  width: 6.4cqw;
+  aspect-ratio: 1;
+  padding: 0.5cqw;
+  border: 0;
+  border-radius: 1.2cqw;
+  background: #f1f6ea;
+  box-shadow: 0 0.3cqw 0 rgb(var(--shadow) / 0.16);
+  transition: transform var(--press) var(--ease);
+}
+.stamp:active {
+  transform: scale(0.94);
+}
+.stamp > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0.6;
+}
+.stampTick {
+  position: absolute;
+  right: -0.7cqw;
+  bottom: -0.7cqw;
+  width: 3cqw;
+  height: 3cqw;
+}
+.stampTick > * {
+  width: 100%;
+  height: 100%;
 }
 
 .empty {
@@ -194,6 +244,23 @@
 :global([data-shape='tall']) .title {
   font-size: 3.4cqw;
   min-height: 8cqw;
+}
+:global([data-shape='tall']) .tray {
+  flex-wrap: wrap;
+  gap: 2.4cqw;
+  padding: 2cqw;
+  border-radius: 3cqw;
+}
+:global([data-shape='tall']) .stamp {
+  width: 15cqw;
+  padding: 1cqw;
+  border-radius: 2.6cqw;
+}
+:global([data-shape='tall']) .stampTick {
+  width: 6.4cqw;
+  height: 6.4cqw;
+  right: -1.4cqw;
+  bottom: -1.4cqw;
 }
 :global([data-shape='tall']) .pin {
   width: 3cqw;

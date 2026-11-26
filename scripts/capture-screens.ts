@@ -49,6 +49,14 @@ const SHOTS: Shot[] = [
     size: WIDE,
     taps: [t('room-quest'), june, t('mission-Shoes in the basket')],
   },
+  {
+    name: 'wall-quest-done',
+    as: 'wall',
+    path: '/wall?at=16:30',
+    size: WIDE,
+    taps: [t('room-quest'), june, t('mission-Shoes in the basket'), t('did-it'), t('sheet-close')],
+    wait: 900,
+  },
   { name: 'wall-bank', as: 'wall', path: '/wall?at=16:30', size: WIDE, taps: [t('room-bank'), june] },
   {
     name: 'wall-bank-reward',
@@ -101,7 +109,7 @@ const SHOTS: Shot[] = [
     as: 'guardian',
     path: '/parent/lists',
     size: PHONE,
-    taps: ['[aria-label="Edit Milk"]'],
+    taps: [t('edit-Milk')],
   },
   { name: 'parent-plan', as: 'guardian', path: '/parent/plan', size: PHONE, fullPage: true },
   {

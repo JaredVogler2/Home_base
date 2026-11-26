@@ -35,7 +35,7 @@ const QuietHoursSchema = v.object({
   enabled: withDefault(v.boolean(), true),
   start: withDefault(time, '19:30'),
   end: withDefault(time, '06:30'),
-  /** During quiet hours the wall is dimmed, silent, and stops asking the server for news. */
+  /** During quiet hours the wall is dimmed and silent, and asks the server for news only now and then. */
   dim: withDefault(v.boolean(), true),
 });
 

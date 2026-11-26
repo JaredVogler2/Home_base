@@ -268,7 +268,8 @@ export function HoldButton({
       type="button"
       className={className ? `${styles.hold} ${className}` : styles.hold}
       style={{ ...style, '--hold-ms': `${ms}ms` } as CSSProperties}
-      aria-label={`${label} (press and hold)`}
+      // The name a screen reader says holds the words on the button, and says how to work it.
+      aria-label={/hold/i.test(label) ? label : `${label} (press and hold)`}
       onPointerDown={begin}
       onPointerUp={cancel}
       onPointerLeave={cancel}

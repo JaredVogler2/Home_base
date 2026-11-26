@@ -15,6 +15,9 @@ import styles from './Frame.module.css';
 
 export type Tone = 'sage' | 'honey' | 'rose' | 'teal' | 'lav' | 'cream' | 'pond';
 
+/** How many sheets are open over the room: while one is, Escape closes it and does not also leave the room. */
+let sheetsOpen = 0;
+
 export function Frame({
   tone,
   origin,
@@ -42,6 +45,16 @@ export function Frame({
       } as CSSProperties)
     : undefined;
   const guideName = view.household.settings.guideName;
+  // Escape is the keyboard's way home, as the house button is a finger's.
+  const goHome = wall.home;
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || sheetsOpen > 0) return;
+      goHome();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [goHome]);
   return (
     <section
       className={styles.frame}
@@ -128,6 +141,12 @@ export function Sheet({
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+  useEffect(() => {
+    sheetsOpen += 1;
+    return () => {
+      sheetsOpen -= 1;
+    };
+  }, []);
 
   return (
     <div

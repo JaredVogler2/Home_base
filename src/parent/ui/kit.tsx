@@ -274,15 +274,19 @@ export function Select<T extends string>({
   onChange,
   options,
   testId,
+  label,
 }: {
   value: T;
   onChange: (value: T) => void;
   options: readonly { value: T; label: string }[];
   testId?: string;
+  /** What it chooses, for a screen reader, when it does not sit inside a `Field` that says so. */
+  label?: string;
 }) {
   return (
     <select
       className={styles.select}
+      aria-label={label}
       value={value}
       onChange={(event) => onChange(event.target.value as T)}
       data-testid={testId}

@@ -95,6 +95,22 @@ describe('two phones and a wall, one list', () => {
     expect(['Tomatoes', 'tomato!']).toContain(items[0]?.text);
   });
 
+  it('takes the amount just said when something already wanted is added again, and keeps it otherwise', async () => {
+    const family = await newFamily(server);
+    const list = await groceries(family);
+    await family.parent.do('shopping.add', item(list, 'Milk'));
+    // "2 milk": still one line, now for two.
+    await family.parent.do('shopping.add', item(list, 'milk', { quantity: 2 }));
+    let items = (await family.parent.pull()).items;
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ text: 'Milk', quantity: 2, alsoAsked: 1, status: 'needed' });
+    // Asked for again with no amount: the two stay two.
+    await family.parent.do('shopping.add', item(list, 'Milk'));
+    items = (await family.parent.pull()).items;
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ quantity: 2, alsoAsked: 2 });
+  });
+
   it('adds a queued item once when a phone that was offline sends its queue twice', async () => {
     const family = await newFamily(server);
     const list = await groceries(family);

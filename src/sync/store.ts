@@ -31,8 +31,12 @@ const PACE_MS: Record<Pace, number> = {
   active: 4_000,
   /** The screen is on and nobody is touching it. */
   idle: 30_000,
-  /** Quiet hours, or the photos are showing. */
-  asleep: 180_000,
+  /**
+   * Nobody is touching it and there is nothing to keep fresh: quiet hours, or the photos are showing. A quarter
+   * of an hour is long enough for a database that sleeps when idle to sleep between askings; any touch asks at
+   * once (see `setPace`), so nothing a person does ever waits for it.
+   */
+  asleep: 900_000,
 };
 
 const BACKOFF_MS = [2_000, 4_000, 8_000, 16_000, 30_000];
@@ -178,7 +182,11 @@ export class SyncStore {
     void this.sync();
   };
 
-  /** How often to ask: quickly while someone is here, slowly when nobody is, hardly at all at night. */
+  /**
+   * How often to ask: quickly while someone is here, slowly when nobody is, seldom at night. Moving to a quicker
+   * pace asks straight away, so a touch on a sleeping screen is answered with fresh news — and a screen that has
+   * been switched off by a parent finds that out the moment anyone touches it.
+   */
   setPace(pace: Pace): void {
     if (pace === this.pace) return;
     const faster = PACE_MS[pace] < PACE_MS[this.pace];
