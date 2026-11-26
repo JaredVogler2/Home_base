@@ -80,6 +80,8 @@ const BankSchema = v.object({
 const RoutinesSchema = v.object({
   /** Getting dressed and brushing teeth earn nothing unless a family decides otherwise. */
   awardStars: withDefault(v.boolean(), false),
+  /** Stars for finishing a routine, where a family has switched that on. */
+  stars: withDefault(int(0, 10), 1),
 });
 
 const AcademySchema = v.object({

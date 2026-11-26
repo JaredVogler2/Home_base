@@ -439,9 +439,23 @@ export interface Milestone {
   profileId: string | null;
 }
 
-/** What a screen is allowed to do, decided by the server from the session — never from who is "selected". */
-export const ACCESS_LEVELS = ['child', 'household', 'guardian', 'owner'] as const;
+/**
+ * What a screen is allowed to do, decided by the server from the session — never from who is "selected".
+ *
+ *   child      what a child does on the wall: start and finish missions and routines, ask for a reward, ask for
+ *              something from the shop by its picture.
+ *   household  everyday family things that are safe behind a two-second press: tick the shopping list, "we did
+ *              that together". A wall may do these only while the household allows it.
+ *   caregiver  a trusted helper (a grandparent, a sitter): approve and mark missions, answer shopping requests.
+ *   guardian   a parent: everything about missions, routines, rewards, stars, children, screens and settings.
+ *   owner      the guardian who also decides who the guardians are, and can delete the household.
+ */
+export const ACCESS_LEVELS = ['child', 'household', 'caregiver', 'guardian', 'owner'] as const;
 export type AccessLevel = (typeof ACCESS_LEVELS)[number];
+
+export function hasAccess(have: AccessLevel, need: AccessLevel): boolean {
+  return ACCESS_LEVELS.indexOf(have) >= ACCESS_LEVELS.indexOf(need);
+}
 
 export interface Viewer {
   kind: 'device' | 'guardian';
