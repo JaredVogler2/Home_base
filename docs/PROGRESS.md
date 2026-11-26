@@ -28,7 +28,7 @@ and each needs something only the family has.
 | A child who cannot read can use it | **Verified** by tests that walk the whole journey, and a routine from first step to "All done!", by pictures and control names alone. **No real child has tried it** | `e2e/non-reader.spec.ts`, `e2e/child-day.spec.ts`; checklist section I |
 | Missions (QUEST) | **Verified** | `tests/server/quest.test.ts` (19), `e2e/approval.spec.ts` |
 | Stars and rewards (BANK) | **Verified** | `tests/server/bank.test.ts` (15), `e2e/rewards.spec.ts` |
-| Routines | **Verified**, on the server and on the wall | `tests/server/routines.test.ts` (10), `e2e/child-day.spec.ts` |
+| Routines | **Verified**, on the server and on the wall | `tests/server/routines.test.ts` (11), `e2e/child-day.spec.ts` |
 | The shopping list (TO BUY), with its favourites shelf | **Verified**. The Siri Shortcut is **hardware-pending** (its server side is verified) | `tests/server/shopping.test.ts` (17), `shortcuts.test.ts`, `e2e/shopping.spec.ts` |
 | The Training Academy | Opening it: **verified** up to the address it would go to. Bringing progress in: **verified** on the server. Coming home again from the Academy: **hardware-pending**. Live two-way sync: **not built** (needs changes to the Academy and the owner's say-so) | `tests/server/academy.test.ts`, `docs/integrations/ACADEMY.md` |
 | The calendar | The display's own Calendar Mode is the calendar (**hardware-pending**). HOMEBASE shows parent-chosen kinds of day (**verified**). A calendar feed inside HOMEBASE: **not built** (the brief calls it optional) | `docs/INTEGRATIONS.md` |
@@ -51,7 +51,7 @@ Every requirement of the brief, one row each: [`TRACEABILITY.md`](TRACEABILITY.m
 
 ## The evidence
 
-- **Tests:** [`TEST_RESULTS.md`](TEST_RESULTS.md) — 490 unit and integration tests; 283 server tests again on
+- **Tests:** [`TEST_RESULTS.md`](TEST_RESULTS.md) — 491 unit and integration tests; 284 server tests again on
   PostgreSQL; 39 browser tests at four sizes in Chromium, and the 12 of the phone's side again in WebKit; the
   deployment check; the wall measured.
 - **Continuous integration:** `.github/workflows/ci.yml` runs all of it on every pull request, in five jobs.

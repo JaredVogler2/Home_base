@@ -11,8 +11,8 @@ those are listed at the end.
 | What | Command | Result |
 | --- | --- | --- |
 | Formatting, lint, types | `npm run format:check`, `npm run lint`, `npm run typecheck` | Clean |
-| Unit and integration tests, built-in database | `npm test` | **490 passed**, 1 skipped (38 files) |
-| Server tests on real PostgreSQL 16 | `npm run test:pg` | **283 passed** (24 files), including backup and restore. An earlier state of the suite was also run on a brand-new server, which is how the first problem below was reproduced |
+| Unit and integration tests, built-in database | `npm test` | **491 passed**, 1 skipped (38 files) |
+| Server tests on real PostgreSQL 16 | `npm run test:pg` | **284 passed** (24 files), including backup and restore. An earlier state of the suite was also run on a brand-new server, which is how the first problem below was reproduced |
 | Production build | `npm run build` | Built: 1.4 MB on disk, 44 files in the offline shell |
 | Browser tests, four screen sizes, Chromium | `npm run test:e2e` | **38 passed**, 1 skipped (needs a built app) |
 | The skipped one, against the built app | `E2E_SERVER=production npx playwright test e2e/offline.spec.ts` | **2 passed** (and 6 of 6 when repeated three times, earlier) |
@@ -37,7 +37,7 @@ holds, and a network that reaches nothing — and talks to it over HTTP as phone
 | `tests/server/isolation.test.ts` | 10 | One household can never read or change another's; the session decides, never who is "selected" |
 | `tests/server/quest.test.ts` | 19 | Missions: schedules, time zones and clock changes, one award however often a tick is tapped, approval, "not yet", undo, order |
 | `tests/server/bank.test.ts` | 15 | Stars: an append-only ledger, rewards asked for at the same moment, refunds, corrections, lifetime never lost by spending |
-| `tests/server/routines.test.ts` | 10 | Steps in order, "together", pausing, no stars unless the family chose them |
+| `tests/server/routines.test.ts` | 11 | Steps in order, "together", pausing, no stars unless the family chose them, the last tick taken back without a routine ever counting as finished twice |
 | `tests/server/shopping.test.ts` | 17 | Two phones and a wall on one list, a child's request, edits to different fields both kept, an offline queue sent twice; the favourites shelf |
 | `tests/server/suggestions.test.ts` | 5 | "You often buy" |
 | `tests/server/shortcuts.test.ts` | 14 | The Siri key: narrow, revocable, rate-limited, useless for anything else |
@@ -147,7 +147,8 @@ Found while closing the audit's last gaps (pull request #4):
 - **Finishing a routine did not feel finished.** The moment the last step was ticked, the wall went back to the
   list of routines and the guide asked "What shall we do?" over the top of "All done! Well done." The panel that
   says "All done!" existed and was never shown. Found by the first browser test to walk a routine to its end;
-  the finished routine now stays in front until the child taps.
+  the finished routine now stays in front until the child taps, and its last tick can be taken back like any
+  other — with the look-back no longer saying the routine was finished until it is finished again.
 - **A tap would have failed at a plain http address on the home network.** Ids were made with a browser
   function that is withheld from pages not fetched securely — which includes a wall tried at `http://192.168.…`
   before the house is hosted. Checked in a browser at a network address after the fix: no secure context, a
