@@ -1,0 +1,14 @@
+dist
+node_modules
+.data
+.vercel
+coverage
+test-results
+playwright-report
+package-lock.json
+server/db/migrations
+server/db/migrations.generated.ts
+design/explorations
+docs/review
+prompt-series
+*.md

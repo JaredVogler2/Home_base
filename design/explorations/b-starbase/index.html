@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>HOMEBASE · Direction B — Starbase Home</title>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body { background: #161d4a; overflow: hidden; }
+  .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .portrait { display: none; }
+  @media (max-aspect-ratio: 3/4) {
+    .landscape { display: none; }
+    .portrait { display: block; }
+  }
+  text {
+    font-family: Inter, ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-weight: 800; letter-spacing: .01em;
+  }
+
+  /* Idle motion: transform and opacity only, nothing faster than once a second. */
+  /* The sky tells the time. index.html#morning shows the dawn palette. */
+  .day-only { display: none; }
+  body:has(#morning:target) { background: #3a52b0; }
+  body:has(#morning:target) .night-only { display: none; }
+  body:has(#morning:target) .day-only { display: inline; }
+  body:has(#morning:target) .stars { opacity: .22; }
+  body:has(#morning:target) .sky0 { stop-color: #3a52b0; }
+  body:has(#morning:target) .sky1 { stop-color: #7f92e8; }
+  body:has(#morning:target) .sky2 { stop-color: #ffc9b6; }
+  .sh { opacity: var(--sh, .4); }
+  .afloat { --sh: 0; }
+  .twinkle  { animation: twinkle 5.5s ease-in-out infinite; }
+  .twinkle.d1 { animation-delay: -1.3s; } .twinkle.d2 { animation-delay: -2.7s; }
+  .twinkle.d3 { animation-delay: -3.9s; } .twinkle.d4 { animation-duration: 7s; animation-delay: -4.6s; }
+  .breathe  { animation: breathe 6s ease-in-out infinite; }
+  .breathe.d1 { animation-delay: -2s; } .breathe.d2 { animation-delay: -4s; }
+  .bob      { animation: bob 5s ease-in-out infinite; }
+  .hover    { animation: bob 3.6s ease-in-out infinite; }
+  .pulse    { animation: pulse 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .blink    { animation: blink 6.5s linear infinite; transform-box: fill-box; transform-origin: center top; }
+  .wave     { animation: wave 4.5s ease-in-out infinite; transform-box: fill-box; transform-origin: 85% 15%; }
+  .starpop  { animation: pulse 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  @keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: .72; } }
+  @keyframes bob     { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @keyframes pulse   { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+  @keyframes blink   { 0%, 95.5%, 100% { transform: scaleY(0); } 97.5% { transform: scaleY(1); } }
+  @keyframes wave    { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-9deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .twinkle, .breathe, .bob, .hover, .pulse, .blink, .wave, .starpop { animation: none; }
+  }
+</style>
+</head>
+<body>
+<span id="morning"></span>
+
+<!-- ───────────────────────── shared paint and parts ───────────────────────── -->
+<svg class="defs" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- sky -->
+    <linearGradient id="g-sky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="900">
+      <stop class="sky0" offset="0" stop-color="#161d4a"/><stop class="sky1" offset=".5" stop-color="#28306f"/><stop class="sky2" offset="1" stop-color="#5a4c9c"/>
+    </linearGradient>
+    <linearGradient id="g-sky-p" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1560">
+      <stop class="sky0" offset="0" stop-color="#161d4a"/><stop class="sky1" offset=".55" stop-color="#28306f"/><stop class="sky2" offset="1" stop-color="#5a4c9c"/>
+    </linearGradient>
+    <radialGradient id="g-nebula" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#9a86e8" stop-opacity=".30"/><stop offset="1" stop-color="#9a86e8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g-halo" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fff3b8" stop-opacity=".55"/><stop offset="1" stop-color="#fff3b8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g-air" cx=".5" cy=".5" r=".5">
+      <stop offset=".955" stop-color="#9fe6ff" stop-opacity=".50"/><stop offset="1" stop-color="#9fe6ff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- planet -->
+    <linearGradient id="g-planet" gradientUnits="userSpaceOnUse" x1="0" y1="700" x2="0" y2="1090">
+      <stop offset="0" stop-color="#93e8bb"/><stop offset=".4" stop-color="#4bb98d"/><stop offset="1" stop-color="#2b877a"/>
+    </linearGradient>
+    <linearGradient id="g-planet-p" gradientUnits="userSpaceOnUse" x1="0" y1="1460" x2="0" y2="1700">
+      <stop offset="0" stop-color="#93e8bb"/><stop offset=".5" stop-color="#4bb98d"/><stop offset="1" stop-color="#2b877a"/>
+    </linearGradient>
+    <!-- materials -->
+    <linearGradient id="g-hull" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#e6d3b3"/></linearGradient>
+    <radialGradient id="g-room" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#fffbe8"/><stop offset="1" stop-color="#ffdf9c"/></radialGradient>
+    <linearGradient id="g-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="g-night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f44a6"/><stop offset="1" stop-color="#232a6b"/></linearGradient>
+    <linearGradient id="g-coral" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa48d"/><stop offset="1" stop-color="#e8644c"/></linearGradient>
+    <linearGradient id="g-mint"  x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fe6b8"/><stop offset="1" stop-color="#3aa584"/></linearGradient>
+    <linearGradient id="g-aqua"  x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ad9f8"/><stop offset="1" stop-color="#3f93d6"/></linearGradient>
+    <linearGradient id="g-lilac" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c6b4fa"/><stop offset="1" stop-color="#7f63da"/></linearGradient>
+    <linearGradient id="g-rose"  x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb1cb"/><stop offset="1" stop-color="#ea6f9d"/></linearGradient>
+    <linearGradient id="g-gold"  x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe98f"/><stop offset="1" stop-color="#f4ad3c"/></linearGradient>
+    <linearGradient id="g-tan"   x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f5cf8f"/><stop offset="1" stop-color="#d79a4d"/></linearGradient>
+    <linearGradient id="g-wool"  x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dcd5fb"/></linearGradient>
+    <linearGradient id="g-face"  x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9d8"/><stop offset="1" stop-color="#f8c6a8"/></linearGradient>
+    <linearGradient id="g-fox"   x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa468"/><stop offset="1" stop-color="#ee7440"/></linearGradient>
+    <linearGradient id="g-bear"  x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7a878"/><stop offset="1" stop-color="#b17f52"/></linearGradient>
+
+    <!-- small reusable shapes -->
+    <path id="spark" d="M0 -12 Q2.4 -2.4 12 0 Q2.4 2.4 0 12 Q-2.4 2.4 -12 0 Q-2.4 -2.4 0 -12Z"/>
+    <path id="star5" d="M0 -10 L2.9 -3.6 L9.8 -3 L4.6 1.6 L6.1 8.4 L0 4.8 L-6.1 8.4 L-4.6 1.6 L-9.8 -3 L-2.9 -3.6Z"/>
+    <g id="token">
+      <circle r="11" fill="url(#g-gold)"/>
+      <use href="#star5" fill="#fff6c9" transform="scale(.66)"/>
+    </g>
+    <g id="toothbrush">
+      <rect x="-44" y="-2" width="62" height="14" rx="7" fill="url(#g-aqua)"/>
+      <rect x="10" y="-4" width="36" height="16" rx="7" fill="#3f93d6"/>
+      <rect x="15" y="-20" width="28" height="18" rx="5" fill="#fff"/>
+      <path d="M15 -19 q7 -13 14 -3 q7 -10 14 2 v5 h-28z" fill="url(#g-mint)"/>
+    </g>
+    <g id="shoe">
+      <path d="M-23 7 V-9 Q-23 -18 -14 -18 H-7 Q-2 -18 1 -13 L7 -5 Q9 -3 13 -3 H16 Q24 -2 24 7Z"/>
+      <rect x="-23" y="-20" width="20" height="8" rx="4" fill="#ffd9cd"/>
+      <rect x="-25" y="5" width="51" height="9" rx="4.5" fill="#fff"/>
+      <circle cx="-6" cy="-8" r="3.2" fill="#fff6e6"/><circle cx="2" cy="-3" r="3.2" fill="#fff6e6"/>
+    </g>
+
+    <clipPath id="clip-rocket"><path d="M-70 -34 V-214 C-70 -292 -32 -338 0 -356 C32 -338 70 -292 70 -214 V-34 Q70 -26 62 -26 H-62 Q-70 -26 -70 -34Z"/></clipPath>
+    <clipPath id="clip-wool">
+      <circle cx="0" cy="34" r="56"/><circle cx="-44" cy="22" r="34"/><circle cx="44" cy="22" r="34"/>
+      <circle cx="-32" cy="66" r="33"/><circle cx="32" cy="66" r="33"/><circle cx="0" cy="78" r="30"/>
+      <circle cx="-54" cy="48" r="25"/><circle cx="54" cy="48" r="25"/>
+    </clipPath>
+    <clipPath id="clip-tuft"><circle cx="-20" cy="-78" r="20"/><circle cx="4" cy="-86" r="23"/><circle cx="26" cy="-76" r="18"/></clipPath>
+
+    <!-- ══════════ QUEST: the mission deck ══════════ -->
+    <g id="m-quest">
+      <ellipse cx="0" cy="10" rx="262" ry="24" fill="#124a58" class="sh"/>
+      <path d="M-220 0V-110A220 220 0 0 1 220 -110V0Z" fill="url(#g-hull)"/>
+      <path d="M-196 -34V-110A196 196 0 0 1 196 -110V-34Z" fill="url(#g-room)"/>
+      <!-- lamp in the crown -->
+      <circle cx="0" cy="-262" r="34" fill="url(#g-halo)" class="breathe"/>
+      <use href="#star5" fill="url(#g-gold)" transform="translate(0 -262) scale(2.1)"/>
+      <!-- board -->
+      <rect x="-172" y="-212" width="344" height="164" rx="26" fill="url(#g-coral)"/>
+      <rect x="-160" y="-200" width="320" height="140" rx="16" fill="#fff4dc"/>
+      <!-- card 1: blocks, done -->
+      <rect x="-154" y="-190" width="92" height="118" rx="14" fill="#fff"/>
+      <rect x="-141" y="-124" width="31" height="31" rx="7" fill="url(#g-coral)"/>
+      <rect x="-107" y="-124" width="31" height="31" rx="7" fill="url(#g-aqua)"/>
+      <rect x="-124" y="-158" width="31" height="31" rx="7" fill="url(#g-gold)"/>
+      <circle cx="-70" cy="-182" r="21" fill="#fff"/>
+      <circle cx="-70" cy="-182" r="17" fill="url(#g-mint)"/>
+      <path d="M-78 -182 l6 6 l11 -12" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- card 2: shoes -->
+      <rect x="-46" y="-190" width="92" height="118" rx="14" fill="#fff"/>
+      <use href="#shoe" fill="#ffab96" transform="translate(-12 -146) scale(1.2)"/>
+      <use href="#shoe" fill="url(#g-coral)" transform="translate(6 -108) scale(1.42)"/>
+      <circle cx="30" cy="-176" r="13" fill="none" stroke="#e6d3b3" stroke-width="6"/>
+      <!-- card 3: toothbrush -->
+      <rect x="62" y="-190" width="92" height="118" rx="14" fill="#fff"/>
+      <use href="#toothbrush" transform="translate(106 -122) rotate(-38) scale(.98)"/>
+      <use href="#spark" fill="url(#g-gold)" transform="translate(84 -158) scale(.85)"/>
+      <circle cx="138" cy="-176" r="13" fill="none" stroke="#e6d3b3" stroke-width="6"/>
+      <!-- glass -->
+      <path d="M-196 -34V-110A196 196 0 0 1 196 -110V-34Z" fill="url(#g-glass)"/>
+      <path d="M-158 -196A176 176 0 0 1 -62 -270" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" opacity=".6"/>
+      <!-- base -->
+      <rect x="-236" y="-46" width="472" height="56" rx="28" fill="url(#g-hull)"/>
+      <rect x="-216" y="-34" width="432" height="12" rx="6" fill="url(#g-coral)"/>
+      <circle cx="-190" cy="-8" r="6" fill="#d8c29d"/><circle cx="190" cy="-8" r="6" fill="#d8c29d"/>
+    </g>
+
+    <!-- ══════════ BANK: piggy under glass, stars in fives ══════════ -->
+    <g id="m-bank">
+      <ellipse cx="0" cy="10" rx="186" ry="22" fill="#124a58" class="sh"/>
+      <path d="M-125 -116V-152A125 125 0 0 1 125 -152V-116Z" fill="url(#g-hull)"/>
+      <path d="M-107 -116V-152A107 107 0 0 1 107 -152V-116Z" fill="url(#g-room)"/>
+      <!-- piggy -->
+      <g transform="translate(-6 -184)">
+        <path d="M-72 -6 q-20 -2 -16 -18 q5 -11 15 -3" fill="none" stroke="#ea6f9d" stroke-width="8" stroke-linecap="round"/>
+        <rect x="-52" y="26" width="24" height="32" rx="10" fill="#d85a86"/>
+        <rect x="22" y="26" width="24" height="32" rx="10" fill="#d85a86"/>
+        <rect x="-26" y="30" width="20" height="26" rx="9" fill="#c84c80" opacity=".55"/>
+        <rect x="0" y="30" width="20" height="26" rx="9" fill="#c84c80" opacity=".55"/>
+        <ellipse cx="0" cy="0" rx="76" ry="46" fill="url(#g-rose)"/>
+        <ellipse cx="-22" cy="-20" rx="30" ry="12" fill="#fff" opacity=".30"/>
+        <path d="M26 -34 Q30 -64 56 -56 Q58 -38 48 -26Z" fill="#e2648f"/>
+        <ellipse cx="74" cy="4" rx="21" ry="18" fill="#ffc7da"/>
+        <circle cx="68" cy="4" r="4.2" fill="#c84c80"/><circle cx="80" cy="4" r="4.2" fill="#c84c80"/>
+        <circle cx="42" cy="-14" r="7" fill="#1b2150"/><circle cx="44" cy="-16" r="2.4" fill="#fff"/>
+        <circle cx="46" cy="10" r="9" fill="#ff7fa9" opacity=".55"/>
+        <rect x="-24" y="-43" width="42" height="10" rx="5" fill="#b13f70"/>
+      </g>
+      <g class="hover"><use href="#token" transform="translate(-9 -246) scale(1.1)"/></g>
+      <path d="M-107 -116V-152A107 107 0 0 1 107 -152V-116Z" fill="url(#g-glass)"/>
+      <path d="M-84 -196A96 96 0 0 1 -30 -244" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity=".6"/>
+      <!-- counter with the star trays -->
+      <rect x="-160" y="-126" width="320" height="136" rx="30" fill="url(#g-hull)"/>
+      <rect x="-138" y="-108" width="276" height="100" rx="20" fill="url(#g-night)"/>
+      <g>
+        <rect x="-120" y="-100" width="240" height="26" rx="13" fill="#161d4a" opacity=".45"/>
+        <rect x="-120" y="-71" width="240" height="26" rx="13" fill="#161d4a" opacity=".45"/>
+        <rect x="-120" y="-42" width="240" height="26" rx="13" fill="#161d4a" opacity=".45"/>
+        <use href="#token" x="-92" y="-87"/><use href="#token" x="-46" y="-87"/><use href="#token" x="0" y="-87"/><use href="#token" x="46" y="-87"/><use href="#token" x="92" y="-87"/>
+        <use href="#token" x="-92" y="-58"/><use href="#token" x="-46" y="-58"/><use href="#token" x="0" y="-58"/><use href="#token" x="46" y="-58"/><use href="#token" x="92" y="-58"/>
+        <use href="#token" x="-92" y="-29"/><use href="#token" x="-46" y="-29"/><use href="#token" x="0" y="-29"/>
+        <circle cx="46" cy="-29" r="9" fill="#4f55ad"/><circle cx="92" cy="-29" r="9" fill="#4f55ad"/>
+      </g>
+      <rect x="-64" y="-126" width="128" height="10" rx="5" fill="url(#g-rose)"/>
+    </g>
+
+    <!-- ══════════ ROUTINES: day turns to night, and what comes next ══════════ -->
+    <g id="m-routines">
+      <ellipse cx="0" cy="10" rx="150" ry="20" fill="#124a58" class="sh"/>
+      <!-- the sun going down behind -->
+      <g transform="translate(-122 -262)">
+        <g fill="none" stroke="#f4ad3c" stroke-width="9" stroke-linecap="round" opacity=".9">
+          <path d="M0 -58V-72"/><path d="M-41 -41l-10 -10"/><path d="M-58 0h-14"/><path d="M-41 41l-10 10"/>
+        </g>
+        <circle r="44" fill="url(#g-gold)"/>
+      </g>
+      <rect x="-46" y="-56" width="92" height="56" rx="10" fill="url(#g-hull)"/>
+      <rect x="-112" y="-32" width="224" height="42" rx="21" fill="url(#g-hull)"/>
+      <circle cx="-64" cy="-11" r="9" fill="#3aa584"/><circle cx="-32" cy="-11" r="9" fill="#3aa584"/>
+      <circle cx="0" cy="-11" r="11" fill="url(#g-gold)" class="pulse"/>
+      <circle cx="32" cy="-11" r="9" fill="#d8c29d"/><circle cx="64" cy="-11" r="9" fill="#d8c29d"/>
+      <circle cx="0" cy="-178" r="138" fill="url(#g-hull)"/>
+      <circle cx="0" cy="-178" r="114" fill="url(#g-night)"/>
+      <use href="#spark" fill="#fff3b8" transform="translate(58 -246) scale(1.1)" class="twinkle d1"/>
+      <use href="#spark" fill="#fff3b8" transform="translate(84 -204) scale(.7)" class="twinkle d3"/>
+      <circle cx="-66" cy="-108" r="5" fill="#fff3b8"/><circle cx="20" cy="-268" r="4" fill="#fff3b8"/>
+      <!-- sleepy moon -->
+      <g transform="translate(-30 -190)">
+        <circle cx="4" cy="2" r="78" fill="url(#g-halo)" opacity=".5"/>
+        <path d="M57.4 23.5A62 62 0 1 1 -1.8 -62A52 52 0 1 0 57.4 23.5Z" fill="url(#g-gold)"/>
+        <path d="M-48 -12 q7 7 14 0" fill="none" stroke="#1b2150" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="-44" cy="8" r="7" fill="#ff8f7a" opacity=".7"/>
+        <path d="M-30 14 q8 8 17 2" fill="none" stroke="#1b2150" stroke-width="6" stroke-linecap="round"/>
+      </g>
+      <path d="M-92 -232A108 108 0 0 1 -28 -280" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity=".35"/>
+      <!-- next: brush teeth -->
+      <rect x="23" y="-154" width="120" height="120" rx="24" fill="#161d4a" opacity=".22"/>
+      <rect x="18" y="-160" width="120" height="120" rx="24" fill="#fff"/>
+      <use href="#toothbrush" transform="translate(78 -94) rotate(-38) scale(1.3)"/>
+      <use href="#spark" fill="url(#g-gold)" transform="translate(52 -132) scale(.9)"/>
+      <circle cx="24" cy="-156" r="22" fill="url(#g-gold)"/>
+      <path d="M17 -167 L35 -156 L17 -145Z" fill="#1b2150" stroke="#1b2150" stroke-width="4" stroke-linejoin="round"/>
+    </g>
+
+    <!-- ══════════ ACADEMY: the little school shuttle ══════════ -->
+    <g id="m-academy">
+      <ellipse cx="-6" cy="10" rx="132" ry="18" fill="#124a58" class="sh"/>
+      <rect x="-124" y="-26" width="248" height="36" rx="18" fill="url(#g-hull)"/>
+      <rect x="-104" y="-16" width="208" height="10" rx="5" fill="url(#g-aqua)"/>
+      <path d="M-62 -176C-120 -144 -134 -86 -128 -28L-62 -56Z" fill="url(#g-aqua)"/>
+      <path d="M62 -176C120 -144 134 -86 128 -28L62 -56Z" fill="url(#g-aqua)"/>
+      <rect x="-4" y="-384" width="8" height="34" rx="4" fill="#e6d3b3"/>
+      <circle cx="0" cy="-388" r="20" fill="url(#g-halo)" class="twinkle d2"/>
+      <circle cx="0" cy="-388" r="10" fill="url(#g-gold)"/>
+      <path d="M-70 -34 V-214 C-70 -292 -32 -338 0 -356 C32 -338 70 -292 70 -214 V-34 Q70 -26 62 -26 H-62 Q-70 -26 -70 -34Z" fill="url(#g-hull)"/>
+      <g clip-path="url(#clip-rocket)">
+        <path d="M-90 -366H90V-268Q0 -246 -90 -268Z" fill="url(#g-aqua)"/>
+        <path d="M-90 -62H90V-20H-90Z" fill="#e6d3b3"/>
+      </g>
+      <circle cx="0" cy="-206" r="42" fill="#3f93d6"/>
+      <circle cx="0" cy="-206" r="30" fill="#fff6d6"/>
+      <circle cx="0" cy="-206" r="30" fill="url(#g-gold)" class="breathe d1"/>
+      <path d="M-20 -216A24 24 0 0 1 -4 -230" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".75"/>
+      <!-- book -->
+      <g transform="translate(0 -122)">
+        <path d="M-40 -18 H40 V22 H-40Z" fill="#7f63da"/>
+        <path d="M-2 -20 Q-18 -30 -36 -22 V16 Q-18 8 -2 18Z" fill="#fff"/>
+        <path d="M2 -20 Q18 -30 36 -22 V16 Q18 8 2 18Z" fill="#fff"/>
+        <path d="M18 -27 h10 v20 l-5 -5 l-5 5Z" fill="url(#g-coral)"/>
+      </g>
+      <path d="M-26 -26V-64A26 26 0 0 1 26 -64V-26Z" fill="#3f93d6"/>
+      <circle cx="13" cy="-52" r="5" fill="#fff3b8"/>
+      <path d="M-44 -306A60 60 0 0 1 -18 -338" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".5"/>
+    </g>
+
+    <!-- ══════════ CALENDAR ══════════ -->
+    <g id="m-calendar">
+      <rect x="-120" y="-110" width="240" height="220" rx="74" fill="url(#g-hull)"/>
+      <rect x="-98" y="-88" width="196" height="176" rx="56" fill="url(#g-room)"/>
+      <rect x="-60" y="-56" width="132" height="128" rx="16" fill="#161d4a" opacity=".16"/>
+      <rect x="-66" y="-64" width="132" height="128" rx="16" fill="#fff"/>
+      <path d="M-66 -34V-48Q-66 -64 -50 -64H50Q66 -64 66 -48V-34Z" fill="url(#g-coral)"/>
+      <rect x="-38" y="-78" width="12" height="28" rx="6" fill="#d8c29d"/><rect x="26" y="-78" width="12" height="28" rx="6" fill="#d8c29d"/>
+      <g fill="#e6defb">
+        <rect x="-56" y="-26" width="22" height="22" rx="6"/><rect x="-26" y="-26" width="22" height="22" rx="6"/><rect x="4" y="-26" width="22" height="22" rx="6"/><rect x="34" y="-26" width="22" height="22" rx="6"/>
+        <rect x="-56" y="2" width="22" height="22" rx="6"/><rect x="4" y="2" width="22" height="22" rx="6"/><rect x="34" y="2" width="22" height="22" rx="6"/>
+        <rect x="-56" y="30" width="22" height="22" rx="6"/><rect x="-26" y="30" width="22" height="22" rx="6"/><rect x="4" y="30" width="22" height="22" rx="6"/>
+      </g>
+      <rect x="-29" y="-1" width="28" height="28" rx="8" fill="url(#g-coral)"/>
+      <rect x="34" y="30" width="22" height="22" rx="6" fill="#fff3b8"/>
+      <use href="#star5" fill="url(#g-gold)" transform="translate(45 41) scale(.95)"/>
+      <rect x="-98" y="-88" width="196" height="176" rx="56" fill="url(#g-glass)"/>
+      <path d="M-74 -40A60 60 0 0 1 -44 -68" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".6"/>
+      <rect x="-44" y="-122" width="88" height="20" rx="10" fill="url(#g-lilac)"/>
+    </g>
+
+    <!-- ══════════ MEMORIES ══════════ -->
+    <g id="m-memories">
+      <rect x="-120" y="-110" width="240" height="220" rx="74" fill="url(#g-hull)"/>
+      <rect x="-98" y="-88" width="196" height="176" rx="56" fill="url(#g-room)"/>
+      <g transform="translate(-26 -8) rotate(-7)">
+        <rect x="-52" y="-38" width="112" height="88" rx="10" fill="#161d4a" opacity=".16"/>
+        <rect x="-56" y="-44" width="112" height="88" rx="10" fill="#fff"/>
+        <rect x="-46" y="-34" width="92" height="68" rx="6" fill="#bfe6ff"/>
+        <circle cx="22" cy="-12" r="13" fill="url(#g-gold)"/>
+        <path d="M-46 28V12Q-22 -16 4 8Q24 -8 46 12V28Q46 34 40 34H-40Q-46 34 -46 28Z" fill="url(#g-mint)"/>
+      </g>
+      <g transform="translate(42 16) rotate(8)">
+        <rect x="-36" y="-44" width="80" height="100" rx="10" fill="#161d4a" opacity=".16"/>
+        <rect x="-40" y="-50" width="80" height="100" rx="10" fill="#fff"/>
+        <rect x="-31" y="-41" width="62" height="82" rx="6" fill="#ffd6e6"/>
+        <path d="M0 -20 q-10 -14 -15 -4 q-3 8 15 18 q18 -10 15 -18 q-5 -10 -15 4Z" fill="url(#g-coral)"/>
+        <circle cx="-15" cy="8" r="8" fill="#7f63da"/><rect x="-23" y="17" width="16" height="24" rx="7" fill="#7f63da"/>
+        <circle cx="14" cy="6" r="8" fill="#e8644c"/><rect x="6" y="15" width="16" height="26" rx="7" fill="#e8644c"/>
+        <circle cx="0" cy="22" r="6" fill="#f4ad3c"/><rect x="-6" y="28" width="12" height="13" rx="5" fill="#f4ad3c"/>
+      </g>
+      <rect x="-98" y="-88" width="196" height="176" rx="56" fill="url(#g-glass)"/>
+      <path d="M-74 -40A60 60 0 0 1 -44 -68" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".6"/>
+      <rect x="-44" y="-122" width="88" height="20" rx="10" fill="url(#g-rose)"/>
+    </g>
+
+    <!-- ══════════ TO BUY: the basket ══════════ -->
+    <g id="m-tobuy">
+      <ellipse cx="6" cy="10" rx="128" ry="18" fill="#124a58" class="sh"/>
+      <path d="M-115 0V-120A115 115 0 0 1 115 -120V0Z" fill="url(#g-hull)"/>
+      <path d="M-95 -30V-120A95 95 0 0 1 95 -120V-30Z" fill="url(#g-room)"/>
+      <g transform="translate(0 -14)">
+        <path d="M-56 -112C-56 -196 56 -196 56 -112" fill="none" stroke="#c98a3e" stroke-width="12" stroke-linecap="round"/>
+        <!-- milk -->
+        <g transform="translate(4 -152)">
+          <path d="M-20 -22L-8 -40H8L20 -22Z" fill="#3f93d6"/>
+          <rect x="-20" y="-24" width="40" height="64" rx="6" fill="#fff"/>
+          <rect x="-20" y="-4" width="40" height="16" fill="url(#g-aqua)"/>
+        </g>
+        <!-- apple -->
+        <g transform="translate(-46 -128)">
+          <rect x="-3" y="-38" width="7" height="16" rx="3.5" fill="#8a5a2b"/>
+          <ellipse cx="13" cy="-30" rx="12" ry="7" fill="url(#g-mint)" transform="rotate(-24 13 -30)"/>
+          <circle r="27" fill="url(#g-coral)"/>
+          <ellipse cx="-9" cy="-9" rx="9" ry="6" fill="#fff" opacity=".45"/>
+        </g>
+        <!-- carrot -->
+        <g transform="translate(48 -146) rotate(20)">
+          <ellipse cx="-9" cy="-32" rx="7" ry="15" fill="url(#g-mint)" transform="rotate(-22 -9 -32)"/>
+          <ellipse cx="9" cy="-32" rx="7" ry="15" fill="url(#g-mint)" transform="rotate(22 9 -32)"/>
+          <ellipse cx="0" cy="-36" rx="7" ry="16" fill="#3aa584"/>
+          <path d="M-14 -20Q0 -30 14 -20L4 40Q0 48 -4 40Z" fill="url(#g-fox)"/>
+        </g>
+        <!-- basket -->
+        <path d="M-78 -110H78L64 -40Q62 -30 52 -30H-52Q-62 -30 -64 -40Z" fill="url(#g-tan)"/>
+        <path d="M-70 -84H70" stroke="#ffe9bd" stroke-width="8" stroke-linecap="round" opacity=".7"/>
+        <path d="M-64 -58H64" stroke="#ffe9bd" stroke-width="8" stroke-linecap="round" opacity=".7"/>
+        <rect x="-86" y="-122" width="172" height="22" rx="11" fill="#e9b566"/>
+      </g>
+      <path d="M-95 -30V-120A95 95 0 0 1 95 -120V-30Z" fill="url(#g-glass)"/>
+      <path d="M-74 -150A82 82 0 0 1 -30 -196" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".6"/>
+      <rect x="-128" y="-42" width="256" height="52" rx="26" fill="url(#g-hull)"/>
+      <rect x="-108" y="-30" width="216" height="12" rx="6" fill="url(#g-mint)"/>
+    </g>
+
+    <!-- ══════════ GROWN-UPS: the high hatch ══════════ -->
+    <g id="m-grownups">
+      <rect x="-4" y="-78" width="8" height="32" rx="4" fill="#e6d3b3"/>
+      <circle cx="0" cy="-82" r="16" fill="url(#g-halo)" class="twinkle d4"/>
+      <circle cx="0" cy="-82" r="9" fill="url(#g-gold)"/>
+      <circle cx="0" cy="0" r="52" fill="url(#g-hull)"/>
+      <circle cx="0" cy="0" r="38" fill="url(#g-lilac)"/>
+      <circle cx="0" cy="-7" r="11" fill="#fffaf0"/>
+      <path d="M-7 -2H7L11 20H-11Z" fill="#fffaf0"/>
+      <circle cx="-45" cy="0" r="4" fill="#d8c29d"/><circle cx="45" cy="0" r="4" fill="#d8c29d"/>
+    </g>
+
+    <!-- ══════════ The guide: Nim, a star-lamb in a bubble helmet ══════════ -->
+    <g id="guide">
+      <!-- little pack -->
+      <rect x="-70" y="6" width="34" height="62" rx="14" fill="url(#g-lilac)"/>
+      <!-- legs -->
+      <rect x="-34" y="88" width="24" height="38" rx="11" fill="url(#g-face)"/>
+      <rect x="12" y="88" width="24" height="38" rx="11" fill="url(#g-face)"/>
+      <rect x="-34" y="110" width="24" height="16" rx="8" fill="#4a4f9c"/>
+      <rect x="12" y="110" width="24" height="16" rx="8" fill="#4a4f9c"/>
+      <!-- wool -->
+      <g clip-path="url(#clip-wool)"><rect x="-90" y="-30" width="180" height="150" fill="url(#g-wool)"/></g>
+      <!-- resting arm -->
+      <g transform="rotate(18 -62 52)">
+        <rect x="-74" y="34" width="24" height="38" rx="11" fill="url(#g-face)"/>
+        <rect x="-74" y="56" width="24" height="16" rx="8" fill="#4a4f9c"/>
+      </g>
+      <!-- pointing arm -->
+      <g class="wave"><g transform="rotate(-128 58 40)">
+        <rect x="46" y="28" width="24" height="52" rx="11" fill="url(#g-face)"/>
+        <rect x="46" y="64" width="24" height="16" rx="8" fill="#4a4f9c"/>
+      </g></g>
+      <!-- collar -->
+      <ellipse cx="0" cy="-2" rx="46" ry="12" fill="url(#g-hull)"/>
+      <!-- ears -->
+      <ellipse cx="-50" cy="-46" rx="23" ry="12" fill="url(#g-face)" transform="rotate(-18 -50 -46)"/>
+      <ellipse cx="50" cy="-46" rx="23" ry="12" fill="url(#g-face)" transform="rotate(18 50 -46)"/>
+      <ellipse cx="-52" cy="-45" rx="13" ry="6" fill="#ffa9c2" transform="rotate(-18 -52 -45)"/>
+      <ellipse cx="52" cy="-45" rx="13" ry="6" fill="#ffa9c2" transform="rotate(18 52 -45)"/>
+      <!-- face -->
+      <ellipse cx="0" cy="-42" rx="44" ry="40" fill="url(#g-face)"/>
+      <g clip-path="url(#clip-tuft)"><rect x="-44" y="-112" width="92" height="60" fill="url(#g-wool)"/></g>
+      <ellipse cx="-16" cy="-42" rx="7.5" ry="9.5" fill="#1b2150"/><ellipse cx="16" cy="-42" rx="7.5" ry="9.5" fill="#1b2150"/>
+      <circle cx="-13.5" cy="-45.5" r="2.8" fill="#fff"/><circle cx="18.5" cy="-45.5" r="2.8" fill="#fff"/>
+      <rect x="-25" y="-53" width="18" height="21" rx="8" fill="#fbd3ba" class="blink"/>
+      <rect x="7" y="-53" width="18" height="21" rx="8" fill="#fbd3ba" class="blink"/>
+      <circle cx="-29" cy="-26" r="8" fill="#ff8fa8" opacity=".6"/><circle cx="29" cy="-26" r="8" fill="#ff8fa8" opacity=".6"/>
+      <ellipse cx="0" cy="-27" rx="6.5" ry="4.5" fill="#c84c80"/>
+      <path d="M-9 -17 Q0 -9 9 -17" fill="none" stroke="#1b2150" stroke-width="6" stroke-linecap="round"/>
+      <!-- helmet -->
+      <circle cx="0" cy="-46" r="70" fill="#dff1ff" opacity=".13"/>
+      <circle cx="0" cy="-46" r="70" fill="none" stroke="#e9f6ff" stroke-width="7" opacity=".9"/>
+      <path d="M-52 -64A56 56 0 0 1 -22 -96" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".8"/>
+      <!-- star antenna -->
+      <path d="M26 -110Q30 -134 46 -140" fill="none" stroke="#e6d3b3" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="50" cy="-144" r="26" fill="url(#g-halo)" class="twinkle d2"/>
+      <g class="starpop"><use href="#star5" fill="url(#g-gold)" transform="translate(50 -144) scale(1.7)"/></g>
+    </g>
+
+    <!-- ══════════ Profile badges: three crew, told apart by their ears ══════════ -->
+    <g id="av-ring">
+      <ellipse cx="0" cy="66" rx="64" ry="13" fill="#124a58" opacity=".35"/>
+      <circle r="66" fill="url(#g-hull)"/>
+    </g>
+    <g id="av-fox">
+      <use href="#av-ring"/>
+      <circle r="54" fill="#bfe6ff"/>
+      <path d="M-50 -30L-46 -84Q-44 -92 -36 -86L-8 -56Z" fill="url(#g-fox)"/>
+      <path d="M50 -30L46 -84Q44 -92 36 -86L8 -56Z" fill="url(#g-fox)"/>
+      <path d="M-42 -42L-40 -70L-22 -52Z" fill="#1b2150"/><path d="M42 -42L40 -70L22 -52Z" fill="#1b2150"/>
+      <path d="M0 46Q-56 40 -52 -8Q-46 -50 0 -50Q46 -50 52 -8Q56 40 0 46Z" fill="url(#g-fox)"/>
+      <path d="M0 46Q-48 42 -50 0Q-28 -2 -14 12Q-4 22 0 22Q4 22 14 12Q28 -2 50 0Q48 42 0 46Z" fill="#fff6e6"/>
+      <ellipse cx="-19" cy="-8" rx="6.5" ry="8" fill="#1b2150"/><ellipse cx="19" cy="-8" rx="6.5" ry="8" fill="#1b2150"/>
+      <ellipse cx="0" cy="20" rx="8" ry="6" fill="#1b2150"/>
+    </g>
+    <g id="av-rabbit">
+      <use href="#av-ring"/>
+      <circle r="54" fill="#ffd6e6"/>
+      <ellipse cx="-20" cy="-66" rx="15" ry="40" fill="#f4f0ff" transform="rotate(-9 -20 -66)"/>
+      <ellipse cx="20" cy="-66" rx="15" ry="40" fill="#f4f0ff" transform="rotate(9 20 -66)"/>
+      <ellipse cx="-20" cy="-66" rx="7" ry="28" fill="#ffa9c2" transform="rotate(-9 -20 -66)"/>
+      <ellipse cx="20" cy="-66" rx="7" ry="28" fill="#ffa9c2" transform="rotate(9 20 -66)"/>
+      <ellipse cx="0" cy="6" rx="44" ry="40" fill="url(#g-wool)"/>
+      <ellipse cx="-17" cy="-2" rx="6.5" ry="8" fill="#1b2150"/><ellipse cx="17" cy="-2" rx="6.5" ry="8" fill="#1b2150"/>
+      <circle cx="-28" cy="16" r="8" fill="#ff8fa8" opacity=".55"/><circle cx="28" cy="16" r="8" fill="#ff8fa8" opacity=".55"/>
+      <path d="M-7 12H7L0 21Z" fill="#c84c80" stroke="#c84c80" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M-8 28Q0 34 8 28" fill="none" stroke="#1b2150" stroke-width="5" stroke-linecap="round"/>
+    </g>
+    <g id="av-bear">
+      <use href="#av-ring"/>
+      <circle r="54" fill="#c9f7dc"/>
+      <circle cx="-38" cy="-40" r="20" fill="url(#g-bear)"/><circle cx="38" cy="-40" r="20" fill="url(#g-bear)"/>
+      <circle cx="-38" cy="-40" r="10" fill="#f0cfa6"/><circle cx="38" cy="-40" r="10" fill="#f0cfa6"/>
+      <ellipse cx="0" cy="2" rx="50" ry="44" fill="url(#g-bear)"/>
+      <ellipse cx="0" cy="18" rx="22" ry="17" fill="#f6dcb8"/>
+      <ellipse cx="-19" cy="-8" rx="6.5" ry="8" fill="#1b2150"/><ellipse cx="19" cy="-8" rx="6.5" ry="8" fill="#1b2150"/>
+      <ellipse cx="0" cy="11" rx="8" ry="6" fill="#1b2150"/>
+      <path d="M-7 22Q0 28 7 22" fill="none" stroke="#1b2150" stroke-width="5" stroke-linecap="round"/>
+    </g>
+
+    <!-- garden bits -->
+    <g id="bush">
+      <circle cx="-22" cy="-14" r="22" fill="#2f9a7c"/><circle cx="20" cy="-16" r="26" fill="#2f9a7c"/><circle cx="0" cy="-30" r="24" fill="#3aa584"/>
+      <circle cx="-14" cy="-26" r="6" fill="#ffa48d"/><circle cx="18" cy="-30" r="6" fill="#ffe98f"/><circle cx="4" cy="-10" r="6" fill="#fff6e6"/>
+    </g>
+
+    <!-- label pill -->
+    <g id="pill-s"><rect x="-62" y="-20" width="124" height="40" rx="20" fill="#fffaf0"/></g>
+    <g id="pill-m"><rect x="-78" y="-20" width="156" height="40" rx="20" fill="#fffaf0"/></g>
+  </defs>
+</svg>
+
+<!-- ───────────────────────── landscape: the wall ───────────────────────── -->
+<svg class="scene landscape" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" role="img"
+     aria-label="Starbase Home: a snug space station on a small green planet under a dusk-blue starry sky. Its pods hold the mission board, the piggy bank, the bedtime dial, the school shuttle, the calendar, the photo frames and the basket.">
+  <!-- sky runs past the frame, so any letterbox is sky -->
+  <rect x="-4000" y="-4000" width="9920" height="9000" fill="url(#g-sky)"/>
+  <g class="night-only">
+    <ellipse cx="360" cy="420" rx="620" ry="330" fill="url(#g-nebula)"/>
+    <ellipse cx="1560" cy="330" rx="560" ry="300" fill="url(#g-nebula)"/>
+  </g>
+
+  <!-- stars -->
+  <g fill="#fff3b8" class="stars">
+    <circle cx="60" cy="62" r="4"/><circle cx="430" cy="118" r="3.5"/><circle cx="822" cy="176" r="4"/><circle cx="1092" cy="72" r="3.5"/>
+    <circle cx="1602" cy="78" r="4"/><circle cx="1652" cy="334" r="3.5"/><circle cx="92" cy="332" r="4"/><circle cx="60" cy="486" r="3.5"/>
+    <circle cx="760" cy="486" r="3.5"/><circle cx="1152" cy="212" r="3.5"/><circle cx="852" cy="58" r="3.5"/><circle cx="1484" cy="96" r="3.5"/>
+    <circle cx="1898" cy="56" r="4"/><circle cx="548" cy="112" r="3.5"/><circle cx="1880" cy="520" r="3.5"/><circle cx="250" cy="540" r="3.5"/>
+    <use href="#spark" transform="translate(302 70) scale(1.25)" class="twinkle"/>
+    <use href="#spark" transform="translate(702 92) scale(.9)" class="twinkle d1"/>
+    <use href="#spark" transform="translate(1212 136) scale(1.1)" class="twinkle d2"/>
+    <use href="#spark" transform="translate(1890 300) scale(.8)" class="twinkle d3"/>
+    <use href="#spark" transform="translate(242 300) scale(.8)" class="twinkle d4"/>
+    <use href="#spark" transform="translate(684 404) scale(1)" class="twinkle d2"/>
+    <use href="#spark" transform="translate(1612 432) scale(.75)" class="twinkle d1"/>
+  </g>
+
+  <!-- moon by night, sun by morning -->
+  <g class="night-only">
+    <circle cx="170" cy="150" r="130" fill="url(#g-halo)" opacity=".55"/>
+    <path transform="translate(170 150) scale(1.15)" d="M57.4 23.5A62 62 0 1 1 -1.8 -62A52 52 0 1 0 57.4 23.5Z" fill="#fff3b8"/>
+  </g>
+  <g class="day-only">
+    <circle cx="170" cy="150" r="190" fill="url(#g-halo)"/>
+    <circle cx="170" cy="150" r="78" fill="url(#g-gold)"/>
+  </g>
+
+  <!-- a small ringed world, far away -->
+  <g transform="translate(118 452) rotate(-18)">
+    <path d="M-58 0A58 16 0 0 1 58 0" fill="none" stroke="#e6dcff" stroke-width="8" stroke-linecap="round" opacity=".8"/>
+    <circle r="34" fill="url(#g-lilac)"/>
+    <path d="M-58 0A58 16 0 0 0 58 0" fill="none" stroke="#e6dcff" stroke-width="8" stroke-linecap="round"/>
+  </g>
+
+  <!-- the far-off school planet, where the shuttle goes -->
+  <g transform="translate(1776 166)">
+    <circle r="96" fill="url(#g-nebula)"/>
+    <circle r="60" fill="url(#g-aqua)"/>
+    <path d="M-52 -12Q-20 -34 10 -18Q34 -4 56 -20" fill="none" stroke="#c9f7dc" stroke-width="12" stroke-linecap="round" opacity=".8"/>
+    <rect x="-9" y="-128" width="18" height="24" rx="5" fill="#fffaf0"/>
+    <circle cx="0" cy="-117" r="5" fill="url(#g-gold)"/>
+    <path d="M-13 -126L0 -140L13 -126Z" fill="#e8644c" stroke="#e8644c" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="-26" y="-88" width="52" height="38" rx="6" fill="#fffaf0"/>
+    <path d="M-34 -86L0 -112L34 -86Z" fill="url(#g-coral)" stroke="#e8644c" stroke-width="6" stroke-linejoin="round"/>
+    <rect x="-7" y="-72" width="14" height="22" rx="6" fill="#7f63da"/>
+  </g>
+  <g fill="#fffaf0" opacity=".75">
+    <circle cx="1752" cy="404" r="6"/><circle cx="1750" cy="368" r="6"/><circle cx="1752" cy="332" r="5.5"/><circle cx="1758" cy="298" r="5"/><circle cx="1766" cy="266" r="4.5"/>
+  </g>
+
+  <!-- air around the planet -->
+  <circle cx="960" cy="4110" r="3560" fill="url(#g-air)"/>
+
+  <!-- mast and arms (behind the pods) -->
+  <g>
+    <rect x="938" y="150" width="44" height="270" fill="#e6d3b3"/>
+    <rect x="938" y="150" width="30" height="270" fill="#fbf3e2"/>
+    <rect x="928" y="204" width="64" height="16" rx="8" fill="#e6d3b3"/><rect x="928" y="372" width="64" height="16" rx="8" fill="#e6d3b3"/>
+    <path d="M936 300C830 300 760 274 610 274" fill="none" stroke="#e0cba6" stroke-width="42" stroke-linecap="round"/>
+    <path d="M936 294C830 294 760 268 610 268" fill="none" stroke="#fbf3e2" stroke-width="28" stroke-linecap="round"/>
+    <path d="M984 300C1090 300 1160 270 1310 270" fill="none" stroke="#e0cba6" stroke-width="42" stroke-linecap="round"/>
+    <path d="M984 294C1090 294 1160 264 1310 264" fill="none" stroke="#fbf3e2" stroke-width="28" stroke-linecap="round"/>
+    <circle cx="960" cy="298" r="40" fill="url(#g-hull)"/>
+    <circle cx="960" cy="298" r="20" fill="url(#g-gold)" class="breathe d2"/>
+  </g>
+
+  <!-- planet -->
+  <circle cx="960" cy="4110" r="3400" fill="url(#g-planet)"/>
+  <path d="M0 842A3400 3400 0 0 1 1920 842" fill="none" stroke="#c9f7dc" stroke-width="10" opacity=".65"/>
+  <g fill="#2f9a7c" opacity=".55">
+    <ellipse cx="330" cy="960" rx="150" ry="34"/><ellipse cx="1560" cy="980" rx="170" ry="36"/><ellipse cx="1830" cy="1010" rx="110" ry="26"/><ellipse cx="80" cy="1010" rx="120" ry="26"/>
+  </g>
+  <!-- soft ground tubes joining the pods -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M266 802Q326 768 372 738" stroke="#e0cba6" stroke-width="40"/><path d="M266 796Q326 762 372 732" stroke="#fbf3e2" stroke-width="26"/>
+    <path d="M572 728Q650 708 734 702" stroke="#e0cba6" stroke-width="40"/><path d="M572 722Q650 702 734 696" stroke="#fbf3e2" stroke-width="26"/>
+    <path d="M1186 702Q1232 704 1274 714" stroke="#e0cba6" stroke-width="40"/><path d="M1186 696Q1232 698 1274 708" stroke="#fbf3e2" stroke-width="26"/>
+    <path d="M1576 724Q1612 756 1640 806" stroke="#e0cba6" stroke-width="40"/><path d="M1576 718Q1612 750 1640 800" stroke="#fbf3e2" stroke-width="26"/>
+  </g>
+  <ellipse cx="960" cy="812" rx="760" ry="74" fill="#c9f7dc" opacity=".22"/>
+  <g>
+    <circle cx="556" cy="912" r="7" fill="#fffaf0"/><circle cx="574" cy="900" r="6" fill="#ffe98f"/><circle cx="582" cy="918" r="6" fill="#ffa48d"/>
+    <circle cx="1488" cy="1018" r="7" fill="#fffaf0"/><circle cx="1506" cy="1006" r="6" fill="#ffa48d"/><circle cx="1514" cy="1024" r="6" fill="#ffe98f"/>
+    <circle cx="436" cy="1030" r="6" fill="#ffe98f"/><circle cx="452" cy="1018" r="7" fill="#fffaf0"/>
+    <circle cx="1716" cy="1040" r="6" fill="#fffaf0"/><circle cx="1732" cy="1030" r="6" fill="#ffe98f"/>
+  </g>
+
+  <!-- upper pods -->
+  <use href="#m-grownups" transform="translate(960 112) scale(.96)"/>
+  <use href="#m-calendar" transform="translate(498 274)"/>
+  <use href="#m-memories" transform="translate(1422 270)"/>
+
+  <!-- ground pods -->
+  <use href="#m-tobuy" transform="translate(170 826)"/>
+  <use href="#m-routines" transform="translate(470 752)"/>
+  <use href="#m-academy" transform="translate(1750 826)"/>
+  <use href="#m-bank" transform="translate(1426 748)"/>
+  <use href="#m-quest" transform="translate(960 726)"/>
+
+  <!-- garden -->
+  <use href="#bush" transform="translate(648 800) scale(.9)"/>
+  <use href="#bush" transform="translate(330 900)"/>
+  <use href="#bush" transform="translate(1596 906) scale(1.05)"/>
+  <use href="#bush" transform="translate(1846 960) scale(.9)"/>
+  <use href="#bush" transform="translate(86 968) scale(.85)"/>
+
+  <!-- the guide -->
+  <ellipse cx="1345" cy="1060" rx="78" ry="13" fill="#124a58" opacity=".35"/>
+  <g transform="translate(1345 936) scale(-.92 .92)"><g class="bob"><use href="#guide"/></g></g>
+
+  <!-- crew badges -->
+  <use href="#av-fox" transform="translate(748 962) scale(1.14)"/>
+  <use href="#av-rabbit" transform="translate(950 972) scale(1.14)"/>
+  <use href="#av-bear" transform="translate(1152 962) scale(1.14)"/>
+
+  <!-- optional short labels -->
+  <g font-size="22" text-anchor="middle" fill="#1b2150">
+    <g transform="translate(170 878)"><use href="#pill-s"/><text y="8">To buy</text></g>
+    <g transform="translate(470 804)"><use href="#pill-s"/><text y="8">Next</text></g>
+    <g transform="translate(960 784)"><use href="#pill-m"/><text y="8">Missions</text></g>
+    <g transform="translate(1426 800)"><use href="#pill-s"/><text y="8">Stars</text></g>
+    <g transform="translate(1750 878)"><use href="#pill-m"/><text y="8">Academy</text></g>
+    <g transform="translate(498 408)"><use href="#pill-m"/><text y="8">Calendar</text></g>
+    <g transform="translate(1422 404)"><use href="#pill-s"/><text y="8">Photos</text></g>
+  </g>
+</svg>
+
+<!-- ───────────────────────── portrait: a phone held upright ───────────────────────── -->
+<svg class="scene portrait" viewBox="0 0 780 1688" preserveAspectRatio="xMidYMid meet" role="img"
+     aria-label="Starbase Home, stacked as a tower: the grown-ups hatch at the top, calendar and photos, the mission deck, bedtime and bank, basket and school shuttle, and the crew on the planet below.">
+  <rect x="-4000" y="-4000" width="8780" height="9000" fill="url(#g-sky-p)"/>
+  <ellipse cx="160" cy="520" rx="420" ry="360" fill="url(#g-nebula)"/>
+  <ellipse cx="650" cy="1080" rx="420" ry="380" fill="url(#g-nebula)"/>
+  <g fill="#fff3b8">
+    <circle cx="40" cy="60" r="4"/><circle cx="300" cy="44" r="3.5"/><circle cx="520" cy="150" r="3.5"/><circle cx="742" cy="250" r="4"/>
+    <circle cx="36" cy="470" r="3.5"/><circle cx="748" cy="760" r="3.5"/><circle cx="30" cy="900" r="4"/><circle cx="750" cy="1240" r="3.5"/><circle cx="34" cy="1290" r="3.5"/>
+    <use href="#spark" transform="translate(250 130) scale(1)" class="twinkle"/>
+    <use href="#spark" transform="translate(60 250) scale(.8)" class="twinkle d2"/>
+    <use href="#spark" transform="translate(90 640) scale(.9)" class="twinkle d1"/>
+    <use href="#spark" transform="translate(726 480) scale(.8)" class="twinkle d3"/>
+    <use href="#spark" transform="translate(60 1120) scale(.8)" class="twinkle d4"/>
+  </g>
+  <circle cx="112" cy="118" r="110" fill="url(#g-halo)" opacity=".55"/>
+  <path transform="translate(112 118)" d="M57.4 23.5A62 62 0 1 1 -1.8 -62A52 52 0 1 0 57.4 23.5Z" fill="#fff3b8"/>
+  <g transform="translate(676 142) scale(.8)">
+    <circle r="96" fill="url(#g-nebula)"/><circle r="60" fill="url(#g-aqua)"/>
+    <path d="M-52 -12Q-20 -34 10 -18Q34 -4 56 -20" fill="none" stroke="#c9f7dc" stroke-width="12" stroke-linecap="round" opacity=".8"/>
+    <rect x="-9" y="-128" width="18" height="24" rx="5" fill="#fffaf0"/>
+    <circle cx="0" cy="-117" r="5" fill="url(#g-gold)"/>
+    <path d="M-13 -126L0 -140L13 -126Z" fill="#e8644c" stroke="#e8644c" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="-26" y="-88" width="52" height="38" rx="6" fill="#fffaf0"/>
+    <path d="M-34 -86L0 -112L34 -86Z" fill="url(#g-coral)" stroke="#e8644c" stroke-width="6" stroke-linejoin="round"/>
+    <rect x="-7" y="-72" width="14" height="22" rx="6" fill="#7f63da"/>
+  </g>
+
+  <circle cx="390" cy="2970" r="1570" fill="url(#g-air)"/>
+
+  <!-- spine and decks -->
+  <rect x="368" y="150" width="44" height="1330" fill="#e6d3b3"/>
+  <rect x="368" y="150" width="30" height="1330" fill="#fbf3e2"/>
+  <g fill="none" stroke-linecap="round">
+    <path d="M300 330H480" stroke="#e0cba6" stroke-width="40"/><path d="M300 324H480" stroke="#fbf3e2" stroke-width="26"/>
+    <path d="M110 1160H670" stroke="#e0cba6" stroke-width="40"/><path d="M110 1154H670" stroke="#fbf3e2" stroke-width="26"/>
+  </g>
+  <rect x="358" y="214" width="64" height="16" rx="8" fill="#e6d3b3"/><rect x="358" y="900" width="64" height="16" rx="8" fill="#e6d3b3"/>
+  <rect x="358" y="1300" width="64" height="16" rx="8" fill="#e6d3b3"/>
+
+  <circle cx="390" cy="2970" r="1500" fill="url(#g-planet-p)"/>
+  <path d="M0 1522A1500 1500 0 0 1 780 1522" fill="none" stroke="#c9f7dc" stroke-width="10" opacity=".65"/>
+
+  <use href="#m-grownups" transform="translate(390 112) scale(.96)"/>
+  <use href="#m-calendar" transform="translate(196 330) scale(.94)"/>
+  <use href="#m-memories" transform="translate(584 330) scale(.94)"/>
+  <use href="#m-quest" class="afloat" transform="translate(390 828)"/>
+  <use href="#m-routines" class="afloat" transform="translate(196 1150) scale(.9)"/>
+  <use href="#m-bank" class="afloat" transform="translate(584 1150) scale(.9)"/>
+  <use href="#m-tobuy" transform="translate(186 1490) scale(.9)"/>
+  <use href="#m-academy" transform="translate(596 1492) scale(.76)"/>
+
+  <g transform="translate(700 600) scale(.78)"><g class="bob"><use href="#guide"/></g></g>
+
+  <use href="#av-fox" transform="translate(190 1598) scale(.95)"/>
+  <use href="#av-rabbit" transform="translate(390 1604) scale(.95)"/>
+  <use href="#av-bear" transform="translate(590 1598) scale(.95)"/>
+</svg>
+
+</body>
+</html>

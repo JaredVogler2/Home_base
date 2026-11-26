@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>HOMEBASE · Direction A · Storybook House</title>
+<style>
+  :root {
+    --sky-top: #a9daf5; --sky-low: #f1faff; --hill-far: #cfe9c6; --hill-near: #a9dc98;
+    --lawn-top: #9fd98a; --lawn-low: #6fbf68; --sun: #ffd45e; --sun-halo: #fff3c4;
+    --wall: #fff6e6; --wall-shade: #f3e2c2; --glow: 0; --star: 0; --pond-a: #9fe0e2; --pond-b: #4fb3c2;
+    --cloud: #ffffff; --ink: #3a2e4d; --window: #cdeeff;
+  }
+  :root.night {
+    --sky-top: #232a5c; --sky-low: #5b5f9e; --hill-far: #3e5a78; --hill-near: #2f5a5a;
+    --lawn-top: #2f6b57; --lawn-low: #234f4a; --sun: #f4f1ff; --sun-halo: #b9b5ee;
+    --wall: #f1e3cc; --wall-shade: #dcc7a3; --glow: 1; --star: 1; --pond-a: #4a6fa8; --pond-b: #2c4780;
+    --cloud: #8f93c9; --window: #39407a;
+  }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradient(var(--sky-top) 0 50%, var(--lawn-low) 50% 100%); }
+  svg { display: block; width: 100vw; height: 100vh; }
+  .portrait { display: none; }
+  @media (max-aspect-ratio: 3/4) { .landscape { display: none; } .portrait { display: block; } }
+  .s-sky-top { stop-color: var(--sky-top); } .s-sky-low { stop-color: var(--sky-low); }
+  .s-lawn-top { stop-color: var(--lawn-top); } .s-lawn-low { stop-color: var(--lawn-low); }
+  .s-halo { stop-color: var(--sun-halo); } .s-pond-a { stop-color: var(--pond-a); } .s-pond-b { stop-color: var(--pond-b); }
+  .f-hill-far { fill: var(--hill-far); } .f-hill-near { fill: var(--hill-near); }
+  .f-sun { fill: var(--sun); } .f-halo { fill: var(--sun-halo); } .f-cloud { fill: var(--cloud); }
+  .f-wall { fill: var(--wall); } .f-wall-shade { fill: var(--wall-shade); } .f-window { fill: var(--window); }
+  .glow { opacity: var(--glow); } .stars { opacity: var(--star); }
+  .dim { opacity: calc(1 - var(--glow) * 0.28); }
+  @media (prefers-reduced-motion: no-preference) {
+    .drift { animation: drift 90s linear infinite; }
+    .drift2 { animation: drift 130s linear infinite reverse; }
+    .bob { animation: bob 5s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+    .sway { animation: sway 6s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+    .puff { animation: puff 9s ease-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+    .puff.p2 { animation-delay: 3s; } .puff.p3 { animation-delay: 6s; }
+    .hover { animation: hover 3.2s ease-in-out infinite; }
+    .blink { animation: blink 5.5s infinite; transform-box: fill-box; transform-origin: 50% 50%; }
+    .twinkle { animation: twinkle 4s ease-in-out infinite; }
+  }
+  @keyframes drift { from { transform: translateX(-60px); } to { transform: translateX(120px); } }
+  @keyframes bob { 0%,100% { transform: rotate(-1.6deg) translateY(0); } 50% { transform: rotate(1.6deg) translateY(-5px); } }
+  @keyframes sway { 0%,100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+  @keyframes puff { 0% { transform: translateY(0) scale(.6); opacity: 0; } 15% { opacity: .9; } 100% { transform: translateY(-70px) scale(1.25); opacity: 0; } }
+  @keyframes hover { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  @keyframes blink { 0%,94%,100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+  @keyframes twinkle { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+  text { font-family: ui-rounded, "Nunito", "Trebuchet MS", system-ui, sans-serif; font-weight: 800; fill: var(--ink); }
+</style>
+</head>
+<body>
+<svg class="defs" width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="s-sky-top"/><stop offset="1" class="s-sky-low"/></linearGradient>
+    <linearGradient id="g-lawn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="s-lawn-top"/><stop offset="1" class="s-lawn-low"/></linearGradient>
+    <linearGradient id="g-pond" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="s-pond-a"/><stop offset="1" class="s-pond-b"/></linearGradient>
+    <linearGradient id="g-roof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f59a72"/><stop offset="1" stop-color="#d9673f"/></linearGradient>
+    <linearGradient id="g-wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9a877"/><stop offset="1" stop-color="#b47d4d"/></linearGradient>
+    <linearGradient id="g-wood-dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9814f"/><stop offset="1" stop-color="#8d5b36"/></linearGradient>
+    <linearGradient id="g-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8c79b"/><stop offset="1" stop-color="#cfa474"/></linearGradient>
+    <linearGradient id="g-pig" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc6d6"/><stop offset="1" stop-color="#f28fb0"/></linearGradient>
+    <linearGradient id="g-basket" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b26a"/><stop offset="1" stop-color="#c98a3f"/></linearGradient>
+    <linearGradient id="g-bird" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58a8e8"/><stop offset="1" stop-color="#2f78c4"/></linearGradient>
+    <linearGradient id="g-breast" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc79c"/><stop offset="1" stop-color="#f79a63"/></linearGradient>
+    <linearGradient id="g-leaf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd08a"/><stop offset="1" stop-color="#4f9e5f"/></linearGradient>
+    <linearGradient id="g-hull" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f27d6d"/><stop offset="1" stop-color="#c8483f"/></linearGradient>
+    <linearGradient id="g-honey" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe07a"/><stop offset="1" stop-color="#f5b42e"/></linearGradient>
+    <radialGradient id="g-halo"><stop offset=".45" class="s-halo" stop-opacity=".75"/><stop offset="1" class="s-halo" stop-opacity="0"/></radialGradient>
+    <linearGradient id="g-door" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc7b4"/><stop offset="1" stop-color="#3f9a8c"/></linearGradient>
+
+    <path id="star" d="M0 -14 L4.1 -4.6 L14 -3.8 L6.4 2.8 L8.7 12.6 L0 7.4 L-8.7 12.6 L-6.4 2.8 L-14 -3.8 L-4.1 -4.6 Z" stroke-linejoin="round"/>
+
+    <!-- picture: toy blocks -->
+    <g id="pic-blocks">
+      <rect x="-20" y="-2" width="20" height="20" rx="4" fill="#f27d6d"/><rect x="2" y="-2" width="20" height="20" rx="4" fill="#58a8e8"/>
+      <rect x="-9" y="-24" width="20" height="20" rx="4" fill="#ffc94d"/>
+    </g>
+    <!-- picture: shoes -->
+    <g id="pic-shoes">
+      <path d="M-22 6 q0 -16 12 -16 q4 0 8 6 q8 2 14 4 q8 2 8 9 v3 h-42 z" fill="#5fb7a6"/>
+      <rect x="-22" y="10" width="42" height="6" rx="3" fill="#fff6e6"/>
+      <circle cx="-8" cy="-2" r="2.4" fill="#fff6e6"/><circle cx="-1" cy="1" r="2.4" fill="#fff6e6"/>
+    </g>
+    <!-- picture: toothbrush -->
+    <g id="pic-brush">
+      <g transform="rotate(-32)">
+        <rect x="-26" y="-4" width="40" height="8" rx="4" fill="#58a8e8"/>
+        <rect x="10" y="-13" width="18" height="10" rx="3" fill="#ffffff" stroke="#bcd6ea" stroke-width="2"/>
+        <path d="M12 -15 q8 -9 15 0 z" fill="#7fd6c1"/>
+      </g>
+    </g>
+
+    <!-- ROOM: QUEST (mission board) 238x290 -->
+    <symbol id="room-quest" viewBox="0 0 238 290">
+      <rect width="238" height="290" fill="#e2f1d6"/>
+      <rect y="250" width="238" height="40" fill="url(#g-floor)"/>
+      <rect x="10" y="14" width="218" height="222" rx="22" fill="url(#g-wood-dark)"/>
+      <rect x="23" y="27" width="192" height="196" rx="11" fill="#ecc793"/>
+      <g fill="#dfb57c"><circle cx="40" cy="150" r="3"/><circle cx="200" cy="46" r="3"/><circle cx="120" cy="212" r="3"/><circle cx="34" cy="40" r="3"/></g>
+      <g transform="translate(58 96) rotate(-4)"><rect x="-30" y="-50" width="60" height="98" rx="10" fill="#fffdf7"/><use href="#pic-blocks" transform="translate(0 12) scale(1.08)"/><circle cx="0" cy="-40" r="5" fill="#e0574a"/></g>
+      <g transform="translate(120 92) rotate(2)"><rect x="-30" y="-50" width="60" height="98" rx="10" fill="#fffdf7"/><use href="#pic-shoes" transform="translate(1 6) scale(1.1)"/><circle cx="0" cy="-40" r="5" fill="#3f8fd1"/></g>
+      <g transform="translate(182 97) rotate(5)"><rect x="-30" y="-50" width="60" height="98" rx="10" fill="#fffdf7"/><use href="#pic-brush" transform="translate(-2 6) scale(1.08)"/><circle cx="0" cy="-40" r="5" fill="#f5b42e"/>
+        <circle cx="19" cy="36" r="15" fill="#57b06a" stroke="#fffdf7" stroke-width="3"/><path d="M12 36 l5.5 5.5 l10 -11" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <g transform="translate(119 188)">
+        <rect x="-70" y="-21" width="140" height="42" rx="21" fill="#d9a468"/>
+        <use href="#star" transform="translate(-42 0) scale(1.15)" fill="url(#g-honey)" stroke="#e39a1c" stroke-width="2"/>
+        <use href="#star" transform="translate(0 0) scale(1.15)" fill="#f3d6a6" stroke="#c98f52" stroke-width="2" stroke-dasharray="4 4"/>
+        <use href="#star" transform="translate(42 0) scale(1.15)" fill="#f3d6a6" stroke="#c98f52" stroke-width="2" stroke-dasharray="4 4"/>
+      </g>
+      <g transform="translate(40 268)"><rect x="-16" y="-14" width="22" height="22" rx="5" fill="#58a8e8"/><rect x="8" y="-8" width="18" height="18" rx="5" fill="#f27d6d"/></g>
+      <g transform="translate(200 270)"><circle r="13" fill="#ffc94d"/><path d="M-13 0 a13 13 0 0 1 26 0" fill="#f27d6d"/></g>
+    </symbol>
+
+    <!-- ROOM: ROUTINES (the day clock) 238x290 -->
+    <symbol id="room-clock" viewBox="0 0 238 290">
+      <rect width="238" height="290" fill="#fdf0cc"/>
+      <g fill="#f9e3a8"><rect x="14" width="16" height="250"/><rect x="208" width="16" height="250"/></g>
+      <rect y="250" width="238" height="40" fill="url(#g-floor)"/>
+      <ellipse cx="119" cy="262" rx="84" ry="9" fill="#b98b5c" opacity=".45"/>
+      <path d="M30 70 L119 8 L208 70 Z" fill="url(#g-roof)" stroke="#c9573a" stroke-width="7" stroke-linejoin="round"/>
+      <rect x="46" y="58" width="146" height="206" rx="24" fill="url(#g-wood-dark)"/>
+      <rect x="57" y="69" width="124" height="184" rx="15" fill="url(#g-wood)"/>
+      <circle cx="119" cy="114" r="44" fill="#fffaf0" stroke="#8d5b36" stroke-width="6"/>
+      <clipPath id="clip-face"><circle cx="119" cy="114" r="38"/></clipPath>
+      <g clip-path="url(#clip-face)" transform="translate(0 -6)">
+        <rect x="70" y="72" width="98" height="50" fill="#bfe6fb"/>
+        <rect x="70" y="122" width="98" height="50" fill="#6b5bb5"/>
+        <circle cx="97" cy="106" r="15" fill="url(#g-honey)"/>
+        <g stroke="#f5b42e" stroke-width="4" stroke-linecap="round"><path d="M97 83 v-5"/><path d="M77 92 l-4 -4"/><path d="M117 92 l4 -4"/><path d="M74 108 h-5"/></g>
+        <path d="M144 134 a12 12 0 1 0 8 20 a10 10 0 0 1 -8 -20 z" fill="#f4f1ff"/>
+        <circle cx="100" cy="146" r="2.4" fill="#f4f1ff"/><circle cx="120" cy="158" r="2.4" fill="#f4f1ff"/>
+      </g>
+      <path d="M119 114 L101 101" stroke="#3a2e4d" stroke-width="6" stroke-linecap="round"/><circle cx="119" cy="114" r="7" fill="#3a2e4d"/>
+      <path d="M66 252 v-28 q0 -12 12 -12 h82 q12 0 12 12 v28 z" fill="#fffaf0" stroke="#8d5b36" stroke-width="5" stroke-linejoin="round"/>
+      <use href="#pic-brush" transform="translate(122 234) scale(.8)"/>
+      <path d="M103 202 v-20 a16 16 0 0 1 32 0 v20 z" fill="#5a3a25"/><rect x="97" y="199" width="44" height="7" rx="3.5" fill="#8d5b36"/>
+    </symbol>
+
+    <!-- ROOM: BANK (piggy bank) 238x290 -->
+    <symbol id="room-bank" viewBox="0 0 238 290">
+      <rect width="238" height="290" fill="#fde2ea"/>
+      <g fill="#f9d0dc"><use href="#star" x="34" y="34" transform="scale(1)"/><use href="#star" x="204" y="60"/><use href="#star" x="30" y="150"/><use href="#star" x="208" y="170"/></g>
+      <rect y="250" width="238" height="40" fill="url(#g-floor)"/>
+      <rect x="20" y="196" width="198" height="14" rx="7" fill="url(#g-wood-dark)"/>
+      <g class="hover"><use href="#star" transform="translate(119 44) scale(1.5)" fill="url(#g-honey)" stroke="#e39a1c" stroke-width="2"/></g>
+      <ellipse cx="119" cy="197" rx="72" ry="8" fill="#8d5b36" opacity=".35"/>
+      <g>
+        <path d="M49 132 q-18 -8 -16 -24 q10 4 14 12" fill="none" stroke="#e77fa3" stroke-width="7" stroke-linecap="round"/>
+        <rect x="70" y="170" width="20" height="28" rx="9" fill="#e77fa3"/><rect x="146" y="170" width="20" height="28" rx="9" fill="#e77fa3"/>
+        <rect x="94" y="174" width="20" height="24" rx="9" fill="#ef8fb0"/><rect x="124" y="174" width="20" height="24" rx="9" fill="#ef8fb0"/>
+        <ellipse cx="117" cy="136" rx="74" ry="56" fill="url(#g-pig)"/>
+        <path d="M132 92 q4 -24 26 -22 q4 16 -8 30 z" fill="#f28fb0"/><path d="M94 90 q-10 -20 8 -28 q14 10 12 26 z" fill="#f7a6c0"/>
+        <ellipse cx="184" cy="140" rx="22" ry="18" fill="#f7a6c0"/><ellipse cx="179" cy="140" rx="3.6" ry="6" fill="#c9517e"/><ellipse cx="190" cy="140" rx="3.6" ry="6" fill="#c9517e"/>
+        <circle cx="154" cy="120" r="6.5" fill="#3a2e4d"/><circle cx="156.2" cy="117.8" r="2.2" fill="#fff"/>
+        <ellipse cx="146" cy="146" rx="10" ry="6" fill="#ff9fbd" opacity=".8"/>
+        <rect x="96" y="83" width="40" height="9" rx="4.5" fill="#b8456f"/>
+      </g>
+      <g transform="translate(44 222)">
+        <rect x="-8" y="-6" width="166" height="62" rx="14" fill="#fff6e6" stroke="#e9b7c6" stroke-width="4"/>
+        <g fill="url(#g-honey)" stroke="#e39a1c" stroke-width="1.6">
+          <use href="#star" transform="translate(15 12) scale(.82)"/><use href="#star" transform="translate(45 12) scale(.82)"/><use href="#star" transform="translate(75 12) scale(.82)"/><use href="#star" transform="translate(105 12) scale(.82)"/><use href="#star" transform="translate(135 12) scale(.82)"/>
+          <use href="#star" transform="translate(15 38) scale(.82)"/><use href="#star" transform="translate(45 38) scale(.82)"/>
+        </g>
+        <g fill="#f6e3d2"><circle cx="75" cy="38" r="8"/><circle cx="105" cy="38" r="8"/><circle cx="135" cy="38" r="8"/></g>
+      </g>
+    </symbol>
+
+    <!-- ROOM: TO BUY (pantry + basket) 238x290 -->
+    <symbol id="room-pantry" viewBox="0 0 238 290">
+      <rect width="238" height="290" fill="#d6efec"/>
+      <rect y="250" width="238" height="40" fill="url(#g-floor)"/>
+      <rect x="18" y="66" width="202" height="12" rx="6" fill="url(#g-wood-dark)"/><rect x="18" y="140" width="202" height="12" rx="6" fill="url(#g-wood-dark)"/>
+      <g><rect x="34" y="22" width="40" height="44" rx="10" fill="#ffd98a"/><rect x="38" y="14" width="32" height="12" rx="5" fill="#c98a3f"/><rect x="40" y="36" width="28" height="16" rx="5" fill="#fff6e6"/></g>
+      <g><rect x="98" y="16" width="40" height="50" rx="10" fill="#f6a58f"/><rect x="102" y="8" width="32" height="12" rx="5" fill="#fff6e6"/><circle cx="118" cy="42" r="9" fill="#e0574a"/></g>
+      <g><rect x="162" y="26" width="40" height="40" rx="10" fill="#a9d6f5"/><rect x="166" y="18" width="32" height="12" rx="5" fill="#3f8fd1"/></g>
+      <g><rect x="40" y="100" width="46" height="40" rx="8" fill="#8fd08a"/><rect x="40" y="110" width="46" height="14" fill="#fff6e6"/></g>
+      <g><path d="M112 140 q-4 -34 22 -34 q26 0 22 34 z" fill="#fff6e6" stroke="#bfdedb" stroke-width="3"/><circle cx="126" cy="112" r="10" fill="#f5b42e"/><circle cx="142" cy="110" r="10" fill="#f27d6d"/></g>
+      <rect x="176" y="96" width="30" height="44" rx="8" fill="#c9b6f0"/>
+      <!-- basket with milk, bread, apples -->
+      <ellipse cx="119" cy="262" rx="88" ry="9" fill="#b98b5c" opacity=".45"/>
+      <path d="M62 190 q57 -78 114 0" fill="none" stroke="#b47a35" stroke-width="10" stroke-linecap="round"/>
+      <g><rect x="74" y="150" width="34" height="62" rx="9" fill="#ffffff" stroke="#c9dcec" stroke-width="3"/><rect x="80" y="140" width="22" height="14" rx="5" fill="#58a8e8"/><rect x="78" y="172" width="26" height="18" rx="4" fill="#bfe6fb"/></g>
+      <g transform="rotate(18 150 180)"><rect x="118" y="150" width="30" height="70" rx="15" fill="#e9b877"/><path d="M124 166 h18 M124 182 h18 M124 198 h18" stroke="#c98a3f" stroke-width="4" stroke-linecap="round"/></g>
+      <g><circle cx="168" cy="190" r="17" fill="#ef6f5e"/><circle cx="190" cy="196" r="15" fill="#f58a6a"/><path d="M168 174 q2 -9 9 -10" fill="none" stroke="#5a3a25" stroke-width="4" stroke-linecap="round"/><path d="M176 166 q9 -5 13 3 q-9 4 -13 -3" fill="#57b06a"/></g>
+      <path d="M40 196 h158 l-14 62 q-2 8 -12 8 h-106 q-10 0 -12 -8 z" fill="url(#g-basket)"/>
+      <g stroke="#b47a35" stroke-width="5" stroke-linecap="round"><path d="M48 214 h142"/><path d="M52 232 h134"/><path d="M57 250 h124"/></g>
+      <rect x="34" y="188" width="170" height="16" rx="8" fill="#d99c4f"/>
+    </symbol>
+
+    <!-- ROOM: MEMORIES (gallery wall) 492x244 -->
+    <symbol id="room-memories" viewBox="0 0 492 244">
+      <rect width="492" height="244" fill="#ebe5fb"/>
+      <rect y="150" width="492" height="94" fill="#e0d8f6"/>
+      <rect y="146" width="492" height="8" fill="#cfc5ee"/>
+      <rect y="212" width="492" height="32" fill="url(#g-floor)"/>
+      <path d="M0 20 Q123 62 246 26 T492 22" fill="none" stroke="#8d7cc9" stroke-width="4"/>
+      <g fill="url(#g-honey)"><circle cx="50" cy="38" r="9"/><circle cx="120" cy="50" r="9"/><circle cx="190" cy="42" r="9"/><circle cx="262" cy="30" r="9"/><circle cx="336" cy="36" r="9"/><circle cx="410" cy="34" r="9"/><circle cx="462" cy="28" r="9"/></g>
+      <g fill="#fff3b8" class="glow"><circle cx="50" cy="38" r="20" opacity=".35"/><circle cx="120" cy="50" r="20" opacity=".35"/><circle cx="190" cy="42" r="20" opacity=".35"/><circle cx="262" cy="30" r="20" opacity=".35"/><circle cx="336" cy="36" r="20" opacity=".35"/><circle cx="410" cy="34" r="20" opacity=".35"/><circle cx="462" cy="28" r="20" opacity=".35"/></g>
+      <!-- big landscape frame -->
+      <g transform="rotate(-2 140 130)">
+        <rect x="42" y="72" width="196" height="126" rx="14" fill="url(#g-wood-dark)"/>
+        <rect x="56" y="86" width="168" height="98" rx="6" fill="#bfe6fb"/>
+        <circle cx="190" cy="112" r="15" fill="#ffd45e"/>
+        <path d="M56 160 q40 -44 84 -8 q40 -30 84 4 v28 h-168 z" fill="#8fd08a"/><path d="M56 172 q60 -22 168 2 v10 h-168 z" fill="#57b06a"/>
+        <g fill="#3a2e4d"><circle cx="108" cy="150" r="9"/><rect x="100" y="158" width="16" height="22" rx="7"/><circle cx="132" cy="158" r="6.5"/><rect x="126" y="164" width="12" height="16" rx="5.5"/></g>
+      </g>
+      <!-- oval portrait -->
+      <ellipse cx="318" cy="128" rx="52" ry="64" fill="#f08a62"/><ellipse cx="318" cy="128" rx="40" ry="52" fill="#fff0d8"/>
+      <g><circle cx="318" cy="112" r="20" fill="#f6c59a"/><path d="M286 172 q32 -44 64 0 z" fill="#5fb7a6"/><circle cx="311" cy="110" r="3" fill="#3a2e4d"/><circle cx="325" cy="110" r="3" fill="#3a2e4d"/><path d="M310 120 q8 7 16 0" fill="none" stroke="#3a2e4d" stroke-width="3" stroke-linecap="round"/><path d="M298 108 q4 -22 20 -20 q18 -2 22 20 q-8 -12 -22 -12 q-12 0 -20 12" fill="#8d5b36"/></g>
+      <!-- small square: balloon -->
+      <g transform="rotate(4 432 122)">
+        <rect x="392" y="82" width="80" height="84" rx="12" fill="#57b06a"/><rect x="402" y="92" width="60" height="64" rx="5" fill="#fff6e6"/>
+        <ellipse cx="432" cy="116" rx="15" ry="18" fill="#f27d6d"/><path d="M432 134 q-6 10 2 20" fill="none" stroke="#3a2e4d" stroke-width="3" stroke-linecap="round"/>
+      </g>
+    </symbol>
+
+    <!-- ROOM: CALENDAR 492x244 -->
+    <symbol id="room-calendar" viewBox="0 0 492 244">
+      <rect width="492" height="244" fill="#fdf3dc"/>
+      <rect y="150" width="492" height="94" fill="#f8e7c0"/><rect y="146" width="492" height="8" fill="#eed59c"/>
+      <rect y="212" width="492" height="32" fill="url(#g-floor)"/>
+      <!-- window -->
+      <rect x="296" y="34" width="156" height="150" rx="18" fill="url(#g-wood-dark)"/>
+      <rect x="308" y="46" width="132" height="126" rx="8" class="f-window"/>
+      <g class="f-cloud"><ellipse cx="350" cy="92" rx="26" ry="13"/><ellipse cx="372" cy="84" rx="20" ry="14"/><ellipse cx="398" cy="96" rx="22" ry="11"/></g>
+      <path d="M308 172 q40 -40 76 -14 q30 -22 56 2 v12 z" class="f-hill-near"/>
+      <rect x="370" y="46" width="8" height="126" fill="#a26b40"/><rect x="308" y="104" width="132" height="8" fill="#a26b40"/>
+      <path d="M296 40 q30 60 6 130 l-14 0 v-130 z" fill="#f6a58f"/><path d="M452 40 q-30 60 -6 130 l14 0 v-130 z" fill="#f6a58f"/>
+      <rect x="282" y="26" width="184" height="14" rx="7" fill="#8d5b36"/>
+      <!-- wall calendar -->
+      <g>
+        <rect x="54" y="30" width="186" height="174" rx="18" fill="#fffdf7" stroke="#e7cf9b" stroke-width="4"/>
+        <path d="M54 76 v-28 a18 18 0 0 1 18 -18 h150 a18 18 0 0 1 18 18 v28 z" fill="url(#g-roof)"/>
+        <g fill="#fff6e6" stroke="#8d5b36" stroke-width="4"><rect x="92" y="18" width="14" height="30" rx="7"/><rect x="188" y="18" width="14" height="30" rx="7"/></g>
+        <g><circle cx="78" cy="98" r="7" fill="#eadfc8"/><circle cx="102" cy="98" r="7" fill="#eadfc8"/><circle cx="126" cy="98" r="7" fill="#eadfc8"/>
+          <circle cx="150" cy="98" r="13" fill="url(#g-honey)" stroke="#e39a1c" stroke-width="3"/>
+          <circle cx="176" cy="98" r="7" fill="#eadfc8"/><circle cx="198" cy="98" r="7" fill="#eadfc8"/><circle cx="220" cy="98" r="7" fill="#eadfc8"/></g>
+        <!-- today's pictures: backpack + balloon -->
+        <g transform="translate(108 158)"><rect x="-24" y="-28" width="48" height="56" rx="16" fill="#58a8e8"/><rect x="-14" y="-4" width="28" height="20" rx="7" fill="#bfe6fb"/><path d="M-12 -28 q12 -18 24 0" fill="none" stroke="#2f78c4" stroke-width="6" stroke-linecap="round"/></g>
+        <g transform="translate(190 152)"><ellipse rx="19" ry="23" fill="#f27d6d"/><path d="M0 23 q-7 12 3 24" fill="none" stroke="#3a2e4d" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="-6" cy="-8" rx="4" ry="7" fill="#fbb3a6"/></g>
+      </g>
+    </symbol>
+
+    <!-- GUIDE: Tock, the clock-house bluebird 200x210 -->
+    <symbol id="guide" viewBox="0 0 200 210">
+      <ellipse cx="100" cy="199" rx="56" ry="9" fill="#2c5a3c" opacity=".28"/>
+      <g stroke="#c9742c" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M84 170 v22 m-12 5 l12 -5 l12 5"/><path d="M118 170 v22 m-12 5 l12 -5 l12 5"/></g>
+      <!-- cocked tail -->
+      <g fill="#2a6fb5"><rect x="24" y="64" width="26" height="74" rx="13" transform="rotate(-38 37 138)"/><rect x="40" y="56" width="24" height="76" rx="12" transform="rotate(-22 52 132)"/></g>
+      <!-- body -->
+      <path d="M100 38 c44 0 66 34 66 72 c0 40 -28 66 -66 66 c-38 0 -66 -26 -66 -66 c0 -38 22 -72 66 -72 z" fill="url(#g-bird)"/>
+      <path d="M54 124 c4 34 22 50 48 50 c28 0 46 -18 50 -52 c-14 -14 -30 -20 -50 -20 c-20 0 -36 8 -48 22 z" fill="url(#g-breast)"/>
+      <ellipse cx="102" cy="152" rx="30" ry="20" fill="#fff3e2"/>
+      <!-- folded wing -->
+      <path d="M40 108 c-6 30 6 50 30 56 c-8 -22 -8 -40 -2 -58 c-10 -6 -20 -6 -28 2 z" fill="#2a6fb5"/>
+      <!-- waving wing -->
+      <g class="sway"><path d="M152 118 c26 -8 40 -30 40 -56 c-24 4 -42 18 -50 42 z" fill="#2a6fb5"/><path d="M158 106 c14 -8 22 -20 26 -34" fill="none" stroke="#58a8e8" stroke-width="5" stroke-linecap="round"/></g>
+      <!-- crest -->
+      <path d="M92 44 c-4 -18 4 -28 14 -32 c-2 10 0 18 4 24 c4 -10 12 -16 22 -16 c-6 10 -8 18 -6 28 z" fill="#2f78c4"/>
+      <!-- face -->
+      <g class="blink"><ellipse cx="80" cy="92" rx="10" ry="12" fill="#3a2e4d"/><ellipse cx="124" cy="92" rx="10" ry="12" fill="#3a2e4d"/></g>
+      <circle cx="83.5" cy="87.5" r="3.6" fill="#fff"/><circle cx="127.5" cy="87.5" r="3.6" fill="#fff"/>
+      <ellipse cx="64" cy="110" rx="10" ry="6.5" fill="#ff9d8a" opacity=".9"/><ellipse cx="140" cy="110" rx="10" ry="6.5" fill="#ff9d8a" opacity=".9"/>
+      <path d="M90 100 q12 -8 24 0 q-4 16 -12 19 q-8 -3 -12 -19 z" fill="url(#g-honey)" stroke="#e39a1c" stroke-width="2.5" stroke-linejoin="round"/>
+    </symbol>
+
+    <!-- AVATARS 140x140 -->
+    <symbol id="av-fox" viewBox="0 0 140 140">
+      <circle cx="70" cy="70" r="66" fill="#fff6e6" stroke="#f08a62" stroke-width="8"/>
+      <path d="M30 62 l-4 -40 l34 20 z" fill="#f08a62"/><path d="M110 62 l4 -40 l-34 20 z" fill="#f08a62"/>
+      <path d="M26 66 q44 -40 88 0 q-6 44 -44 56 q-38 -12 -44 -56 z" fill="#f59a5f"/>
+      <path d="M26 70 q20 8 30 30 q8 14 14 20 q6 -6 14 -20 q10 -22 30 -30 q-6 42 -44 52 q-38 -10 -44 -52 z" fill="#fffaf0"/>
+      <circle cx="52" cy="74" r="6.5" fill="#3a2e4d"/><circle cx="88" cy="74" r="6.5" fill="#3a2e4d"/><ellipse cx="70" cy="98" rx="8" ry="6" fill="#3a2e4d"/>
+    </symbol>
+    <symbol id="av-bunny" viewBox="0 0 140 140">
+      <circle cx="70" cy="70" r="66" fill="#fff6e6" stroke="#8d7cc9" stroke-width="8"/>
+      <rect x="42" y="6" width="22" height="62" rx="11" fill="#e9e3f7"/><rect x="76" y="6" width="22" height="62" rx="11" fill="#e9e3f7"/>
+      <rect x="48" y="16" width="10" height="42" rx="5" fill="#f7a6c0"/><rect x="82" y="16" width="10" height="42" rx="5" fill="#f7a6c0"/>
+      <ellipse cx="70" cy="88" rx="42" ry="36" fill="#f3effb"/>
+      <circle cx="54" cy="82" r="6.5" fill="#3a2e4d"/><circle cx="86" cy="82" r="6.5" fill="#3a2e4d"/>
+      <ellipse cx="70" cy="96" rx="6" ry="4.5" fill="#f28fb0"/><path d="M62 104 q8 8 16 0" fill="none" stroke="#3a2e4d" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse cx="44" cy="98" rx="8" ry="5" fill="#ffc6d6"/><ellipse cx="96" cy="98" rx="8" ry="5" fill="#ffc6d6"/>
+    </symbol>
+    <symbol id="av-bear" viewBox="0 0 140 140">
+      <circle cx="70" cy="70" r="66" fill="#fff6e6" stroke="#57b06a" stroke-width="8"/>
+      <circle cx="36" cy="42" r="18" fill="#b9814f"/><circle cx="104" cy="42" r="18" fill="#b9814f"/><circle cx="36" cy="42" r="9" fill="#e9c391"/><circle cx="104" cy="42" r="9" fill="#e9c391"/>
+      <ellipse cx="70" cy="78" rx="46" ry="42" fill="#c9976b"/>
+      <ellipse cx="70" cy="94" rx="22" ry="17" fill="#f1dcc0"/>
+      <circle cx="52" cy="72" r="6.5" fill="#3a2e4d"/><circle cx="88" cy="72" r="6.5" fill="#3a2e4d"/><ellipse cx="70" cy="88" rx="7" ry="5" fill="#3a2e4d"/>
+      <path d="M62 98 q8 7 16 0" fill="none" stroke="#3a2e4d" stroke-width="3.5" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- the Academy boat 240x280 -->
+    <symbol id="boat" viewBox="0 0 240 280">
+      <rect x="114" y="18" width="10" height="200" rx="5" fill="#8d5b36"/>
+      <g class="sway"><path d="M124 22 l40 14 l-40 14 z" fill="#58a8e8"/></g>
+      <path d="M130 44 q78 70 84 160 h-84 z" fill="#fffaf0" stroke="#ecd9b4" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M108 70 q-62 60 -76 134 h76 z" fill="#ffd98a" stroke="#f5b42e" stroke-width="4" stroke-linejoin="round"/>
+      <g transform="translate(168 146)"><path d="M-13 30 l5 -52 h16 l5 52 z" fill="#fff6e6" stroke="#d9c7a3" stroke-width="2"/><path d="M-10.6 4 h21.2 l1.2 12 h-23.6 z" fill="#f08a62"/><rect x="-11" y="-34" width="22" height="14" rx="3" fill="#ffc94d"/><path d="M-14 -34 h28 l-14 -14 z" fill="#f08a62"/><rect x="-20" y="28" width="40" height="8" rx="4" fill="#8fd08a"/></g>
+      <path d="M14 214 h212 q-8 44 -50 50 h-112 q-42 -6 -50 -50 z" fill="url(#g-hull)"/>
+      <rect x="10" y="206" width="220" height="16" rx="8" fill="#fff6e6"/>
+      <circle cx="78" cy="240" r="9" fill="#fff6e6"/><circle cx="120" cy="240" r="9" fill="#fff6e6"/><circle cx="162" cy="240" r="9" fill="#fff6e6"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============================ LANDSCAPE (wall) ============================ -->
+<svg class="landscape" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" role="img" aria-label="HOMEBASE home: a storybook house with rooms for missions, routines, the bank, the pantry, memories and the calendar">
+  <rect width="1920" height="1080" fill="url(#g-sky)"/>
+  <g class="stars" fill="#fff">
+    <circle class="twinkle" cx="140" cy="210" r="3"/><circle cx="330" cy="90" r="2.5"/><circle class="twinkle" cx="560" cy="150" r="3"/><circle cx="760" cy="60" r="2.5"/>
+    <circle cx="1180" cy="70" r="3"/><circle class="twinkle" cx="1400" cy="150" r="2.5"/><circle cx="1620" cy="80" r="3"/><circle class="twinkle" cx="1800" cy="230" r="3"/><circle cx="1720" cy="330" r="2.5"/><circle cx="230" cy="380" r="2.5"/>
+  </g>
+  <circle cx="210" cy="170" r="170" fill="url(#g-halo)"/><circle cx="210" cy="170" r="70" class="f-sun"/>
+  <g class="f-cloud drift" opacity=".95"><ellipse cx="520" cy="170" rx="90" ry="34"/><ellipse cx="590" cy="150" rx="70" ry="40"/><ellipse cx="660" cy="176" rx="80" ry="30"/></g>
+  <g class="f-cloud drift2" opacity=".9"><ellipse cx="1560" cy="220" rx="100" ry="34"/><ellipse cx="1640" cy="196" rx="76" ry="42"/><ellipse cx="1720" cy="226" rx="88" ry="30"/></g>
+
+  <path d="M0 640 Q260 520 560 610 T1100 600 T1920 560 V1080 H0 Z" class="f-hill-far"/>
+  <!-- far away, over the water: where the boat goes -->
+  <g opacity=".85" transform="translate(70 600) scale(1.5)">
+    <ellipse cx="60" cy="30" rx="70" ry="12" fill="#f3e3b5"/><path d="M20 28 q40 -34 80 0 z" fill="#9fd9a4"/>
+    <rect x="52" y="-22" width="16" height="40" rx="4" fill="#fff6e6"/><rect x="52" y="-8" width="16" height="9" fill="#f08a62"/><path d="M48 -22 h24 l-12 -14 z" fill="#f08a62"/>
+  </g>
+  <path d="M0 760 Q300 660 640 740 T1280 730 T1920 700 V1080 H0 Z" class="f-hill-near"/>
+  <rect y="880" width="1920" height="200" fill="url(#g-lawn)"/>
+  <path d="M0 884 Q480 862 960 880 T1920 872 V900 H0 Z" fill="url(#g-lawn)"/>
+
+  <!-- pond + boat (ACADEMY) -->
+  <g transform="translate(0 16)">
+    <ellipse cx="226" cy="900" rx="232" ry="74" fill="#e9dcae"/>
+    <ellipse cx="226" cy="898" rx="212" ry="62" fill="url(#g-pond)"/>
+    <ellipse cx="170" cy="884" rx="90" ry="12" fill="#fff" opacity=".28"/>
+    <g fill="#57b06a"><path d="M30 880 q4 -44 14 -4 z"/><path d="M48 890 q6 -56 16 -6 z"/><path d="M404 876 q6 -50 16 -4 z"/></g>
+    <g class="bob"><use href="#boat" x="96" y="640" width="240" height="280"/></g>
+    <ellipse cx="216" cy="914" rx="120" ry="12" fill="#fff" opacity=".35"/>
+    </g>
+  </g>
+
+  <!-- garden (grows with the family) -->
+  <g>
+    <rect x="1770" y="700" width="34" height="200" rx="14" fill="url(#g-wood-dark)"/>
+    <g class="sway"><circle cx="1790" cy="640" r="128" fill="url(#g-leaf)"/><circle cx="1700" cy="690" r="70" fill="#7cc77d"/><circle cx="1866" cy="700" r="66" fill="#69b872"/>
+      <g fill="#ef6f5e"><circle cx="1740" cy="620" r="15"/><circle cx="1830" cy="596" r="15"/><circle cx="1800" cy="690" r="15"/><circle cx="1700" cy="700" r="13"/><circle cx="1872" cy="680" r="13"/></g></g>
+    <g fill="#fffaf0" stroke="#e7d3ab" stroke-width="4">
+      <rect x="1668" y="830" width="30" height="86" rx="12"/><rect x="1716" y="830" width="30" height="86" rx="12"/><rect x="1764" y="830" width="30" height="86" rx="12"/><rect x="1812" y="830" width="30" height="86" rx="12"/><rect x="1860" y="830" width="30" height="86" rx="12"/>
+      <rect x="1656" y="856" width="250" height="16" rx="8"/>
+    </g>
+    <g stroke="#3f8a55" stroke-width="7" stroke-linecap="round"><path d="M1706 946 v-44"/><path d="M1770 956 v-48"/><path d="M1850 948 v-52"/></g>
+    <g><circle cx="1706" cy="894" r="18" fill="#b3a2f2"/><circle cx="1706" cy="894" r="7" fill="#ffd45e"/>
+      <circle cx="1770" cy="900" r="20" fill="#ffc94d"/><circle cx="1770" cy="900" r="8" fill="#f08a62"/><circle cx="1850" cy="888" r="18" fill="#f594b4"/><circle cx="1850" cy="888" r="7" fill="#fff6e6"/></g>
+  </g>
+
+  <!-- ======= the house ======= -->
+  <ellipse cx="960" cy="950" rx="600" ry="24" fill="#2c5a3c" opacity=".22"/>
+  <!-- chimney + smoke -->
+  <g fill="#fff" opacity=".85"><circle class="puff" cx="1262" cy="104" r="20"/><circle class="puff p2" cx="1272" cy="100" r="16"/><circle class="puff p3" cx="1256" cy="96" r="18"/></g>
+  <rect x="1222" y="130" width="78" height="150" rx="10" fill="#e89473"/><rect x="1212" y="118" width="98" height="26" rx="10" fill="#c9573a"/>
+  <!-- attic gable -->
+  <path d="M470 330 L960 124 L1450 330 Z" class="f-wall"/>
+  <path d="M470 330 L960 124 L1450 330 Z" class="f-wall-shade" opacity=".5"/>
+  <!-- GROWN-UPS: the high attic window -->
+  <g>
+    <circle cx="960" cy="236" r="52" fill="url(#g-wood-dark)"/><circle cx="960" cy="236" r="40" class="f-window"/>
+    <circle cx="960" cy="236" r="40" fill="#ffe08a" class="glow"/>
+    <g fill="none" stroke="#3a2e4d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><circle cx="946" cy="236" r="11"/><path d="M957 236 h26 m-6 0 v10 m-10 -10 v8"/></g>
+    <circle cx="960" cy="236" r="40" fill="none" stroke="#8d5b36" stroke-width="5"/>
+  </g>
+  <!-- rooms -->
+  <rect x="440" y="324" width="1040" height="622" rx="14" fill="url(#g-wood-dark)"/>
+  <g class="dim">
+    <use href="#room-memories" x="460" y="340" width="492" height="244"/>
+    <use href="#room-calendar" x="968" y="340" width="492" height="244"/>
+    <use href="#room-quest" x="460" y="618" width="238" height="290"/>
+    <use href="#room-clock" x="714" y="618" width="238" height="290"/>
+    <use href="#room-bank" x="968" y="618" width="238" height="290"/>
+    <use href="#room-pantry" x="1222" y="618" width="238" height="290"/>
+  </g>
+  <!-- warm lamp light at night -->
+  <g class="glow"><rect x="460" y="340" width="1000" height="568" fill="#ffb84d" fill-opacity=".13"/></g>
+  
+  <!-- beams -->
+  <g fill="url(#g-wood)">
+    <rect x="440" y="584" width="1040" height="34"/><rect x="952" y="340" width="16" height="244"/>
+    <rect x="698" y="618" width="16" height="290"/><rect x="952" y="618" width="16" height="290"/><rect x="1206" y="618" width="16" height="290"/>
+  </g>
+  <!--FOUNDATION-->
+  <rect x="428" y="908" width="1064" height="40" rx="12" fill="#cdbfae"/><rect x="428" y="908" width="1064" height="12" rx="6" fill="#e3d8c8"/>
+  <!-- roof -->
+  <path d="M388 344 L960 100 L1532 344" fill="none" stroke="#c9573a" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M388 338 L960 94 L1532 338" fill="none" stroke="url(#g-roof)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M430 312 L960 86 L1490 312" fill="none" stroke="#ffb999" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
+
+  <!-- optional short labels for emerging readers: small plaques on the beams -->
+  <g class="labels" font-size="21" text-anchor="middle">
+    <g transform="translate(706 601)"><rect x="-52" y="-14" width="104" height="28" rx="14" fill="#fffaf0"/><text y="7">Photos</text></g>
+    <g transform="translate(1214 601)"><rect x="-62" y="-14" width="124" height="28" rx="14" fill="#fffaf0"/><text y="7">Calendar</text></g>
+    <g transform="translate(579 929)"><rect x="-62" y="-14" width="124" height="28" rx="14" fill="#fffaf0"/><text y="7">Missions</text></g>
+    <g transform="translate(833 929)"><rect x="-40" y="-14" width="80" height="28" rx="14" fill="#fffaf0"/><text y="7">Day</text></g>
+    <g transform="translate(1087 929)"><rect x="-44" y="-14" width="88" height="28" rx="14" fill="#fffaf0"/><text y="7">Stars</text></g>
+    <g transform="translate(1341 929)"><rect x="-50" y="-14" width="100" height="28" rx="14" fill="#fffaf0"/><text y="7">To buy</text></g>
+    <g transform="translate(226 1010)"><rect x="-58" y="-14" width="116" height="28" rx="14" fill="#fffaf0"/><text y="7">Academy</text></g>
+  </g>
+
+  <!-- front path + who is here (profile avatars) -->
+  <path d="M850 946 h220 l90 134 h-400 z" fill="#f3e2bd"/>
+  <path d="M850 946 h220 l12 18 h-244 z" fill="#e4cd9d"/>
+  <use href="#av-fox" x="762" y="950" width="118" height="118"/>
+  <use href="#av-bunny" x="901" y="950" width="118" height="118"/>
+  <use href="#av-bear" x="1040" y="950" width="118" height="118"/>
+
+  <!-- the guide -->
+  <g class="hover"><use href="#guide" x="1452" y="868" width="200" height="210"/></g>
+
+  <!-- say it again -->
+  <g transform="translate(1838 1000)">
+    <circle r="58" fill="#c9861a" cy="5"/><circle r="58" fill="url(#g-honey)"/>
+    <path d="M-28 -12 h14 l20 -18 v60 l-20 -18 h-14 z" fill="#3a2e4d" stroke="#3a2e4d" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M18 -16 q14 16 0 32" fill="none" stroke="#3a2e4d" stroke-width="7" stroke-linecap="round"/><path d="M30 -28 q24 28 0 56" fill="none" stroke="#3a2e4d" stroke-width="7" stroke-linecap="round"/>
+  </g>
+</svg>
+
+<!-- ============================ PORTRAIT (phone / child tablet) ============================ -->
+<svg class="portrait" viewBox="0 0 780 1688" preserveAspectRatio="xMidYMid meet" role="img" aria-label="HOMEBASE home, tall arrangement">
+  <rect width="780" height="1688" fill="url(#g-sky)"/>
+  <circle cx="120" cy="120" r="130" fill="url(#g-halo)"/><circle cx="120" cy="120" r="52" class="f-sun"/>
+  <g class="f-cloud" opacity=".95"><ellipse cx="560" cy="110" rx="80" ry="30"/><ellipse cx="620" cy="92" rx="60" ry="34"/><ellipse cx="676" cy="114" rx="66" ry="26"/></g>
+  <path d="M0 1320 Q200 1250 420 1300 T780 1280 V1688 H0 Z" class="f-hill-near"/>
+  <rect y="1420" width="780" height="268" fill="url(#g-lawn)"/>
+  <!-- tall house: 2 columns x 3 floors + attic -->
+  <path d="M70 372 L390 180 L710 372 Z" class="f-wall"/>
+  <g><circle cx="390" cy="292" r="44" fill="url(#g-wood-dark)"/><circle cx="390" cy="292" r="33" class="f-window"/>
+    <g fill="none" stroke="#3a2e4d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><circle cx="378" cy="292" r="9"/><path d="M387 292 h22 m-5 0 v8 m-9 -8 v7"/></g></g>
+  <rect x="50" y="366" width="680" height="1062" rx="14" fill="url(#g-wood-dark)"/>
+  <svg x="66" y="382" width="316" height="334" viewBox="26 0 231 244" preserveAspectRatio="xMidYMid slice"><use href="#room-memories" width="492" height="244"/></svg>
+  <svg x="398" y="382" width="316" height="334" viewBox="32 0 231 244" preserveAspectRatio="xMidYMid slice"><use href="#room-calendar" width="492" height="244"/></svg>
+  <use href="#room-quest" x="66" y="732" width="316" height="334" preserveAspectRatio="xMidYMid slice"/>
+  <use href="#room-clock" x="398" y="732" width="316" height="334" preserveAspectRatio="xMidYMid slice"/>
+  <use href="#room-bank" x="66" y="1082" width="316" height="334" preserveAspectRatio="xMidYMid slice"/>
+  <use href="#room-pantry" x="398" y="1082" width="316" height="334" preserveAspectRatio="xMidYMid slice"/>
+  <g fill="url(#g-wood)"><rect x="50" y="716" width="680" height="16"/><rect x="50" y="1066" width="680" height="16"/><rect x="382" y="382" width="16" height="1034"/></g>
+  <path d="M30 384 L390 164 L750 384" fill="none" stroke="#c9573a" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M30 378 L390 158 L750 378" fill="none" stroke="url(#g-roof)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- who is here + guide + boat -->
+  <use href="#boat" x="28" y="1440" width="150" height="176"/>
+  <use href="#av-fox" x="214" y="1470" width="116" height="116"/><use href="#av-bunny" x="342" y="1470" width="116" height="116"/><use href="#av-bear" x="470" y="1470" width="116" height="116"/>
+  <use href="#guide" x="606" y="1440" width="160" height="168"/>
+</svg>
+<script>if (location.search.includes('night')) document.documentElement.classList.add('night');</script>
+</body>
+</html>
