@@ -86,7 +86,10 @@ test.describe('records a parent keeps', { tag: '@phone' }, () => {
     await page.goto('/parent/more/records');
     const record = page.getByTestId('day-record');
     await expect(record).toBeVisible();
-    await expect(record.locator('tbody tr')).toHaveCount(before.length);
+    // A handful at first, the newest on top; the rest are a tap away.
+    await expect(record.locator('tbody tr')).toHaveCount(8);
+    await record.getByTestId('day-record-more').click();
+    await expect(record.locator('tbody tr')).toHaveCount(Math.min(before.length, 28));
     const target = before[0]!.id;
     await record.getByTestId(`forget-${target}`).click();
     // It asks once before it does it.

@@ -100,6 +100,8 @@ const EVENT_WORDS: Record<string, string> = {
   'stars.corrected': 'had their stars corrected',
 };
 
+const LINES_AT_FIRST = 8;
+
 export function Records() {
   const parent = useParent();
   const toast = useToast();
@@ -108,6 +110,8 @@ export function Records() {
   const owner = parent.can('owner');
   const [changes, setChanges] = useState<Change[] | null>(null);
   const [events, setEvents] = useState<DayEvent[] | null>(null);
+  // A handful of lines at first: this page is mostly about what is kept and how to take it away.
+  const [linesShown, setLinesShown] = useState(LINES_AT_FIRST);
   const [check, setCheck] = useState<boolean | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [typed, setTyped] = useState('');
@@ -244,7 +248,7 @@ export function Records() {
         >
           <table className={styles.table}>
             <tbody>
-              {events.map((event) => {
+              {events.slice(0, linesShown).map((event) => {
                 const child = view.profiles.find((profile) => profile.id === event.profileId);
                 const subject =
                   view.templates?.find((template) => template.id === event.subjectId)?.title ??
@@ -288,6 +292,11 @@ export function Records() {
               })}
             </tbody>
           </table>
+          {events.length > linesShown && (
+            <Button tone="quiet" onClick={() => setLinesShown(linesShown + 20)} testId="day-record-more">
+              Show older lines
+            </Button>
+          )}
         </Section>
       )}
 
