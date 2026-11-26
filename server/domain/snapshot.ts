@@ -84,5 +84,7 @@ function forChildren(settings: Ctx['household']['settings']): Ctx['household']['
       ? { lat: settings.location.lat, lon: settings.location.lon, label: '' }
       : null,
     ai: { ...settings.ai, share: [], provider: null },
+    // The favourites shelf is a grown-up's, on a phone. A child's screen has no use for it and is not sent it.
+    shopping: { ...settings.shopping, favourites: [] },
   };
 }

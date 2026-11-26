@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { makeAcademyExport } from '../tests/shared/academy-fixture';
-import { DEMO, enter, guardianApi, resetDemo } from './support/demo';
+import { DEMO, enter, guardianApi, newScreen, resetDemo, snapshot } from './support/demo';
 
 /**
  * A parent's own records: bringing in a child's Training Academy progress from a file, with consent first; and
@@ -69,6 +69,64 @@ test.describe('records a parent keeps', { tag: '@phone' }, () => {
     const exported = await (await api.get('/api/export/household.json')).text();
     expect(exported).not.toContain('A name typed in the Academy');
     await api.dispose();
+  });
+
+  test('History says how each routine went — its steps, when, and where it waits — and what a child is saving for', async ({
+    page,
+    context,
+    browser,
+  }) => {
+    await enter(context, 'guardian');
+    // A child chooses something to save for, on the wall.
+    const wall = await newScreen(browser, 'wall');
+    await enter(wall, 'wall');
+    const reward = (await snapshot(wall)).rewards.find(
+      (entry) => entry.status === 'active' && entry.profiles.length === 0,
+    )!;
+    const chosen = await wall.request.post('/api/sync/ops', {
+      data: {
+        ops: [
+          {
+            id: crypto.randomUUID(),
+            type: 'goal.set',
+            at: new Date().toISOString(),
+            input: { profileId: DEMO.june, rewardId: reward.id },
+          },
+        ],
+      },
+    });
+    expect(JSON.stringify(await chosen.json())).toContain('"applied"');
+    await wall.close();
+
+    await page.goto('/parent/history');
+    const routines = page.getByTestId('history-routines');
+    await expect(routines).toBeVisible();
+    // How the steps were done: on their own, together with a grown-up, left out — counts, with their legend.
+    await expect(
+      routines.getByRole('img', { name: /^Steps of Morning: On their own \d+, Together \d+/ }),
+    ).toBeVisible();
+    // When it was finished, and where it tends to wait: about the routine, with how many goes it is out of.
+    await expect(
+      routines.getByRole('img', { name: /^When Morning was finished: Morning \d+/ }),
+    ).toBeVisible();
+    const timing = routines.getByTestId('timing-Morning');
+    await expect(timing).toHaveCount(2);
+    await expect(timing.nth(0)).toHaveText(
+      /^Usually about \d+ minutes? from the first tap to the last \(the middle of \d+ goes\)\.$/,
+    );
+    await expect(timing.nth(1)).toHaveText(
+      /^The longest wait is usually before “.+” is ticked: about \d+ minutes? \(\d+ goes\)\.$/,
+    );
+    // No child is named in what a routine's minutes say.
+    await expect(timing.nth(0)).not.toContainText(/June|Milo|Bea/);
+    await expect(timing.nth(1)).not.toContainText(/June|Milo|Bea/);
+    // And the page says what the minutes are, and are not.
+    await expect(page.getByText('not how quick anyone is')).toBeVisible();
+
+    // What June chose on the wall, against the stars she has now.
+    const saving = page.getByTestId('goals');
+    await expect(saving).toContainText(`June: ${reward.title}`);
+    await expect(saving).toContainText(new RegExp(`of ${reward.price}`));
   });
 
   test('a line of the day-by-day record that was simply wrong can be forgotten', async ({

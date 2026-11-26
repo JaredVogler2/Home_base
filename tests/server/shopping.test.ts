@@ -269,7 +269,7 @@ describe('the favourites shelf', () => {
     expect(changed.status).toBe('applied');
   });
 
-  it('is for grown-ups: the wall can read the shelf but cannot change it, and a child cannot type on it', async () => {
+  it('is for grown-ups: a child’s screen is not sent the shelf and cannot change it', async () => {
     const family = await newFamily(server);
     const wall = await pairWall(family);
     await family.parent.do('shopping.favourite', {
@@ -278,7 +278,9 @@ describe('the favourites shelf', () => {
       category: 'dairy',
       on: true,
     });
-    expect(await shelfOf(wall)).toEqual(['Eggs']);
+    // A wall is a child's screen: it has no use for the shelf, so it is not sent it.
+    expect(await shelfOf(wall)).toEqual([]);
+    expect(await shelfOf(family.parent)).toEqual(['Eggs']);
     const refused = await wall.op('shopping.favourite', {
       text: 'Sweets',
       picture: 'other',

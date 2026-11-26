@@ -162,6 +162,15 @@ describe('whether the display keeps up', () => {
     expect(keepsUp(summarise([...steady(16.7, 100), 250, 180, 90]))).toBe(true);
   });
 
+  it('is not fooled the other way either: most frames on time and a good many late is not keeping up', () => {
+    // What a 4K wall drawn without a graphics card did: 22 frames a second, with a respectable middle frame.
+    const uneven = [...steady(33.3, 70), ...steady(66.7, 50)];
+    const sample = summarise(uneven);
+    expect(sample.median).toBeCloseTo(33.3);
+    expect(1000 / sample.mean).toBeLessThan(23);
+    expect(keepsUp(sample)).toBe(false);
+  });
+
   it('does not judge on too little: a page in the background draws nothing', () => {
     expect(keepsUp(summarise([]))).toBeNull();
     expect(keepsUp(summarise(steady(200, 5)))).toBeNull();
