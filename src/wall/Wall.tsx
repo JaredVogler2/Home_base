@@ -10,6 +10,7 @@ import { Celebration } from './Celebration';
 import { StatusCloud } from './chrome/chrome';
 import { useWall, WallContext, type Scene, type Wall as WallApi } from './context';
 import { childById, gladTidings, wearFor } from './derive';
+import { useHidden } from './hidden';
 import { Home } from './home/Home';
 import { Tour, tourSeen } from './home/Tour';
 import type { Box } from './home/layout';
@@ -19,7 +20,7 @@ import { cameBackFromAcademy } from './scenes/Academy';
 import { Scenes } from './scenes/Scenes';
 import { lookOfSky } from './sky';
 import { configureSound, play, unlockSound, type Sound } from './sound';
-import { configureVoice, say } from './speech';
+import { configureVoice, hush, say } from './speech';
 import { Stage, useLayout } from './Stage';
 import styles from './Wall.module.css';
 
@@ -143,6 +144,19 @@ function WallReady({
       delete root.dataset.contrast;
     };
   }, [still, light, settings.contrast]);
+
+  // A wall nobody can see — the screen saver is over it, or the display is showing something else — holds every
+  // animation where it is and stops talking, and picks up again when it is back in front.
+  const hidden = useHidden();
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!hidden) return;
+    root.dataset.hidden = 'true';
+    hush();
+    return () => {
+      delete root.dataset.hidden;
+    };
+  }, [hidden]);
 
   useEffect(() => {
     configureVoice(settings.voice, quiet);

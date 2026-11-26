@@ -210,6 +210,16 @@
   font-weight: 600;
   font-size: 5cqw;
 }
+.finishedPicture {
+  position: relative;
+  width: 20cqw;
+}
+.finishedTick {
+  position: absolute;
+  right: -1.5cqw;
+  bottom: -1cqw;
+  width: 6cqw;
+}
 .empty {
   height: 100%;
   display: grid;
@@ -279,6 +289,12 @@
 }
 :global([data-shape='tall']) .finishedWords {
   font-size: 11cqw;
+}
+:global([data-shape='tall']) .finishedPicture {
+  width: 44cqw;
+}
+:global([data-shape='tall']) .finishedTick {
+  width: 13cqw;
 }
 :global([data-shape='tall']) .emptyPicture {
   width: 60cqw;

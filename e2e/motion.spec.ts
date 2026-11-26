@@ -69,6 +69,34 @@ test.describe('the wall holds still', { tag: '@w1080' }, () => {
     await phone.close();
   });
 
+  test('a wall nobody can see holds its animations, and picks them up again when it is back', async ({
+    page,
+    context,
+  }) => {
+    await enter(context, 'wall');
+    await openWall(page, '10:30');
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'full');
+    await expect
+      .poll(async () => (await running(page)).length, { message: 'the house moves at first' })
+      .toBeGreaterThan(0);
+
+    // The display's screen saver comes over the page: the browser says the page is hidden.
+    const show = (state: 'hidden' | 'visible') =>
+      page.evaluate((value) => {
+        Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => value });
+        document.dispatchEvent(new Event('visibilitychange'));
+      }, state);
+    await show('hidden');
+    await expect(page.locator('html')).toHaveAttribute('data-hidden', 'true');
+    await expect.poll(async () => running(page), { message: 'nothing runs while hidden' }).toEqual([]);
+
+    await show('visible');
+    await expect(page.locator('html')).not.toHaveAttribute('data-hidden', 'true');
+    await expect
+      .poll(async () => (await running(page)).length, { message: 'the house moves again' })
+      .toBeGreaterThan(0);
+  });
+
   test('in quiet hours the wall is dimmed and still', async ({ page, context }) => {
     await enter(context, 'wall');
     await openWall(page, '21:30');
