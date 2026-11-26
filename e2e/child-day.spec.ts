@@ -26,6 +26,9 @@ test.describe('a child’s routine and extras', { tag: '@w1080' }, () => {
 
     // The routine for this time of day is put first; a tap starts it (or picks it up where it was left).
     const runner = scene.getByTestId('routine-runner');
+    // The room has drawn one or the other — a routine under way, or the list to choose from — before it is
+    // asked which.
+    await expect(runner.or(scene.getByTestId('routine-chooser'))).toBeVisible();
     if (!(await runner.isVisible())) {
       const offered = scene.getByTestId('routine-chooser').locator('button').first();
       await expect(offered).toHaveAttribute('data-now', 'true');
@@ -51,13 +54,23 @@ test.describe('a child’s routine and extras', { tag: '@w1080' }, () => {
     await expect(now).toHaveAttribute('aria-label', first!);
 
     // Then all the way through: however many steps today has, each is one tap.
+    //
+    // Where the routine is — which step, or finished — is read in ONE look at the page. Asked as two questions
+    // ("is it finished?", then "which step is this?") the screen can change in between, and the second
+    // question then waits for a step picture that has just been replaced by "All done!". That is exactly what
+    // happened once on a slower machine.
+    const whereNow = (): Promise<string> =>
+      page.evaluate(() => {
+        if (document.querySelector('[data-testid="routine-finished"]')) return 'finished';
+        return document.querySelector('[data-testid="step-now"]')?.getAttribute('aria-label') ?? 'neither';
+      });
     const finished = scene.getByTestId('routine-finished');
-    for (let taps = 0; taps < 12 && !(await finished.isVisible()); taps++) {
-      const before = await now.getAttribute('aria-label');
+    for (let taps = 0; taps < 12; taps++) {
+      const before = await whereNow();
+      if (before === 'finished') break;
+      expect(before, 'a step is showing').toMatch(/^Now: /);
       await press(runner.getByTestId('step-done'));
-      await expect
-        .poll(async () => (await finished.isVisible()) || (await now.getAttribute('aria-label')) !== before)
-        .toBe(true);
+      await expect.poll(whereNow, { message: 'the tick moves the routine on' }).not.toBe(before);
     }
     // "All done!" stays in front — said, drawn and celebrated — until the child taps; it does not flick away.
     await expect(finished).toBeVisible();
@@ -125,6 +138,8 @@ test.describe('a child’s routine and extras', { tag: '@w1080' }, () => {
     await press(page.getByTestId('room-quest'));
     const board = page.getByTestId('scene-quest');
     await expect(board).toBeVisible();
+    // The board's cards are up before it is asked whether this one is among them.
+    await expect(board.locator('[data-testid^="mission-"]').first()).toBeVisible();
     const card = board.getByTestId(`mission-${extra!.title}`);
     test.skip(!(await card.isVisible()), 'the extra is behind the day’s own missions just now');
     await expect(card).toHaveAttribute('data-kind', 'bonus');

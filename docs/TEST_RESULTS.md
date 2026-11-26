@@ -172,6 +172,14 @@ And one that only a slower machine than this one shows:
   On GitHub's runner the offline test reloaded the page inside that gap, and the mission came back as "to do".
   A request is now written to the device first and shown after, so "sent" on the screen always means "kept".
 
+And one fault that was in a test, not in HOMEBASE, which CI's slower machine also found:
+
+- **The new routine test asked the page two questions where it needed one.** "Is it finished?" and then "which
+  step is this?" — and once, on GitHub's runner, the screen changed between the two, so the second question
+  waited for a step picture that "All done!" had just replaced. The failed run's own snapshot of the page showed
+  "All done!" on screen: the house was right and the test was wrong. The test now reads where the routine is in
+  one look, and was run six times over with the machine deliberately kept busy.
+
 ## What is not tested, and why
 
 | Not tested | Why | Where it is tracked |
