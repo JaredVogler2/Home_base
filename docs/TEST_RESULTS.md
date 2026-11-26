@@ -11,7 +11,7 @@ those are listed at the end.
 | What | Command | Result |
 | --- | --- | --- |
 | Formatting, lint, types | `npm run format:check`, `npm run lint`, `npm run typecheck` | Clean |
-| Unit and integration tests, built-in database | `npm test` | **491 passed**, 1 skipped (38 files) |
+| Unit and integration tests, built-in database | `npm test` | **493 passed**, 1 skipped (38 files) |
 | Server tests on real PostgreSQL 16 | `npm run test:pg` | **284 passed** (24 files), including backup and restore. An earlier state of the suite was also run on a brand-new server, which is how the first problem below was reproduced |
 | Production build | `npm run build` | Built: 1.4 MB on disk, 44 files in the offline shell |
 | Browser tests, four screen sizes, Chromium | `npm run test:e2e` | **38 passed**, 1 skipped (needs a built app) |
@@ -53,7 +53,7 @@ holds, and a network that reaches nothing — and talks to it over HTTP as phone
 | `tests/server/optimistic.test.ts` | 8 | What a screen shows the instant something is tapped agrees with what the server then says — and about stars is behind, never ahead |
 | `tests/server/demo.test.ts`, `cron.test.ts`, `log.test.ts` | 12 | The made-up family; the daily nudge; nothing a family typed in the server's log |
 | `tests/server/backup.test.ts` | 1 | `pg_dump` and restore into an empty database: the same household (PostgreSQL only) |
-| `tests/shared/*.test.ts` | 52 | Colour and sky, deployment configuration, Academy export format, safety words, badges, the plan's fairness sums, code boundaries, migrating beside another database, ids made where a browser withholds its own |
+| `tests/shared/*.test.ts` | 54 | Colour and sky, deployment and CI configuration, Academy export format, safety words, badges, the plan's fairness sums, code boundaries, migrating beside another database, ids made where a browser withholds its own |
 | `tests/client/pictures.test.tsx` | 129 | Every drawing a parent can choose exists and draws cleanly: no broken number, no words inside a picture, none too heavy |
 | `tests/client/*` (the rest) | 27 | ZIP lookup; photo shrinking; the wall's helpers (what to wear, glad tidings, whether the display keeps up); the gentle timer |
 
@@ -172,13 +172,18 @@ And one that only a slower machine than this one shows:
   On GitHub's runner the offline test reloaded the page inside that gap, and the mission came back as "to do".
   A request is now written to the device first and shown after, so "sent" on the screen always means "kept".
 
-And one fault that was in a test, not in HOMEBASE, which CI's slower machine also found:
+And two faults that were in the testing itself, not in HOMEBASE, which CI also found:
 
 - **The new routine test asked the page two questions where it needed one.** "Is it finished?" and then "which
   step is this?" — and once, on GitHub's runner, the screen changed between the two, so the second question
   waited for a step picture that "All done!" had just replaced. The failed run's own snapshot of the page showed
   "All done!" on screen: the house was right and the test was wrong. The test now reads where the routine is in
   one look, and was run six times over with the machine deliberately kept busy.
+- **The WebKit job installed its browser's system libraries afresh on every run** — about two hundred packages
+  from the runner's Ubuntu mirror. It passed the first time in two minutes; then the mirror slowed to a crawl
+  (one 13 MB package took 74 seconds) and three runs in a row sat for eight to ten minutes without starting a
+  single test. The job now runs inside Playwright's own image, which has WebKit and its libraries in it already,
+  and a test holds the image's version to the version of Playwright that is installed.
 
 ## What is not tested, and why
 

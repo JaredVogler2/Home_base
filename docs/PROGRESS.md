@@ -51,7 +51,7 @@ Every requirement of the brief, one row each: [`TRACEABILITY.md`](TRACEABILITY.m
 
 ## The evidence
 
-- **Tests:** [`TEST_RESULTS.md`](TEST_RESULTS.md) — 491 unit and integration tests; 284 server tests again on
+- **Tests:** [`TEST_RESULTS.md`](TEST_RESULTS.md) — 493 unit and integration tests; 284 server tests again on
   PostgreSQL; 39 browser tests at four sizes in Chromium, and the 12 of the phone's side again in WebKit; the
   deployment check; the wall measured.
 - **Continuous integration:** `.github/workflows/ci.yml` runs all of it on every pull request, in five jobs.

@@ -101,3 +101,35 @@ describe('the web app manifest', () => {
       expect(readFileSync(`public${icon.src}`).byteLength).toBeGreaterThan(500);
   });
 });
+
+describe('continuous integration', () => {
+  const workflow = readFileSync('.github/workflows/ci.yml', 'utf8');
+  const packages = JSON.parse(readFileSync('package.json', 'utf8')) as {
+    devDependencies: Record<string, string>;
+  };
+
+  it('runs WebKit from the Playwright image made for the version of Playwright that is installed', () => {
+    // The image holds browsers for exactly one version of Playwright. A newer @playwright/test with the old
+    // image would find no browser at all, and say so only once CI had started.
+    const image = /image:\s*mcr\.microsoft\.com\/playwright:v([0-9.]+)-[a-z]+/.exec(workflow);
+    expect(image, 'the WebKit job names a Playwright image').not.toBeNull();
+    expect(image?.[1]).toBe(packages.devDependencies['@playwright/test']);
+  });
+
+  it('never skips the checks that keep a family’s data safe', () => {
+    // Each of these is a job a pull request must pass; none may be made optional by an edit to the workflow.
+    for (const command of [
+      'npm run format:check',
+      'npm run lint',
+      'npm run typecheck',
+      'npm test',
+      'npm run build',
+      'npm run test:pg',
+      'npx playwright test',
+      'npm audit --omit=dev --audit-level=high',
+    ]) {
+      expect(workflow, command).toContain(`run: ${command}`);
+    }
+    expect(workflow).not.toMatch(/continue-on-error:\s*true/);
+  });
+});

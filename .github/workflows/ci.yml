@@ -114,6 +114,14 @@ jobs:
     name: Browser tests in WebKit (the grown-ups' side)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Playwright's own image: WebKit and every system library it needs are already inside it. Installing them
+    # on the runner instead means fetching about two hundred packages from an Ubuntu mirror on every run, and
+    # when that mirror was slow this job sat for ten minutes without starting a single test. The tag must be
+    # the version of @playwright/test in package.json — the image's browsers are found by version — and
+    # tests/shared/deploy-config.test.ts fails if the two ever differ.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -121,7 +129,6 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps webkit
       # Parents use HOMEBASE in Safari on an iPhone. WebKit is Safari's engine; this is its Linux build, which
       # is not an iPhone but is the same engine reading the same pages, and it runs every test of the phone's side.
       - run: npx playwright test --project=phone-webkit --trace retain-on-failure

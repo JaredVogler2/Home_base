@@ -17,7 +17,7 @@ What was run for the refresh: `npx vitest run` at `ef906d2` (33 files, 453 passe
 one is the backup test, which needs PostgreSQL) and `tests/server/backup.test.ts` against a local PostgreSQL at
 `9d866c0` (passed). At `5479df1`: `tsc --noEmit` and `eslint .` clean, and a search of tracked files for API keys
 and tokens (none). For the rows changed by pull request #4, everything was run again at its head: `npx vitest
-run` (38 files, **491 passed, 1 skipped**), the server tests on PostgreSQL (284 passed), the Playwright browser
+run` (38 files, **493 passed, 1 skipped**), the server tests on PostgreSQL (284 passed), the Playwright browser
 tests (38 passed, 1 skipped under the dev server; the skipped offline reload passes against a production
 build), and on GitHub the same plus the phone's tests in WebKit. Results are recorded in
 `docs/TEST_RESULTS.md`.
