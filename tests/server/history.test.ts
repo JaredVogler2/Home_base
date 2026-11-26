@@ -217,4 +217,72 @@ describe('history, export and deletion', () => {
     // The first family is untouched.
     expect((await family.parent.get('/sync')).status).toBe(200);
   });
+
+  describe('moments a parent writes down', () => {
+    it('are kept for the grown-ups only, are in the export, and go when removed', async () => {
+      const family = await newFamily(server);
+      const kit = await addChild(family, 'Kit');
+      const wall = await pairWall(family);
+      const milestoneId = newId();
+      await family.parent.do('milestone.save', {
+        milestoneId,
+        date: '2026-03-01',
+        title: 'Shoes on, all by herself',
+        picture: 'shoes',
+        profileId: kit,
+      });
+      const seen = await family.parent.pull();
+      expect(seen.milestones).toEqual([
+        {
+          id: milestoneId,
+          date: '2026-03-01',
+          title: 'Shoes on, all by herself',
+          picture: 'shoes',
+          profileId: kit,
+        },
+      ]);
+      // The wall is a child's screen: a parent's notes are not sent to it at all.
+      expect((await wall.pull()).milestones).toBeUndefined();
+      // Nor can it write one.
+      const refused = await wall.op('milestone.save', {
+        milestoneId: newId(),
+        date: '2026-03-02',
+        title: 'From the wall',
+        picture: null,
+        profileId: null,
+      });
+      expect(refused.status).toBe('rejected');
+
+      // Saving again with the same id changes it; it is not a second moment.
+      await family.parent.do('milestone.save', {
+        milestoneId,
+        date: '2026-03-01',
+        title: 'Shoes on, all by herself!',
+        picture: 'shoes',
+        profileId: kit,
+      });
+      expect((await family.parent.pull()).milestones).toHaveLength(1);
+
+      const exported = await family.parent.get<{ milestones: { title: string }[] }>('/export/household.json');
+      expect(exported.body.milestones.map((moment) => moment.title)).toEqual(['Shoes on, all by herself!']);
+
+      await family.parent.do('milestone.remove', { milestoneId });
+      expect((await family.parent.pull()).milestones).toEqual([]);
+    });
+
+    it('does not let a moment be given to another family’s child', async () => {
+      const family = await newFamily(server);
+      const others = await newFamily(server);
+      const theirs = await addChild(others, 'Bo');
+      const outcome = await family.parent.op('milestone.save', {
+        milestoneId: newId(),
+        date: '2026-03-01',
+        title: 'Not ours',
+        picture: null,
+        profileId: theirs,
+      });
+      expect(outcome.status).toBe('rejected');
+      expect((await family.parent.pull()).milestones).toEqual([]);
+    });
+  });
 });

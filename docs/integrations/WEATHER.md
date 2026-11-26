@@ -141,4 +141,6 @@ Trimmed copies of the live answers are in `tests/server/fixtures/weather/` and a
   rely on.
 - The rough US box is not checked against NWS's real coverage at its edges (for example Guam, which falls outside
   the box and is asked of Open-Meteo).
-- Open-Meteo's CC BY 4.0 attribution is not yet shown anywhere in the app.
+- Open-Meteo's CC BY 4.0 attribution is shown on the grown-ups' side, where the weather is switched on
+  (*Family → Sky and weather*: "Weather from the U.S. National Weather Service in the United States, and from
+  Open-Meteo.com elsewhere"). It is not shown on the wall, which carries no words of that kind.

@@ -6,6 +6,7 @@ import { useParent } from '../context';
 import { CHART, InOutColumns, MeterList, SplitBar, WeekColumns, type WeekTick } from '../ui/charts';
 import { PageHead } from '../ui/Page';
 import { Button, Card, Empty, Section, Segmented, Stack } from '../ui/kit';
+import { Moments } from './Moments';
 import styles from './pages.module.css';
 
 /**
@@ -333,6 +334,8 @@ export function History({ rest }: { rest: string[] }) {
           </Card>
         </Section>
       )}
+
+      <Moments />
 
       {summary && (
         <Section title="About these numbers">

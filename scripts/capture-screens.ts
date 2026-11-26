@@ -4,6 +4,9 @@
  *   npm run screens                     every screen, into docs/review/screens
  *   npm run screens -- wall-quest       only the ones whose name starts with that
  *   OUT=/some/dir npm run screens       somewhere else
+ *   FULL=1 npm run screens              lossless PNGs at the display's full density (large: not for the repository)
+ *
+ * By default the pictures are JPEGs at a modest density, so that the set kept in the repository stays small.
  *
  * It needs a server started with HOMEBASE_DEMO=1 (npm run dev does that for a fresh checkout).
  */
@@ -13,6 +16,7 @@ import { chromium, type BrowserContext, type Page } from 'playwright';
 const base = process.env.BASE_URL ?? 'http://127.0.0.1:5173';
 const out = process.env.OUT ?? 'docs/review/screens';
 const only = process.argv.slice(2);
+const full = process.env.FULL === '1';
 mkdirSync(out, { recursive: true });
 
 interface Shot {
@@ -150,6 +154,14 @@ const SHOTS: Shot[] = [
     fullPage: true,
     wait: 1200,
   },
+  {
+    name: 'parent-moment',
+    as: 'guardian',
+    path: '/parent/history',
+    size: PHONE,
+    wait: 1200,
+    taps: [t('new-moment')],
+  },
   { name: 'parent-family', as: 'guardian', path: '/parent/more', size: PHONE, fullPage: true },
   { name: 'parent-children', as: 'guardian', path: '/parent/more/children', size: PHONE },
   { name: 'parent-grownups', as: 'guardian', path: '/parent/more/grownups', size: PHONE, fullPage: true },
@@ -209,7 +221,11 @@ async function take(page: Page, shot: Shot): Promise<string[]> {
     await page.locator(selector).first().click({ timeout: 5000 });
     await page.waitForTimeout(650);
   }
-  await page.screenshot({ path: `${out}/${shot.name}.png`, fullPage: shot.fullPage ?? false });
+  await page.screenshot(
+    full
+      ? { path: `${out}/${shot.name}.png`, fullPage: shot.fullPage ?? false }
+      : { path: `${out}/${shot.name}.jpg`, type: 'jpeg', quality: 84, fullPage: shot.fullPage ?? false },
+  );
   return problems;
 }
 
@@ -230,7 +246,8 @@ for (const shot of SHOTS) {
   const [width, height, scale] = shot.size ?? WIDE;
   const context = await browser.newContext({
     viewport: { width, height },
-    deviceScaleFactor: scale,
+    // The wall at one pixel per unit (1920×1080) and the phone at two, unless the full set is asked for.
+    deviceScaleFactor: full ? scale : Math.min(scale, width < 600 ? 2 : 1),
     reducedMotion: 'reduce',
     hasTouch: true,
   });

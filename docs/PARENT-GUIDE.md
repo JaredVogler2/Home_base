@@ -129,8 +129,10 @@ missed.
 
 *History* shows each child's weeks side by side with their own earlier weeks — how many missions out of how
 many, where a hand was asked for, stars in and out. They are counts, not a judgement, and children are never
-compared with each other. *Family → Records* says exactly what is kept and for how long, lets you switch the
-look-back off, download everything, or delete a child's records or the whole household for good.
+compared with each other. At the bottom of *History*, **Moments worth keeping** is for your own notes — the day
+the shoes went on without help — with a date, a picture and whose it was. Only grown-ups see them and nothing
+is counted. *Family → Records* says exactly what is kept and for how long, lets you switch the look-back off,
+download everything, or delete a child's records or the whole household for good.
 
 ## When something goes wrong
 
