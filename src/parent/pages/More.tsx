@@ -17,6 +17,7 @@ const Photos = lazy(() => import('./Photos').then((module) => ({ default: module
 const Shortcuts = lazy(() => import('./Shortcuts').then((module) => ({ default: module.Shortcuts })));
 const Records = lazy(() => import('./Records').then((module) => ({ default: module.Records })));
 const Helper = lazy(() => import('./Helper').then((module) => ({ default: module.Helper })));
+const Connections = lazy(() => import('./Connections').then((module) => ({ default: module.Connections })));
 const WallSettings = lazy(() => import('./Settings').then((module) => ({ default: module.WallSettings })));
 const RuleSettings = lazy(() => import('./Settings').then((module) => ({ default: module.RuleSettings })));
 const HouseholdPage = lazy(() => import('./Settings').then((module) => ({ default: module.HouseholdPage })));
@@ -43,6 +44,7 @@ export function More({ rest }: { rest: string[] }) {
   else if (page === 'shortcuts') inner = <Shortcuts />;
   else if (page === 'records') inner = <Records />;
   else if (page === 'helper') inner = <Helper />;
+  else if (page === 'connections') inner = <Connections />;
   if (inner) return <Suspense fallback={null}>{inner}</Suspense>;
 
   const settings = view.household.settings;
@@ -181,6 +183,13 @@ export function More({ rest }: { rest: string[] }) {
             settings.ai.enabled ? 'On' : 'Off: everything works without it',
             <ActionPicture id="drawing" />,
           )}
+          {parent.can('guardian') &&
+            line(
+              'connections',
+              'Connections',
+              'Weather, helper, Academy, Siri and screens: how each is doing',
+              <ActionPicture id="plant" />,
+            )}
           {line(
             'records',
             'Records, export and deleting',

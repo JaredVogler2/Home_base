@@ -13,8 +13,9 @@ import styles from './pages.module.css';
  * Looking back: what was handed out and what was done, week by week.
  *
  * Every number is shown with what it is out of. Each child is set beside their own earlier weeks and never
- * beside a brother or sister. These are counts of things the family already knew had happened — not scores, not
- * speeds, and not a judgement of anybody.
+ * beside a brother or sister. These are counts of things the family already knew had happened — not scores and
+ * not a judgement of anybody. Minutes appear once, for a routine as a whole (never for a child): where the
+ * morning tends to wait, for whoever is planning it.
  */
 
 interface Cell {
@@ -46,6 +47,15 @@ interface Summary {
     stepsTogether: number;
     stepsSkipped: number;
     helpAsked: number;
+    morning: number;
+    afternoon: number;
+    evening: number;
+    timing: {
+      usualMinutes: number | null;
+      timed: number;
+      setAside: number;
+      longest: { title: string; picture: string; usualMinutes: number; of: number } | null;
+    };
   }[];
   rewards: { asked: number; approved: number; fulfilled: number; declined: number; refunded: number };
   shopping: {
@@ -67,6 +77,41 @@ const tickOf = (week: Summary['weeks'][number]): WeekTick => {
 };
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+
+/** Fewest finished goes before the page says how long a routine usually takes (the server's own rule). */
+const GOES_NEEDED = 3;
+
+const about = (minutes: number): string =>
+  minutes < 1 ? 'under a minute' : `about ${plural(minutes, 'minute', 'minutes')}`;
+
+/**
+ * Where a routine tends to wait, in a sentence or two — or, when there is too little to go on, saying so.
+ * Something noticed, never a verdict: minutes between taps on a screen, out of a stated number of goes.
+ */
+export function timingWords(row: Summary['routines'][number]): string[] {
+  const { timing } = row;
+  const words: string[] = [];
+  if (timing.usualMinutes === null) {
+    if (row.completed > 0)
+      words.push(
+        `Too few goes to say how long it usually takes: ${timing.timed} so far, and ${GOES_NEEDED} are needed.`,
+      );
+  } else {
+    words.push(
+      `Usually ${about(timing.usualMinutes)} from the first tap to the last (the middle of ${plural(timing.timed, 'go', 'goes')}).`,
+    );
+    words.push(
+      timing.longest
+        ? `The longest wait is usually before “${timing.longest.title}” is ticked: ${about(timing.longest.usualMinutes)} (${plural(timing.longest.of, 'go', 'goes')}).`
+        : 'No one step stands out as the place it waits.',
+    );
+  }
+  if (timing.setAside > 0)
+    words.push(
+      `${plural(timing.setAside, 'go was', 'goes were')} set aside and finished much later, and ${timing.setAside === 1 ? 'is' : 'are'} left out of the minutes.`,
+    );
+  return words;
+}
 
 /** One child's week, in a sentence, with every "out of" in it. */
 function sentence(child: Profile, cell: Cell | undefined, soFar: boolean): string {
@@ -239,9 +284,7 @@ export function History({ rest }: { rest: string[] }) {
                     />
                     {times && times.morning + times.afternoon + times.evening > 0 && (
                       <div>
-                        <p style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>
-                          When missions were finished (last four weeks)
-                        </p>
+                        <p className={styles.chartTitle}>When missions were finished (last four weeks)</p>
                         <SplitBar
                           label="When missions were finished"
                           parts={[
@@ -304,7 +347,11 @@ export function History({ rest }: { rest: string[] }) {
       )}
 
       {summary && summary.routines.some((row) => row.started > 0) && (
-        <Section title="Routines" hint="Over the last four weeks: how the steps were done.">
+        <Section
+          title="Routines"
+          hint="Over the last four weeks: how the steps were done, when, and where a routine tends to wait."
+          testId="history-routines"
+        >
           <Stack gap="s">
             {summary.routines
               .filter((row) => row.started > 0)
@@ -328,6 +375,24 @@ export function History({ rest }: { rest: string[] }) {
                         { name: 'Left out', value: row.stepsSkipped, colour: CHART.quiet },
                       ]}
                     />
+                    {row.morning + row.afternoon + row.evening > 0 && (
+                      <div>
+                        <p className={styles.chartTitle}>When it was finished</p>
+                        <SplitBar
+                          label={`When ${row.title} was finished`}
+                          parts={[
+                            { name: 'Morning', value: row.morning, colour: CHART.morning },
+                            { name: 'Afternoon', value: row.afternoon, colour: CHART.afternoon },
+                            { name: 'Evening', value: row.evening, colour: CHART.evening },
+                          ]}
+                        />
+                      </div>
+                    )}
+                    {timingWords(row).map((line) => (
+                      <p key={line} className={styles.itemNote} data-testid={`timing-${row.title}`}>
+                        {line}
+                      </p>
+                    ))}
                   </Stack>
                 </Card>
               ))}
@@ -383,6 +448,11 @@ export function History({ rest }: { rest: string[] }) {
               <p>
                 These are counts, not measurements of a child. A week can look different for a hundred
                 ordinary reasons: a cold, a holiday, a new baby.
+              </p>
+              <p>
+                A routine’s minutes are the time between taps on the wall, to the nearest minute, for all its
+                goes together. A child who does everything and then ticks it all at once looks instant. They
+                show where a morning tends to wait — not how quick anyone is.
               </p>
               <Button onClick={() => parent.go('more', 'records')}>What is kept, export and deleting</Button>
             </Stack>

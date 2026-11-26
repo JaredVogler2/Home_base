@@ -1,21 +1,26 @@
 # Traceability: the brief against the code
 
 Every requirement, invariant and prohibition in the brief (`README.md` as first written, and the fifteen files in
-`prompt-series/`), and what the code at commit **`ad4c5e4`** actually does about it. First written 2026-11-26
-against `5479df1`; refreshed the same day after the fixes that audit led to (merge `ef906d2`, then `9d866c0`, then
-`ad4c5e4`, which adds `README.md` and `docs/PROGRESS.md` only). Two changes made after that refresh are folded in
-by hand: the "Saving up" section in History (row 11.22), CI keeping a trace of any failing browser test, and
-printable picture routines (row 14.26).
+`prompt-series/`), and what the code actually does about it. First written 2026-11-26 against `5479df1`;
+refreshed the same day after the fixes that audit led to (merge `ef906d2`, then `9d866c0`, then `ad4c5e4`).
+Changes made after that refresh are folded in by hand, row by row: the "Saving up" section in History, CI
+keeping a trace of any failing browser test, printable picture routines (14.26) — and then the work of pull
+request #4, which closed the gaps this file listed as "not built" that needed nobody's account or hardware:
+where a routine takes longer (06.20, 11.22), favourites (10.9), a record of how the connections have been (11.2,
+11.10), a screen for correcting the record (11.11), the wall holding still when hidden (13.29), a run of the
+phone's tests in WebKit (13.35), and browser tests for the routine screens, the extras ribbon and the Academy
+import page (04.22, 06.9, 06.19, 07.11).
 Statuses come from reading the code and the tests; other documents were used as a map and checked where they
 made claims.
 
-What was run for the refresh: `npx vitest run` at `ef906d2` (33 files, **453 passed, 1 skipped** — the skipped
+What was run for the refresh: `npx vitest run` at `ef906d2` (33 files, 453 passed, 1 skipped — the skipped
 one is the backup test, which needs PostgreSQL) and `tests/server/backup.test.ts` against a local PostgreSQL at
 `9d866c0` (passed). At `5479df1`: `tsc --noEmit` and `eslint .` clean, and a search of tracked files for API keys
-and tokens (none). Not re-run here: the full `npm run test:pg`, the Playwright browser tests, the production
-build and `npm run verify:deployment`; where those are cited, the evidence is their code and the results
-recorded in `docs/TEST_RESULTS.md` (browser: 29 passed, 1 skipped under the dev server; the skipped offline
-reload passes against a production build).
+and tokens (none). For the rows changed by pull request #4, everything was run again at its head: `npx vitest
+run` (38 files, **493 passed, 1 skipped**), the server tests on PostgreSQL (284 passed), the Playwright browser
+tests (38 passed, 1 skipped under the dev server; the skipped offline reload passes against a production
+build), and on GitHub the same plus the phone's tests in WebKit. Results are recorded in
+`docs/TEST_RESULTS.md`.
 
 ## How to read the statuses
 
@@ -43,20 +48,20 @@ sentences (one row per separately testable promise), which is why there are more
 | README | 8 | 4 | 1 | 0 | 2 | 1 | 0 | 0 | 0 |
 | 00 Start here | 33 | 26 | 4 | 0 | 0 | 3 | 0 | 0 | 0 |
 | 01 Architecture | 25 | 19 | 3 | 0 | 0 | 1 | 2 | 0 | 0 |
-| 02 Child experience | 36 | 17 | 13 | 2 | 2 | 0 | 1 | 1 | 0 |
+| 02 Child experience | 36 | 17 | 14 | 2 | 2 | 0 | 1 | 0 | 0 |
 | 03 Identity and data | 24 | 22 | 1 | 0 | 0 | 0 | 1 | 0 | 0 |
-| 04 Quest | 30 | 23 | 6 | 0 | 0 | 0 | 0 | 1 | 0 |
+| 04 Quest | 30 | 24 | 5 | 0 | 0 | 0 | 0 | 1 | 0 |
 | 05 Bank | 28 | 25 | 3 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 06 Routines | 21 | 13 | 6 | 0 | 0 | 0 | 0 | 2 | 0 |
+| 06 Routines | 21 | 16 | 4 | 0 | 0 | 0 | 0 | 1 | 0 |
 | 07 Academy | 20 | 12 | 4 | 0 | 0 | 1 | 0 | 2 | 1 |
 | 08 Calendar | 17 | 2 | 5 | 0 | 5 | 1 | 0 | 3 | 1 |
 | 09 Memories | 20 | 9 | 4 | 0 | 4 | 0 | 0 | 3 | 0 |
-| 10 To buy | 34 | 21 | 6 | 1 | 2 | 0 | 0 | 3 | 1 |
-| 11 Parent studio, history | 26 | 17 | 8 | 0 | 0 | 0 | 0 | 1 | 0 |
+| 10 To buy | 34 | 22 | 6 | 1 | 2 | 0 | 0 | 2 | 1 |
+| 11 Parent studio, history | 26 | 20 | 6 | 0 | 0 | 0 | 0 | 0 | 0 |
 | 12 AI copilot | 29 | 17 | 2 | 3 | 0 | 1 | 1 | 5 | 0 |
-| 13 Deployment, device | 40 | 23 | 4 | 2 | 5 | 3 | 0 | 3 | 0 |
+| 13 Deployment, device | 40 | 25 | 4 | 2 | 5 | 3 | 1 | 0 | 0 |
 | 14 Quality and release | 33 | 19 | 4 | 1 | 1 | 2 | 0 | 6 | 0 |
-| **Total** | **424** | **269** | **74** | **9** | **21** | **13** | **5** | **30** | **3** |
+| **Total** | **424** | **279** | **70** | **9** | **21** | **13** | **6** | **23** | **3** |
 
 ## What is not done
 
@@ -70,39 +75,35 @@ says it is missing.
    taps"); a real child's time is not measured.
 3. **Nothing has run on the real wall, an iPhone, Vercel or a hosted database**, and no live AI provider call has
    been made. Every hardware and account row below is open; DEVICE-CHECKLIST, DEPLOYMENT and INTEGRATIONS say so.
-4. **History does not say where routines take longer** (06, 11). Run minutes are stored in the completion event
-   and never reported; time of day is shown for missions, not routines. Undocumented. (Reward goal progress is
-   now in History, as "Saving up".)
-5. **No record of integration health or sync errors in history** (11 f). Device pairing and switching off are in
-   the audit trail; the Sky page notes a stale weather reading and the Helper page shows spend, but nothing is
-   kept over time. Undocumented.
-6. **To-buy gaps** (10): no favourites; no in-app voice input (keyboard dictation and the Siri Shortcut only); item
-   "images" are bundled pictures, not photos. Undocumented.
-7. **Routines have no branching and no active reminders** (06); only the day clock shows what is next.
-   Undocumented.
-8. **Missions have no age band of their own** (04); they are assigned to named children. Undocumented.
-9. **Browsers**: no WebKit or Firefox run, Chromium only (13); no Background Sync API, foreground reconnect only
-    (13). Undocumented.
+4. **Routines have no branching and no active reminders** (06); only the day clock shows what is next.
+   Recorded only here.
+5. **Missions have no age band of their own** (04); they are assigned to named children. Recorded only here.
+6. **To-buy gaps** (10): no in-app voice input (keyboard dictation and the Siri Shortcut only, by design — no
+   microphone, DECISIONS §11); item "images" are bundled pictures, not photos.
+7. **Browsers**: Firefox has not run the tests; WebKit runs the phone's tests in CI but not the wall's; no
+   Background Sync, on purpose (DECISIONS §26).
+8. **Not kept in the repository**: Playwright traces (CI keeps those of a failing test for seven days).
+9. **Smaller, recorded only here**: no device-side photo cache budget; no face-safe crop (09).
 10. **AI copilot: four of eight jobs not built** — schedule-aware planner, learning bridge, family briefing, story
     scripts — and shopping "staples from history". Documented (AI.md, ROADMAP §5). SDKs not used (DECISIONS §18).
 11. **Calendar glance adapters and Google Photos Picker** not built — optional; documented (DECISIONS §13–14,
     ROADMAP §5).
 12. **Academy Phase B live sync** not built — needs the Academy owner's permission; documented.
-13. **Smaller, undocumented**: no device-side photo cache budget; no face-safe crop (09); no explicit pause of
-    motion when the page is hidden (13); browser traces are kept only by CI, and only for a test that fails
-    (none are committed) (02); `history.forget` has no screen; the core/bonus ribbon, the routine screens and the Academy
-    import page have no browser test.
-14. **Optional enhancements in file 14** not built: adventure map (ROADMAP's "family garden"), family bulletin,
+13. **Optional enhancements in file 14** not built: adventure map (ROADMAP's "family garden"), family bulletin,
     packing wizard, trip/emergency checklists, milestone cards on the wall — all listed with trade-offs in
     ROADMAP §6. (Printable picture routines are built.)
-15. **Deliberate deviations**: Vite SPA not Next.js (§1); polling not managed realtime (§2, §4); CSS/SVG only, no
-    skeletal animation (§10); plain HTTPS not the providers' SDKs (§18); unencrypted device cache (§23).
+14. **Deliberate deviations**: Vite SPA not Next.js (§1); polling not managed realtime (§2, §4); CSS/SVG only, no
+    skeletal animation (§10); plain HTTPS not the providers' SDKs (§18); unencrypted device cache (§23); no
+    Background Sync (§26).
 
 Done since the first version of this file (each re-checked in the code): the mission timer on the wall; the
 bonus ribbon on the child's board; parents' moments in History; mission reordering; the plan's load per child
 ("fairness by effort"); a warning for rewards that look like necessities; a tested backup and restore; the
-missing documents except PROGRESS; screenshots at 4K, tablet and phone; a recording of the wall journey; and
-the stale claims listed in the last section.
+missing documents; screenshots at 4K, tablet and phone; a recording of the wall journey; the stale claims listed
+in the last section; and, in pull request #4, where a routine tends to wait and when it was finished, the
+favourites shelf, the Connections page, the day-by-day record with a way to forget a line, the wall holding
+still when it cannot be seen, the phone's tests in WebKit, and browser tests for the routine screens, the
+extras ribbon, the Academy import page and History.
 
 ## README (the original paragraph)
 
@@ -124,7 +125,7 @@ the stale claims listed in the last section.
 | 00.1 | Pre-readers primary; a baby may have a profile but no independent tasks | built, not tested here | `server/domain/family.ts` forces `independent=false` for `baby`; `server/domain/quest.ts` refuses missions for a non-independent child. No test |
 | 00.2 | Family data configurable at runtime, never hard-coded | built, not tested here | Profiles, settings, missions all in the database (`shared/settings.ts` defaults only); made-up family only in `seed.ts` for the demo |
 | 00.3 | Record decisions and tradeoffs in `docs/DECISIONS.md` | verified | Inspected: 23 sections plus smaller choices; deviations marked |
-| 00.4 | Never silently drop requirements | built, not tested here | Gaps are now written down: this file (linked from `docs/ROADMAP.md`), ROADMAP §5–6, INTEGRATIONS. Several small gaps (favourites, routine branching, Background Sync, cache budget) are recorded only here |
+| 00.4 | Never silently drop requirements | built, not tested here | Gaps are written down: this file (linked from `docs/ROADMAP.md`), ROADMAP §5–6, INTEGRATIONS, and — for Background Sync — DECISIONS §26. Routine branching, the cache budget and a mission's own age band are recorded only here |
 | 00.5 | Never claim untested integrations | verified | Inspected `docs/INTEGRATIONS.md` (each row says built/tested/needs device). One stale claim found the other way round (last section) |
 | 00.6 | No paid service without documenting costs and free alternatives | verified | Inspected `docs/COSTS.md` ("Why nothing paid is required", alternatives) |
 | 00.7 | Inventory requirements; tracked plan with dependencies and acceptance tests | verified | Inspected `docs/ROADMAP.md`: phases with brief file and state, then next steps each with "waiting for". Acceptance is via `docs/TEST_RESULTS.md`, not per step |
@@ -220,8 +221,8 @@ the stale claims listed in the last section.
 | 02.29 | Parent-configurable voice, mute, theme, seasonal decor | built, not tested here | `shared/settings.ts` (`voice`, `sounds`, `contrast`, `decor`); `src/parent/pages/Settings.tsx` |
 | 02.30 | Parent-configurable quiet hours and calm mode | verified | `e2e/motion.spec.ts`: `calm mode, switched on by a parent, makes the wall still within a few seconds`; `in quiet hours the wall is dimmed and still` |
 | 02.31 | Do not send child voice to the cloud | verified | No microphone use anywhere in `src/` (searched); `Permissions-Policy: microphone=()` checked by `deploy-config.test.ts`: `sends every page with the same security headers the standalone server sends` |
-| 02.32 | Screenshots at 4K, scaled landscape, portrait, iPhone | verified | Inspected `docs/review/screens/` (62 images): `wall-home-4k.jpg` and `wall-quest-4k.jpg` (3840×2160), `wall-home-small.jpg` (1280×720), `wall-home-tall.jpg` (upright tablet), `wall-home-phone.jpg`, `parent-today.jpg` |
-| 02.33 | Actual browser traces | not built | No traces exist: `trace: 'off'` in `playwright.config.ts` and `--trace off` in `npm run test:e2e`; CI uploads the HTML report only on failure (`ci.yml`), which with tracing off holds no traces |
+| 02.32 | Screenshots at 4K, scaled landscape, portrait, iPhone | verified | Inspected `docs/review/screens/` (64 images): `wall-home-4k.jpg` and `wall-quest-4k.jpg` (3840×2160), `wall-home-small.jpg` (1280×720), `wall-home-tall.jpg` (upright tablet), `wall-home-phone.jpg`, `parent-today.jpg` |
+| 02.33 | Actual browser traces | built, not tested here | Traces are made, not kept in the repository. CI records every step of any browser test that fails and keeps it for seven days (`ci.yml`: `--trace retain-on-failure`, uploaded with the report); `npx playwright test --trace on` makes one for any test. None is committed: a trace holds the test server's session cookies and the paths of the machine that made it. The kept evidence is the film `docs/review/recordings/wall-journey.webm` and the screenshots |
 | 02.34 | Measure frame time and memory | simulated | `npm run measure` (`scripts/measure-wall.ts`), output in `docs/TEST_RESULTS.md` "The wall, measured": headless Chromium, no graphics card |
 | 02.35 | Fall back to static art | verified | `tests/client/derive.test.ts`: `gives up the ambient movement on a display that cannot manage thirty`; `motion.spec.ts` |
 | 02.36 | Acceptance: non-reader selects profile, finds chores, sees balance, enters Academy, returns, requests a reward, after one demonstration | simulated | A headless browser plays the child (`non-reader.spec.ts`, R2); no real child has tried it (14.10) |
@@ -280,7 +281,7 @@ the stale claims listed in the last section.
 | 04.19 | Snooze | built, not tested here | `occurrence.snooze` in `quest.ts`, button in `Today.tsx`; no test |
 | 04.20 | Correct credit with reversal | verified | `occurrence.reverse` exercised in `quest.test.ts`: `lets a child take back an “I did it”…` (ledger shows grant/correction pairs) |
 | 04.21 | View pending | verified | `e2e/approval.spec.ts`: `Yes: the wall shows it done and the stars go up by exactly the mission’s stars, once` |
-| 04.22 | Separate mandatory household routines from optional bonus missions | built, not tested here | Plan page separates them; the wall marks bonus cards with a ribbon (`data-kind`, `.extra` in `Quest.tsx`/`Quest.module.css`) and "(an extra)" in the accessible name. No test |
+| 04.22 | Separate mandatory household routines from optional bonus missions | verified | Plan page separates them; the wall marks an extra with a ribbon and "(an extra)" in its name. `e2e/child-day.spec.ts`: `an extra on the board is marked as a choice, and saying "not today" to it costs nothing` |
 | 04.23 | Friendly celebration | verified | `derive.test.ts`: `cheers when a grown-up says yes to a waiting mission — for that child only` |
 | 04.24 | Collectible non-monetary badges | verified | `badges.test.ts`: `gives the first star its badge, once, to the child who earned it` |
 | 04.25 | Lifetime level and progress to goals | verified | `tests/shared/badges.test.ts`: `counts stars ever earned, a step at a time`; level rosette in `Bank.tsx` |
@@ -335,7 +336,7 @@ the stale claims listed in the last section.
 | 06.6 | Create, reorder, schedule, clone, pause from iPhone | verified | `routines.test.ts`: `copies a routine with steps of its own, and pauses one without losing it`; arrows in `RoutineEditor.tsx` |
 | 06.7 | Quiet hours, day-of-week variations, shared steps, gentle reminders | built, not tested here | Day variations tested (`shows only the steps that belong to the day`); reminders are only the day clock's "next" picture (`clockOf` in `src/wall/derive.ts`) — no active reminder |
 | 06.8 | No mandatory countdown or punitive timer | built, not tested here | No countdown anywhere on the wall (searched) |
-| 06.9 | "Now / next / finished" unmistakable | built, not tested here | `step-now`, next, `routine-finished` in `src/wall/scenes/Routines.tsx`; no browser test opens a routine |
+| 06.9 | "Now / next / finished" unmistakable | verified | `e2e/child-day.spec.ts`: `a routine goes one picture at a time: now and next, a hand asked for, a tap taken back, all done` — which also found that "All done!" was never shown (fixed: a finished routine now stays in front until the child taps) |
 | 06.10 | Tap next, repeat, ask for help | verified | `routines.test.ts`: `counts a tap once, lets a tap be taken back, and records help without judging it` |
 | 06.11 | Skip with parent-configurable policy | verified | `routines.test.ts`: `lets a grown-up say “we did that together”, and only a grown-up leave a firm step out` |
 | 06.12 | Resume a suspended routine | verified | `routines.test.ts`: `is one go per child per day, whichever screen opens it, and can be left and come back to` |
@@ -345,8 +346,8 @@ the stale claims listed in the last section.
 | 06.16 | Record run/step start, end, completion, help, skip coarsely; no camera | verified | `routines.test.ts` (06.10); events in `server/domain/routines.ts` |
 | 06.17 | One canonical occurrence/credit reference | verified | 06.5 |
 | 06.18 | No XP for basic needs by default; optional family rule | verified | `routines.test.ts`: `gives nothing for the routine itself unless the family has decided it should` |
-| 06.19 | History shows where routines need assistance (non-clinical) | built, not tested here | "Routines" section of `src/parent/pages/History.tsx` (alone / together / left out) |
-| 06.20 | History shows where routines take longer | not built | Minutes are stored in the completion event and never reported. Undocumented |
+| 06.19 | History shows where routines need assistance (non-clinical) | verified | "Routines" in `src/parent/pages/History.tsx` (on their own / together / left out, and a hand asked for). `e2e/records.spec.ts`: `History says how each routine went — its steps, when, and where it waits — and what a child is saving for` |
+| 06.20 | History shows where routines take longer | verified | `tests/server/routine-timing.test.ts`: `reports when a routine was finished and where it waits, for the routine and not for a child`; `says there is too little to go on rather than guessing from one go`; `is not moved by one very slow morning`; `leaves out a go that was set aside and finished much later, and says that it did`. About the routine, never a child (DECISIONS §24) |
 | 06.21 | Tests: schedule variants, DST, interrupted run, edit while active, two devices, duplicate XP | verified | `routines.test.ts` titles above. **DST for routines is not tested** (missions only) |
 
 ## 07 — Training Academy
@@ -363,7 +364,7 @@ the stale claims listed in the last section.
 | 07.8 | No session tokens in query strings | verified | `non-reader.spec.ts` asserts the request is exactly the configured address; `checkAcademyUrl` refuses queries |
 | 07.9 | Preserve Academy's local mode and standalone deployment | built, not tested here | Nothing in this repo changes it |
 | 07.10 | Phase B live progress adapter (optional, with permission) | not built | Documented as a proposal: ACADEMY.md "Phase B" |
-| 07.11 | Parent-mediated export/import fallback; explicit deletion and disconnect | verified | `academy.test.ts`: `links the child, keeps a total per sitting, and gives no stars unless asked to`; `deletes the link and the sittings, and leaves every star where it is` |
+| 07.11 | Parent-mediated export/import fallback; explicit deletion and disconnect | verified | `academy.test.ts`: `links the child, keeps a total per sitting, and gives no stars unless asked to`; `deletes the link and the sittings, and leaves every star where it is`; the page itself in a browser: `e2e/records.spec.ts`: `Academy progress is brought in from a file, only after a yes, and a wrong file is turned away` |
 | 07.12 | If launch-only, show no fake progress | built, not tested here | Summary shown only for imported sittings (`AcademyPage.tsx`) |
 | 07.13 | Reward participation, not speed/correctness; capped; no duplicates; progress separate from grants | verified | `academy.test.ts`: `keeps to the daily limit across imports`; `keeps but never pays for sittings dated in the future or long ago, or left unfinished` |
 | 07.14 | Child can play without linking or earning | built, not tested here | The boat needs only the address and the switch |
@@ -433,7 +434,7 @@ the stale claims listed in the last section.
 | 10.6 | Optional images | built, not tested here | A picture from the bundled set only (`SHOPPING_PICTURE_IDS`); no item photos |
 | 10.7 | Priority | built, not tested here | `priority` field in `shared/ops.ts`, `Lists.tsx` |
 | 10.8 | Checked/purchased, undo, archive, recently purchased | verified | `shopping.test.ts` (00.29); bought tray in `shopping.spec.ts` |
-| 10.9 | Favourites | not built | No favourites anywhere (searched). Undocumented |
+| 10.9 | Favourites | verified | A favourites shelf above the list (`Lists.tsx`), kept with the settings (DECISIONS §25). `shopping.test.ts`: `keeps what the family always buys, once however it is spelled, and puts it back with one tap`; `is a shelf and not a second list: it stops at forty`; `e2e/shopping.spec.ts`: `favourites: kept from the editor, put back with one tap, taken off the shelf` |
 | 10.10 | Recurring suggestions | verified | `suggestions.test.ts`: `suggests what was bought at least twice, most often first, and survives the tidy` |
 | 10.11 | Large visual pantry tile on the wall | verified | `room-pantry` in `non-reader.spec.ts`; `shopping.spec.ts` |
 | 10.12 | Child requests items as pictures with guardian approval; buys nothing | verified | `shopping.test.ts`: `puts a picture on the list for a grown-up to answer, and buys nothing`; `cannot type: a child’s request is a picture from the list of pictures and nothing else` |
@@ -465,7 +466,7 @@ the stale claims listed in the last section.
 | # | Requirement | Status | Where / evidence |
 | --- | --- | --- | --- |
 | 11.1 | Mobile-first adult console: settings, profiles, task/routine designer, rewards, approvals, academy, lists, devices, exports, deletion, AI | verified | `e2e/layouts.spec.ts`: `no grown-ups’ page scrolls sideways on a phone` (20 pages); `a11y.spec.ts`: `Today, To buy, Plan with the mission editor, History, Family and a settings page` |
-| 11.2 | Integrations status and device logs | built, not tested here | One-line state per integration on the Family page (`More.tsx`); Sky page notes a stale weather reading; Helper page shows provider, model and spend (`/ai/status`); last seen per screen (`Screens.tsx`); audit list on Records. No test |
+| 11.2 | Integrations status and device logs | verified | The Connections page (`src/parent/pages/Connections.tsx`): each connection's state now, each line opening the page where it is set up; plus last seen per screen (`Screens.tsx`). `e2e/connections.spec.ts`: `says what is off without alarm, counts the screens’ requests, and keeps what happened` |
 | 11.3 | Wall parent mode locked and easy to exit | verified | `identity.test.ts` (03.5); `src/wall/scenes/GrownUps.tsx` |
 | 11.4 | Adult views text/tables; child views picture-led | verified | 00.18; parent pages |
 | 11.5 | History (a): occurrences, completion, approval, skip, effort | verified | `history.test.ts`: `counts what was handed out and what was done, week by week` |
@@ -473,8 +474,8 @@ the stale claims listed in the last section.
 | 11.7 | History (c): ledger, redemptions, fulfilment, refunds | verified | `history.test.ts` (05.22) |
 | 11.8 | History (d): Academy aggregates only with consent | verified | `academy.test.ts`: `needs a parent’s yes` |
 | 11.9 | History (e): purchases and recurring items | verified | `suggestions.test.ts` (10.10) |
-| 11.10 | History (f): integration health, sync errors, device changes | not built | Device pair/revoke are audited; sync errors and integration health are not recorded. Undocumented |
-| 11.11 | History (g) and timeline: parent-authored milestones/notes | verified | `history.test.ts`: `are kept for the grown-ups only, are in the export, and go when removed`; `does not let a moment be given to another family’s child`; `src/parent/pages/Moments.tsx` in History. (`history.forget` still has no screen and no test) |
+| 11.10 | History (f): integration health, sync errors, device changes | verified | `server/domain/health.ts`, read mostly from what is already kept (DECISIONS §26). `tests/server/health.test.ts`: `lists a request that was refused, by screen and part of the house, and only counts an ordinary "no"`; `notes a request the server itself could not carry out — once a day, however often it is retried`; `notes a weather service going quiet once, and coming back once — not every failed try`; `starts out saying what is switched off, and shows a screen being added and switched off`; `is for parents only, and one household never sees another’s` |
+| 11.11 | History (g) and timeline: parent-authored milestones/notes | verified | `history.test.ts`: `are kept for the grown-ups only, are in the export, and go when removed`; `does not let a moment be given to another family’s child`; `src/parent/pages/Moments.tsx` in History. Correcting the record: `lets a parent forget a line that was simply wrong: it leaves the record, and the stars stay as they are`; the screen for it is "The day-by-day record" on Records (`e2e/records.spec.ts`: `a line of the day-by-day record that was simply wrong can be forgotten`) |
 | 11.12 | Avoid raw touches, mic/camera, locations, medical labels, child chat logs | verified | `isolation.test.ts`: `rounds a home’s position to the middle of its area, and tells a child’s wall no more than that`; inspected Records "What is kept" |
 | 11.13 | Calendar and photo metadata minimal | built, not tested here | No calendar data; photos re-encoded on the phone (09.20) |
 | 11.14 | Retention: 90 days detail, 12 months trends, configurable; ledger until profile deletion | built, not tested here | `history.detailDays`/`trendMonths` in `shared/settings.ts`; pruning in `server/domain/housekeeping.ts`; no test of pruning itself |
@@ -485,7 +486,7 @@ the stale claims listed in the last section.
 | 11.19 | Remove integrations | verified | `academy.test.ts` (07.11); Shortcut keys (10.23) |
 | 11.20 | Weekly family recap | verified | "This week" in `History.tsx`, data from `history.test.ts` (11.5) |
 | 11.21 | Charts: help needed, XP in/out, time since purchase, category practice | built, not tested here | `History.tsx` (help meters, stars in/out, "Bought again and again"); islands table in `AcademyPage.tsx` |
-| 11.22 | Charts: routine completion by time of day; reward goal progress | built, not tested here | Reward goal progress: "Saving up" in `src/parent/pages/History.tsx` (each child's chosen reward against the stars they have). Routines by time of day: not built — time of day is for missions only (`server/domain/history.ts`); each routine's own completion is shown instead |
+| 11.22 | Charts: routine completion by time of day; reward goal progress | verified | Routines by time of day: "When it was finished" for each routine (`routine-timing.test.ts`: the `morning` / `evening` counts in `reports when a routine was finished…`). Reward goal progress: "Saving up". Both in a browser: `e2e/records.spec.ts`: `History says how each routine went — its steps, when, and where it waits — and what a child is saving for` |
 | 11.23 | Denominators, missing-data flags, observation vs inference, no rankings or diagnoses | verified | `demo.test.ts`: `has eight weeks to look back on, each with what it was out of`; "nothing kept" weeks and wording in `History.tsx` |
 | 11.24 | Comparisons within one individual over time only | built, not tested here | `History.tsx` |
 | 11.25 | Tests: data minimisation, deletion cascades, export fidelity, ledger reconciliation, timezone, permissions | verified | `history.test.ts` titles above; `is closed to the wall`; `keeps another household out of all of it` |
@@ -554,16 +555,16 @@ the stale claims listed in the last section.
 | 13.23 | Installable manifest and icons | verified | `deploy-config.test.ts`: `can be installed: a start address, a standalone window, and icons that exist` |
 | 13.24 | Offline app shell, cached safe assets | verified | `e2e/offline.spec.ts`: `a reload with no signal at all still draws the house, with the mission still sent` (production build) |
 | 13.25 | IndexedDB outbox | verified | `store.test.ts` (01.12) |
-| 13.26 | Background Sync where supported | not built | No Background Sync API; foreground reconnect only. Undocumented |
+| 13.26 | Background Sync where supported | deviation | Not used, on purpose: Safari on an iPhone does not have it, the wall is always in front, and a second copy of the sync rules in a service worker is a cost with no gain here (DECISIONS §26). The queue is kept on the device and sent when the page is next in front with a signal (13.24, 13.25) |
 | 13.27 | Foreground reconnect fallback | verified | `online`/`visibilitychange` wake in `src/sync/store.ts`; `offline.spec.ts` |
 | 13.28 | Service worker versioning so queued data survives updates | built, not tested here | Versioned shell cache; outbox lives in IndexedDB, independent of the worker |
-| 13.29 | Pause heavy motion when hidden | not built | Nothing pauses animation on `visibilitychange`; the browser's own throttling is relied on (`pace.ts` only skips judging). Undocumented |
+| 13.29 | Pause heavy motion when hidden | verified | `src/wall/hidden.ts`: a wall that cannot be seen holds every animation where it is, stops talking and stops turning photographs. `e2e/motion.spec.ts`: `a wall nobody can see holds its animations, and picks them up again when it is back` |
 | 13.30 | Avoid 4K overdraw; image decode budget; profiling | simulated | Self-chosen light motion (`derive.test.ts`: `is not fooled by a few slow frames among many good ones`); figures from `npm run measure`, headless |
 | 13.31 | Thermal/long-running tests; 24-hour soak or mark not run | hardware-pending | Not run; DEVICE-CHECKLIST C7, H2, H4 |
 | 13.32 | Restore safe navigation after reboot, reconnect, idle | verified | 13.24; idle home in `Wall.tsx` |
-| 13.33 | iPhone app-like layout | simulated | `layouts.spec.ts` (phone project is Chromium at 390×844, not Safari) |
+| 13.33 | iPhone app-like layout | simulated | `layouts.spec.ts` on the phone project (390×844), in Chromium and again in WebKit in CI (13.35). Not an iPhone |
 | 13.34 | Installation guide for both parents | verified | Inspected PARENT-GUIDE "First ten minutes" (Add to Home Screen; invitation) |
-| 13.35 | Test Chrome and WebKit | not built | Playwright projects are all Chromium (`playwright.config.ts`). Undocumented |
+| 13.35 | Test Chrome and WebKit | verified | CI runs every browser test of the phone's side again in WebKit, the engine under Safari (`ci.yml` job "Browser tests in WebKit", `phone-webkit` in `playwright.config.ts`): 11 of 11 passed on its first run. It is WebKit's Linux build, not an iPhone; the wall's tests run in Chromium only, which is what the display runs |
 | 13.36 | Different viewports and DPR | verified | `layouts.spec.ts` four projects |
 | 13.37 | No WebGL fallback | verified | Inspected: no WebGL anywhere, so nothing to fall back from |
 | 13.38 | Reduced motion; interrupted internet | verified | `motion.spec.ts`; `offline.spec.ts` |
@@ -610,7 +611,7 @@ the stale claims listed in the last section.
 
 ## Checked at the end
 
-Looked for again when the refresh was finished (HEAD `ad4c5e4`):
+Looked for again when the refresh was finished (HEAD `ad4c5e4`), and the counts again after pull request #4:
 
 | Document | State |
 | --- | --- |
@@ -618,14 +619,14 @@ Looked for again when the refresh was finished (HEAD `ad4c5e4`):
 | `docs/ROADMAP.md`, `docs/TEST_RESULTS.md`, `docs/ART_DIRECTION.md`, `docs/ASSETS.md` | present, committed |
 | `docs/DEVICE-CHECKLIST.md` §I | present; says plainly no child has tried HOMEBASE |
 | `README.md` | rewritten to describe the app, committed in `ad4c5e4` |
-| `docs/review/screens/` | 62 images, committed |
+| `docs/review/screens/` | 64 images, committed |
 | `docs/review/recordings/wall-journey.webm` | present, committed |
 | Playwright traces | none committed; CI records them and keeps those of any failing test as an artifact (`.github/workflows/ci.yml`) |
 
 ## Claims in other documents that the code does not bear out
 
 The five found in the first version are fixed, each re-read: `docs/integrations/ACADEMY.md` now says the import
-page is built (without a browser test); `docs/THREAT-MODEL.md` row 9 cites the committed store test and the
+page is built (it has a browser test since pull request #4); `docs/THREAT-MODEL.md` row 9 cites the committed store test and the
 "Things not done" bullet now agrees with row 17 on scrubbed logs; `docs/TEST_RESULTS.md` and `docs/ASSETS.md`,
 linked from DECISIONS and DEVICE-CHECKLIST, now exist; `docs/PARENT-GUIDE.md` no longer says "never food".
 `docs/integrations/WEATHER.md`'s attribution note matches the Open-Meteo link on the Sky page

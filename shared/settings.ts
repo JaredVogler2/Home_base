@@ -131,6 +131,26 @@ const HistorySchema = v.object({
   trendMonths: withDefault(int(1, 60), 12),
 });
 
+/** How many things the favourites shelf holds: a shelf, not a second list. */
+export const FAVOURITES_MAX = 40;
+
+/**
+ * A thing the family always buys. The picture and the aisle are kept as plain words on purpose: if a later
+ * version retires a picture, that one favourite falls back to a plain basket where it is shown, instead of a
+ * household's whole settings failing to read.
+ */
+const FavouriteSchema = v.object({
+  text: text(120),
+  picture: v.pipe(v.string(), v.maxLength(40)),
+  category: v.pipe(v.string(), v.maxLength(40)),
+});
+export type Favourite = v.InferOutput<typeof FavouriteSchema>;
+
+const ShoppingSchema = v.object({
+  /** Kept by a grown-up; one tap puts any of them back on the list. Never bought, never ordered. */
+  favourites: withDefault(v.fallback(v.pipe(v.array(FavouriteSchema), v.maxLength(FAVOURITES_MAX)), []), []),
+});
+
 const AiSchema = v.object({
   enabled: withDefault(v.boolean(), false),
   provider: withDefault(v.nullable(v.picklist(['anthropic', 'openai'])), null),
@@ -174,6 +194,10 @@ export const HouseholdSettingsSchema = v.object({
   /** While set, missions and routines are not handed out. Nothing is counted as missed. */
   vacation: withDefault(v.nullable(v.object({ from: date, to: date })), null),
   history: withDefault(HistorySchema, v.getDefaults(HistorySchema) as v.InferOutput<typeof HistorySchema>),
+  shopping: withDefault(
+    ShoppingSchema,
+    v.getDefaults(ShoppingSchema) as v.InferOutput<typeof ShoppingSchema>,
+  ),
   ai: withDefault(AiSchema, v.getDefaults(AiSchema) as v.InferOutput<typeof AiSchema>),
 });
 

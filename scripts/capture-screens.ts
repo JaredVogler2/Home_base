@@ -24,7 +24,7 @@ interface Shot {
   as: 'wall' | 'guardian' | 'caregiver' | null;
   path: string;
   size?: [number, number, number];
-  /** Things to tap, in order, before the picture. */
+  /** Things to tap, in order, before the picture. One that begins with "?" is tapped only if it is there. */
   taps?: string[];
   fullPage?: boolean;
   wait?: number;
@@ -84,6 +84,15 @@ const SHOTS: Shot[] = [
     path: '/wall?at=07:10',
     size: WIDE,
     taps: [t('room-routines'), june, t('routine-Morning'), t('step-done')],
+  },
+  {
+    // The routine begun in the picture before, taken to its end: however many steps today has.
+    name: 'wall-routine-done',
+    as: 'wall',
+    path: '/wall?at=07:10',
+    size: WIDE,
+    taps: [t('room-routines'), june, ...Array.from({ length: 8 }, () => `?${t('step-done')}`)],
+    wait: 900,
   },
   { name: 'wall-pantry', as: 'wall', path: '/wall?at=16:30', size: WIDE, taps: [t('room-pantry')] },
   {
@@ -207,6 +216,14 @@ const SHOTS: Shot[] = [
     wait: 900,
   },
   {
+    name: 'parent-connections',
+    as: 'guardian',
+    path: '/parent/more/connections',
+    size: PHONE,
+    fullPage: true,
+    wait: 900,
+  },
+  {
     name: 'parent-helper',
     as: 'guardian',
     path: '/parent/more/helper',
@@ -243,7 +260,13 @@ async function take(page: Page, shot: Shot): Promise<string[]> {
   await page.goto(base + shot.path, { waitUntil: 'networkidle' });
   await page.waitForTimeout(shot.wait ?? 500);
   for (const selector of shot.taps ?? []) {
-    await page.locator(selector).first().click({ timeout: 5000 });
+    if (selector.startsWith('?')) {
+      const optional = page.locator(selector.slice(1)).first();
+      if (!(await optional.isVisible())) continue;
+      await optional.click({ timeout: 5000 });
+    } else {
+      await page.locator(selector).first().click({ timeout: 5000 });
+    }
     await page.waitForTimeout(650);
   }
   await page.screenshot(

@@ -7,6 +7,8 @@ import { BASE, PHONE, PORT, WALL_1080 } from './e2e/support/env';
  *
  * Every spec says which screens it belongs on with a tag (`@w1080`, `@w720`, `@tall`, `@phone`), and each
  * project runs only the tests carrying its tag. The demo is one shared household, so the tests run one at a time.
+ * The projects are Chromium (what the wall display and Android run); with `E2E_WEBKIT=1` the phone's tests also
+ * run in WebKit, which is the nearest thing to an iPhone's Safari that runs without an iPhone.
  */
 
 /**
@@ -60,6 +62,11 @@ export default defineConfig({
       grep: /@phone\b/,
       use: { ...PHONE },
     },
+    // The grown-ups' side again in WebKit, the engine under Safari on an iPhone. Only when asked for
+    // (E2E_WEBKIT=1), because it needs `npx playwright install webkit`; CI does both.
+    ...(process.env.E2E_WEBKIT
+      ? [{ name: 'phone-webkit', grep: /@phone\b/, use: { ...PHONE, browserName: 'webkit' as const } }]
+      : []),
   ],
   webServer: {
     command: SERVER_COMMAND,

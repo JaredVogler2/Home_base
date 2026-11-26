@@ -5,6 +5,7 @@ import { inHousehold } from '../db/client.js';
 import { weatherCache } from '../db/schema.js';
 import type { Tx } from '../db/types.js';
 import type { Deps } from '../deps.js';
+import { noteConnection, WEATHER_WORTH_NOTING } from '../domain/health.js';
 import {
   AUTO_ACTOR_NAME,
   SYSTEM_ACTOR,
@@ -224,6 +225,16 @@ export async function refreshWeatherIfDue(deps: Deps, householdId: string): Prom
         .set(next)
         .where(and(eq(weatherCache.householdId, householdId), eq(weatherCache.place, place)))
         .returning();
+      // One line when a service has gone quiet for a while, and one when it comes back — not one for every try.
+      if (!reading && row.failures + 1 === WEATHER_WORTH_NOTING) {
+        await noteConnection(tx, householdId, now, 'weather.failed', AUTO_ACTOR_NAME, {
+          service: provider.name,
+        });
+      } else if (reading && row.failures >= WEATHER_WORTH_NOTING) {
+        await noteConnection(tx, householdId, now, 'weather.recovered', AUTO_ACTOR_NAME, {
+          after: row.failures,
+        });
+      }
       const after = viewOf(stored ?? null, household.settings, now);
       if (looksDifferent(before, after)) {
         await bumpRevision(makeCtx(tx, household, { ...SYSTEM_ACTOR, name: AUTO_ACTOR_NAME }, now));

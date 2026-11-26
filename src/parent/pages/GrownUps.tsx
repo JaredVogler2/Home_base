@@ -3,6 +3,7 @@ import type { Member } from '../../../shared/model';
 import type { AvatarId } from '../../../shared/pictures';
 import { Avatar } from '../../art/pictures';
 import { Qr } from '../../art/Qr';
+import { copyText } from '../../app/clipboard';
 import { api, ApiError } from '../../sync/api';
 import { store } from '../../sync/store';
 import { useParent } from '../context';
@@ -250,7 +251,9 @@ export function GrownUps() {
                 onClick={() =>
                   void (navigator.share
                     ? navigator.share({ text: link }).catch(() => undefined)
-                    : navigator.clipboard.writeText(link).then(() => toast('Copied.')))
+                    : copyText(link).then((copied) =>
+                        toast(copied ? 'Copied.' : 'Could not copy. Read the code out instead.'),
+                      ))
                 }
               >
                 Share the link

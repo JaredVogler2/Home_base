@@ -41,6 +41,7 @@ export function Device() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [shell, setShell] = useState('looking…');
   const [frames, setFrames] = useState<string>('measuring…');
+  const [covered, setCovered] = useState('not since this page was opened');
 
   useEffect(() => {
     const again = () => setFacts(gather());
@@ -83,6 +84,25 @@ export function Device() {
     };
   }, []);
 
+  // Whether this browser says so when something covers the page: the display's screen saver, its Calendar
+  // Mode, another app. The house holds still and stops asking for news while it is told it is hidden, so it
+  // matters whether this display tells it. Open this page, let the thing cover it, come back and read the line.
+  useEffect(() => {
+    let since: number | null = document.visibilityState === 'hidden' ? Date.now() : null;
+    const look = () => {
+      if (document.visibilityState === 'hidden') {
+        since = Date.now();
+      } else if (since !== null) {
+        const seconds = Math.round((Date.now() - since) / 1000);
+        const long = seconds < 90 ? `${seconds} seconds` : `${Math.round(seconds / 60)} minutes`;
+        setCovered(`yes: for ${long}, until ${new Date().toLocaleTimeString()}`);
+        since = null;
+      }
+    };
+    document.addEventListener('visibilitychange', look);
+    return () => document.removeEventListener('visibilitychange', look);
+  }, []);
+
   // How evenly this screen can draw: sixty frames, timed.
   useEffect(() => {
     let frame = 0;
@@ -120,14 +140,17 @@ export function Device() {
       <p>Nothing on this page is sent anywhere. Copy what you need into the device checklist.</p>
       <table className={styles.facts} data-testid="device-facts">
         <tbody>
-          {Object.entries({ ...facts, 'Kept for offline use': shell, 'Drawing speed, at rest': frames }).map(
-            ([name, value]) => (
-              <tr key={name}>
-                <th scope="row">{name}</th>
-                <td>{value}</td>
-              </tr>
-            ),
-          )}
+          {Object.entries({
+            ...facts,
+            'Kept for offline use': shell,
+            'Drawing speed, at rest': frames,
+            'Hidden just now (told by the browser)': covered,
+          }).map(([name, value]) => (
+            <tr key={name}>
+              <th scope="row">{name}</th>
+              <td>{value}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
       <h2 style={{ marginTop: 24 }}>Voices this screen has</h2>

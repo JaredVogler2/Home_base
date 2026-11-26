@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNotNull, ne, sql } from 'drizzle-orm';
 import { addDays, daysBetween, startOfWeek, zonedParts, type LocalDate } from '../../shared/time.js';
 import {
   events,
@@ -19,8 +19,10 @@ import type { Ctx } from './context.js';
  *
  * Every number here comes with what it is out of, and with where it came from: the day-by-day record (kept for
  * a few months), the weekly totals kept after that, or nothing at all. Children are only ever set beside their
- * own earlier weeks, never beside each other. There are no scores, no speeds and no judgements in it — only
- * counts of things a family already knew had happened.
+ * own earlier weeks, never beside each other. There are no scores and no judgements in it — only counts of
+ * things a family already knew had happened. The one place minutes appear is a routine's own: where the morning
+ * tends to wait, for whoever is planning it. Those are about the routine, all its goes together, never about a
+ * child.
  */
 
 export interface WeekCell {
@@ -61,6 +63,11 @@ export interface HistorySummary {
     stepsTogether: number;
     stepsSkipped: number;
     helpAsked: number;
+    /** When in the day its last step was ticked, for the goes that were finished. */
+    morning: number;
+    afternoon: number;
+    evening: number;
+    timing: RoutineTiming;
   }[];
   rewards: { asked: number; approved: number; fulfilled: number; declined: number; refunded: number };
   shopping: {
@@ -74,6 +81,108 @@ export interface HistorySummary {
 }
 
 export const HISTORY_WEEKS = { default: 8, max: 26 } as const;
+
+/** Fewest goes before anything is said about how long a routine takes: two mornings are not a habit. */
+export const MIN_TIMED_RUNS = 3;
+/** A go that took longer than this was set aside and come back to; its minutes say nothing about the routine. */
+export const ONE_SITTING_MINUTES = 120;
+/** A gap shorter than this is not worth pointing at. */
+const WORTH_SAYING_MINUTES = 2;
+
+/** One finished go at a routine, as far as timing it needs. */
+export interface TimedRun {
+  startedAt: Date;
+  /** The steps as they were for this go, in their order. */
+  steps: { id: string; title: string; picture: string }[];
+  /** Every answer a step was given, to the minute. A step left out moves the clock on but is not timed itself. */
+  ticks: { stepId: string; at: Date; leftOut: boolean }[];
+}
+
+export interface RoutineTiming {
+  /** Whole minutes from the first tap to the last, in the middle go. Null when too few goes can be timed. */
+  usualMinutes: number | null;
+  /** How many goes that was worked out from. */
+  timed: number;
+  /** Goes left out because they were set aside and finished much later. */
+  setAside: number;
+  /** The step that usually has the longest wait before its tick, when one stands out. */
+  longest: { title: string; picture: string; usualMinutes: number; of: number } | null;
+}
+
+const middle = (values: number[]): number => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const half = sorted.length >> 1;
+  return sorted.length % 2 === 1 ? sorted[half]! : (sorted[half - 1]! + sorted[half]!) / 2;
+};
+
+/**
+ * Where a routine tends to wait: the usual minutes from first tap to last, and the step with the longest usual
+ * gap before its tick.
+ *
+ * These are minutes between taps on a screen, to the nearest minute — a child who does everything and then ticks
+ * it all at once looks instant. So it is offered as something noticed, with how many goes it is out of, and with
+ * the middle value rather than the average, so that one slow Tuesday does not colour a month.
+ */
+export function routineTiming(runs: readonly TimedRun[]): RoutineTiming {
+  const lengths: number[] = [];
+  const gaps = new Map<string, { title: string; picture: string; order: number; minutes: number[] }>();
+  let setAside = 0;
+  for (const run of runs) {
+    if (run.ticks.length === 0) continue;
+    const place = new Map(run.steps.map((step, index) => [step.id, index]));
+    // Times are kept to the minute, so several ticks often share one: the routine's own order settles it.
+    const ticks = [...run.ticks].sort(
+      (a, b) => a.at.getTime() - b.at.getTime() || (place.get(a.stepId) ?? 0) - (place.get(b.stepId) ?? 0),
+    );
+    const started = run.startedAt.getTime();
+    const whole = Math.round((ticks[ticks.length - 1]!.at.getTime() - started) / 60_000);
+    if (whole > ONE_SITTING_MINUTES) {
+      setAside += 1;
+      continue;
+    }
+    lengths.push(Math.max(0, whole));
+    let previous = started;
+    for (const tick of ticks) {
+      const at = tick.at.getTime();
+      const index = place.get(tick.stepId);
+      const step = index === undefined ? undefined : run.steps[index];
+      if (step && index !== undefined && !tick.leftOut) {
+        const entry = gaps.get(step.id) ?? {
+          title: step.title,
+          picture: step.picture,
+          order: index,
+          minutes: [],
+        };
+        // The step's words as they were on the latest go that had it.
+        entry.title = step.title;
+        entry.picture = step.picture;
+        entry.order = index;
+        entry.minutes.push(Math.max(0, Math.round((at - previous) / 60_000)));
+        gaps.set(step.id, entry);
+      }
+      previous = Math.max(previous, at);
+    }
+  }
+  if (lengths.length < MIN_TIMED_RUNS) {
+    return { usualMinutes: null, timed: lengths.length, setAside, longest: null };
+  }
+  let longest: RoutineTiming['longest'] = null;
+  let longestOrder = Infinity;
+  for (const entry of gaps.values()) {
+    if (entry.minutes.length < MIN_TIMED_RUNS) continue;
+    const usual = Math.round(middle(entry.minutes));
+    if (usual < WORTH_SAYING_MINUTES) continue;
+    if (
+      !longest ||
+      usual > longest.usualMinutes ||
+      (usual === longest.usualMinutes && entry.order < longestOrder)
+    ) {
+      longest = { title: entry.title, picture: entry.picture, usualMinutes: usual, of: entry.minutes.length };
+      longestOrder = entry.order;
+    }
+  }
+  return { usualMinutes: Math.round(middle(lengths)), timed: lengths.length, setAside, longest };
+}
 
 const emptyCell = (): WeekCell => ({
   offered: 0,
@@ -312,6 +421,79 @@ export async function historySummary(ctx: Ctx, weekCount: number): Promise<Histo
           .where(and(eq(routines.householdId, ctx.household.id), inArray(routines.id, routineIds)))
           .orderBy(asc(routines.sort));
 
+  // When each routine was finished, and where it tends to wait: from the goes that were finished, tick by tick.
+  const finishedRuns = await ctx.tx
+    .select({
+      id: routineRuns.id,
+      routineId: routineRuns.routineId,
+      startedAt: routineRuns.startedAt,
+      steps: routineVersions.steps,
+    })
+    .from(routineRuns)
+    .innerJoin(
+      routineVersions,
+      and(
+        eq(routineVersions.routineId, routineRuns.routineId),
+        eq(routineVersions.version, routineRuns.routineVersion),
+      ),
+    )
+    .where(
+      and(
+        eq(routineRuns.householdId, ctx.household.id),
+        gte(routineRuns.localDate, recentFrom),
+        eq(routineRuns.status, 'completed'),
+      ),
+    )
+    .limit(1000);
+  const tickRows =
+    finishedRuns.length === 0
+      ? []
+      : await ctx.tx
+          .select({
+            runId: routineStepEvents.runId,
+            stepId: routineStepEvents.stepId,
+            kind: routineStepEvents.kind,
+            at: routineStepEvents.at,
+          })
+          .from(routineStepEvents)
+          .innerJoin(routineRuns, eq(routineRuns.id, routineStepEvents.runId))
+          .where(
+            and(
+              eq(routineStepEvents.householdId, ctx.household.id),
+              gte(routineRuns.localDate, recentFrom),
+              eq(routineRuns.status, 'completed'),
+              ne(routineStepEvents.kind, 'help'),
+            ),
+          )
+          .limit(20_000);
+  const ticksOf = new Map<string, TimedRun['ticks']>();
+  for (const row of tickRows) {
+    const list = ticksOf.get(row.runId) ?? [];
+    list.push({ stepId: row.stepId, at: row.at, leftOut: row.kind === 'skipped' });
+    ticksOf.set(row.runId, list);
+  }
+  const timedOf = new Map<string, TimedRun[]>();
+  const finishedWhen = new Map<string, { morning: number; afternoon: number; evening: number }>();
+  for (const run of finishedRuns) {
+    const ticks = ticksOf.get(run.id) ?? [];
+    const list = timedOf.get(run.routineId) ?? [];
+    list.push({
+      startedAt: run.startedAt,
+      steps: run.steps.map((step) => ({ id: step.id, title: step.title, picture: step.picture })),
+      ticks,
+    });
+    timedOf.set(run.routineId, list);
+    // A go a grown-up closed with nothing ticked was not finished at any time of day worth counting.
+    if (ticks.length === 0) continue;
+    const last = ticks.reduce((latest, tick) => (tick.at > latest ? tick.at : latest), ticks[0]!.at);
+    const minutes = zonedParts(last, zone).minutes;
+    const bucket = finishedWhen.get(run.routineId) ?? { morning: 0, afternoon: 0, evening: 0 };
+    if (minutes < 12 * 60) bucket.morning += 1;
+    else if (minutes < 17 * 60) bucket.afternoon += 1;
+    else bucket.evening += 1;
+    finishedWhen.set(run.routineId, bucket);
+  }
+
   const rewardRows = await ctx.tx
     .select({ status: redemptions.status, total: sql<number>`count(*)::int` })
     .from(redemptions)
@@ -373,6 +555,8 @@ export async function historySummary(ctx: Ctx, weekCount: number): Promise<Histo
         stepsTogether: Number(row?.together ?? 0),
         stepsSkipped: Number(row?.skipped ?? 0),
         helpAsked: Number(row?.help ?? 0),
+        ...(finishedWhen.get(named.id) ?? { morning: 0, afternoon: 0, evening: 0 }),
+        timing: routineTiming(timedOf.get(named.id) ?? []),
       };
     }),
     rewards: {
@@ -402,6 +586,8 @@ export interface HistoryEvent {
   date: LocalDate;
   kind: string;
   profileId: string | null;
+  /** What it was about: a mission, a routine or a reward, by its id. */
+  subjectId: string | null;
   actor: string;
   data: Record<string, unknown>;
 }
@@ -430,6 +616,7 @@ export async function recentEvents(
     date: row.localDate,
     kind: row.kind,
     profileId: row.profileId,
+    subjectId: row.subjectId,
     actor: row.actor,
     data: row.data,
   }));

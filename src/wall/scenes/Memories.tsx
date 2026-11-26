@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { zonedParts } from '../../../shared/time';
 import { SAMPLE_COUNT, SamplePicture } from '../../art/samples';
 import { useWall } from '../context';
+import { useHidden } from '../hidden';
 import styles from './Memories.module.css';
 
 /**
@@ -29,14 +30,16 @@ export function Memories() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Photographs are not turned over, or fetched, while nobody can see them.
+  const hidden = useHidden();
   useEffect(() => {
-    if (count < 2) return;
+    if (count < 2 || hidden) return;
     const timer = setInterval(
       () => setIndex((current) => (current + 1) % count),
       settings.secondsPerPhoto * 1000,
     );
     return () => clearInterval(timer);
-  }, [count, settings.secondsPerPhoto]);
+  }, [count, settings.secondsPerPhoto, hidden]);
 
   const srcOf = (i: number): string | null => {
     const item = media[i % Math.max(media.length, 1)];

@@ -495,6 +495,15 @@ erDiagram
 Not drawn, to keep the diagram readable (all hang from `households`): `connections`, `calendar_rules`,
 `calendar_days`, `audit`, `milestones`, `ai_usage`, `ai_proposals`.
 
+Two things in this corner have no table of their own, on purpose. **Favourites** — the things a family always
+buys — are a short list inside the household's settings (`settings.shopping.favourites`), changed by their own
+request (`shopping.favourite`) and left out of the copy of the settings a child's screen receives
+([`DECISIONS.md`](DECISIONS.md) §25). **How the connections have been** (`server/domain/health.ts`, the phone's
+Connections page) is read from what is already kept — `operations` (the answer to every request, 30 days),
+`ai_usage`, `devices`, `shortcut_tokens`, `weather_cache` and `audit` — plus two kinds of line it writes to
+`audit` itself: a weather service that went quiet and came back, and a request the server could not carry out
+(§26).
+
 ### 5.5 Every table
 
 "App role" is what `homebase_app` (the role household work runs as) is granted in `0001_security.sql`:

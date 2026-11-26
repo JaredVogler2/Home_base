@@ -9,6 +9,7 @@ import { asSystem } from '../../db/client.js';
 import { audit, households, memberships, users } from '../../db/schema.js';
 import { Reject } from '../../domain/context.js';
 import { deleteProfile, eventsCsv, exportHousehold, ledgerCsv } from '../../domain/export.js';
+import { healthReport } from '../../domain/health.js';
 import { HISTORY_WEEKS, historySummary, recentEvents } from '../../domain/history.js';
 import { listLedger, reconcile } from '../../domain/ledger.js';
 import { clientKey, readJson, requireGuardianSession, withHousehold, type AppEnv } from '../env.js';
@@ -22,6 +23,7 @@ import { badRequest, forbidden, HttpError, tooMany } from '../errors.js';
  *   GET  /history/events?days=14           parents               the day-by-day record
  *   GET  /history/reconcile                parents               do the kept totals agree with the lines?
  *   GET  /history/changes                  parents               who changed the set-up, and when
+ *   GET  /history/health                   parents               how the connections are, and have been
  *   GET  /export/household.json            parents               everything, as one readable file
  *   GET  /export/ledger.csv, history.csv   parents               the same two tables for a spreadsheet
  *   POST /family/profiles/:id/delete       parents               a child and all their records, for good
@@ -94,6 +96,11 @@ historyRoutes.get('/changes', async (c) => {
       .limit(100),
   );
   return c.json({ changes: rows.map((row) => ({ ...row, at: row.at.toISOString() })) });
+});
+
+historyRoutes.get('/health', async (c) => {
+  requireGuardianSession(c);
+  return c.json(await withHousehold(c, 'guardian', (ctx) => healthReport(ctx)));
 });
 
 export const exportRoutes = new Hono<AppEnv>();

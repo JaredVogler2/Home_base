@@ -122,9 +122,10 @@ All are **phone only**; a wall is refused even when unlocked (`tests/server/hist
 | --- | --- | --- |
 | `GET /api/history/summary?weeks=` | caregiver | weeks 1–26 (default 8) → week-by-week counts with their "out of" |
 | `GET /api/history/ledger?profileId=&limit=&before=` | guardian | limit 1–200 (default 100), `before` an ISO time for paging → `{ entries: LedgerEntry[] }` newest first |
-| `GET /api/history/events?days=&profileId=&limit=` | guardian | days clamped 1–366 (default 14), limit clamped 1–300 (default 100) → `{ events }` |
+| `GET /api/history/events?days=&profileId=&limit=` | guardian | days clamped 1–366 (default 14), limit clamped 1–300 (default 100) → `{ events: [{ id, at, date, kind, profileId, subjectId, actor, data }] }`, newest first; `subjectId` is the mission, routine or reward it was about |
 | `GET /api/history/reconcile` | guardian | → `{ ok, children: [{ profileId, wallet, fromLedger, matches }] }` |
 | `GET /api/history/changes` | guardian | → `{ changes: [{ at, action, actor }] }` (latest 100 audit rows) |
+| `GET /api/history/health` | guardian | How the connections are and have been, over 30 days → `{ days, weather, helper, academy, shortcuts, screens, requests: { done, ordinaryNo, refused, failed }, lines: [{ at, what, who, about }] }`. `what` is one of a fixed set (`weather.failed`, `weather.recovered`, `sync.failed`, `request.not_allowed`, `request.made_no_sense`, `helper.failed`, `device.paired`, …); `about` is a part of the house or a count, never anything typed (`server/domain/health.ts`) |
 | `GET /api/export/household.json` | guardian | attachment `homebase-<date>.json` (format `homebase.household-export` v1); audited |
 | `GET /api/export/ledger.csv` | guardian | attachment, formula-safe CSV; audited |
 | `GET /api/export/history.csv` | guardian | attachment, formula-safe CSV; audited |
@@ -216,7 +217,7 @@ type OpOutcome =
 
 The table below is checked against the code by `npx tsx scripts/print-ops.ts --check docs/API.md` (it fails if an op
 is missing, has a different access level, or no longer exists). `npx tsx scripts/print-ops.ts` prints the bare
-table. There are 65 ops.
+table. There are 66 ops.
 
 | Op | Least access | What it does |
 | --- | --- | --- |
@@ -233,7 +234,7 @@ table. There are 65 ops.
 | `redemption.cancel` | child | Withdraw a request not yet answered; releases the stars |
 | `goal.set` | child | Set or clear the reward a child is saving for |
 | `shopping.request` | child | Ask for something by picture; waits for a grown-up (max 5 open per child) |
-| `shopping.add` | household | Add an item (merges with the same normalised text already on the list) |
+| `shopping.add` | household | Add an item (merges with the same normalised text already on the list). `via` says how it came: `typed`, `pasted`, `voice`, `picture` or `favourite` |
 | `shopping.check` | household | Tick or untick an item |
 | `run.together` | household | Mark a step "done together" |
 | `occurrence.approve` | caregiver | Approve up to 50 submitted missions; credits each once |
@@ -246,6 +247,7 @@ table. There are 65 ops.
 | `shopping.remove` | caregiver | Remove an item (soft; undoable) |
 | `shopping.restore` | caregiver | Bring back a removed or archived item |
 | `shopping.clearChecked` | caregiver | Archive every ticked item on a list |
+| `shopping.favourite` | caregiver | Keep a thing on the favourites shelf (`on: true`) or take it off; one entry per folded spelling, at most 40; adds nothing to any list |
 | `occurrence.reverse` | guardian | Take back an approved mission's stars with a correction line |
 | `task.create` | guardian | Create a mission template (and today's occurrences) |
 | `task.update` | guardian | Edit a mission with a base-version check; re-makes today's untouched copies |
@@ -301,7 +303,7 @@ unlocked by a PIN).
 | --- | --- | --- | --- |
 | `rev`, `serverTime`, `today`, `viewer` | yes | yes | yes |
 | `household` `{ id, name, timeZone, demo }` | yes | yes | yes |
-| `household.settings` | yes, but `location.label` blanked and `ai.share = []`, `ai.provider = null` | full | full |
+| `household.settings` | yes, but `location.label` blanked, `ai.share = []`, `ai.provider = null` and `shopping.favourites = []` | full | full |
 | `profiles` | not archived | including archived | including archived |
 | `wallets` | every child's three totals | same | same |
 | `occurrences` | today's, plus `submitted` from the last 2 days | same | same |

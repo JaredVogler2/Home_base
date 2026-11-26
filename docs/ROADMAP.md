@@ -28,6 +28,7 @@ that makes it installable, safe to host and provable.
 | 12 | The optional planning helper (Anthropic or OpenAI) | 12 | Four of the eight jobs built | `docs/integrations/AI.md` |
 | 13 | Proof: server tests, browser tests, accessibility, measurement, threat model, costs | 14 | Done here; **hardware and hosting still to be proven** | [`TEST_RESULTS.md`](TEST_RESULTS.md), [`THREAT-MODEL.md`](THREAT-MODEL.md) |
 | 14 | Refinement from what the tests found; keepsakes, first-visit tour, self-tuning motion | 14 | Done | `git log` |
+| 15 | The audit's last gaps that need nobody's account or hardware: where a routine waits, favourites, connections, correcting the record, stillness when hidden; the phone's tests in Safari's engine | 06, 10, 11, 13 | Done | [`TRACEABILITY.md`](TRACEABILITY.md), pull request #4 |
 
 ## What comes next, in order
 
@@ -59,7 +60,8 @@ can reach the bottom row. The answers decide, among other things:
 
 Add to Home Screen; sign in and stay signed in; the Siri Shortcut (`docs/integrations/SHORTCUTS.md`); the share
 sheet; adding photos from the camera roll (the phone shrinks them and strips where they were taken); the QR
-code for pairing and invitations.
+code for pairing and invitations. The grown-ups' pages already pass their browser tests in WebKit, Safari's
+engine, on CI — which makes surprises here less likely, and is not the same as an iPhone.
 
 ### 4. If the planning helper is wanted — *waiting for: an API key and a few cents*
 
@@ -74,9 +76,11 @@ In the order of how much it would matter to the family:
 | --- | --- | --- |
 | A read-only family calendar glance in HOMEBASE (iCloud, Google or Outlook) with parent-approved coarse labels | The brief calls it "optional later" and prefers the display's own Calendar Mode. Needs an account to build against; the tables for it exist and are unused | Large |
 | The helper's other four jobs: schedule-aware mission planner, learning bridge, family briefing, story scripts | The first four were the brief's minimum; the calendar and Academy categories send nothing until these exist | Medium each |
+| Routines that branch, and a gentle reminder when a routine's time comes | The brief lists both as options; today the day clock shows what is next and nothing nudges | Medium |
 | Text that follows the phone's own text-size setting | Sizes are fixed in pixels on the grown-ups' side | Small |
-| The rest of the screen's instant guesses checked against the server | Missions, rewards, the list, settings and the plan are (`tests/server/optimistic.test.ts`); routines, photos and a few others are not yet | Small |
-| A dependency audit step in CI | Not set up | Small |
+| The rest of the screen's instant guesses checked against the server | Missions, rewards, the list, favourites, settings and the plan are (`tests/server/optimistic.test.ts`); routines, photos and a few others are not yet | Small |
+| The wall's browser tests in WebKit, and everything in Firefox | CI runs the phone's side in WebKit; the wall runs in Chromium, which is what the display has | Small |
+| A bot that proposes dependency updates | CI checks what ships against published advisories; nothing says when a newer version exists | Small |
 | Encrypting a device's cache with a key held by the server | A real gain only for a wall in a shared place, at the cost of starting with no signal ([`DECISIONS.md`](DECISIONS.md) §23) | Medium |
 | A licence for the repository | The owner's decision ([`ASSETS.md`](ASSETS.md)) | — |
 
@@ -97,7 +101,8 @@ the work of co-ordinating a family. In the order they seem worth it:
 Three things were built in this spirit already: **printable picture routines** (*Plan → Routines →* a routine
 *→ Print*: the same drawings in order with a ring to tick for each day, for the bathroom mirror — a routine
 that needs no screen at all), **keepsake badges** for things that add up (never for days in a row), and the
-parents' **moments worth keeping**.
+parents' **moments worth keeping**. And one that helps a parent plan rather than a child perform: History says
+**where a routine tends to wait** — for the routine, never for a child.
 
 ## What will not be done
 

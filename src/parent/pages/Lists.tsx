@@ -7,7 +7,9 @@ import {
   type ShoppingCategory,
   type ShoppingPictureId,
 } from '../../../shared/pictures';
-import { classifyItem, describeItem, listAsText, parseLines } from '../../../shared/shopping';
+import type { Favourite } from '../../../shared/settings';
+import { classifyItem, describeItem, listAsText, normalizeItem, parseLines } from '../../../shared/shopping';
+import { copyText } from '../../app/clipboard';
 import { ShoppingPicture } from '../../art/pictures';
 import { api } from '../../sync/api';
 import { useParent } from '../context';
@@ -56,6 +58,14 @@ const AISLE: Record<ShoppingCategory, string> = {
   other: 'Everything else',
 };
 
+/** A favourite's picture and aisle are kept as plain words; one this version does not know is a plain basket. */
+const pictureOf = (favourite: Favourite): ShoppingPictureId =>
+  favourite.picture in SHOPPING_PICTURES ? (favourite.picture as ShoppingPictureId) : 'other';
+const aisleOf = (favourite: Favourite): ShoppingCategory =>
+  (SHOPPING_CATEGORIES as readonly string[]).includes(favourite.category)
+    ? (favourite.category as ShoppingCategory)
+    : 'other';
+
 interface Suggestion {
   text: string;
   picture: ShoppingPictureId;
@@ -74,7 +84,9 @@ export function Lists({ rest }: { rest: string[] }) {
   const [managing, setManaging] = useState(false);
   const [grouping, setGrouping] = useState<'aisle' | 'store' | 'none'>('aisle');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [tidying, setTidying] = useState(false);
   const guardian = parent.can('guardian');
+  const favourites = view.household.settings.shopping.favourites;
 
   const listId = list?.id;
   useEffect(() => {
@@ -145,6 +157,29 @@ export function Lists({ rest }: { rest: string[] }) {
     if (lines.length > 1) toast(`Added ${lines.length} things.`);
   };
 
+  // One tap puts a favourite back on this list, with the picture and aisle it was kept with.
+  const addFavourite = (favourite: Favourite) => {
+    if (!list) return;
+    parent.tell('shopping.add', {
+      itemId: newId(),
+      listId: list.id,
+      text: favourite.text,
+      quantity: null,
+      unit: null,
+      note: null,
+      url: null,
+      store: null,
+      priority: false,
+      category: aisleOf(favourite),
+      picture: pictureOf(favourite),
+      via: 'favourite',
+    });
+  };
+  const waiting = new Set(
+    items.filter((item) => item.status === 'needed').map((item) => normalizeItem(item.text)),
+  );
+  const kept = new Set(favourites.map((favourite) => normalizeItem(favourite.text)));
+
   const submit = (event: FormEvent) => {
     event.preventDefault();
     addLines(text, text.includes('\n') ? 'pasted' : 'typed');
@@ -156,10 +191,8 @@ export function Lists({ rest }: { rest: string[] }) {
     const words = listAsText(list.name, items);
     try {
       if (navigator.share) await navigator.share({ title: list.name, text: words });
-      else {
-        await navigator.clipboard.writeText(words);
-        toast('Copied. Paste it into a note or a message.');
-      }
+      else if (await copyText(words)) toast('Copied. Paste it into a note or a message.');
+      else toast('Could not copy the list on this screen.');
     } catch {
       // Sharing was cancelled: nothing to say.
     }
@@ -247,18 +280,89 @@ export function Lists({ rest }: { rest: string[] }) {
         </Button>
       </form>
 
-      {suggestions.length > 0 && (
-        <div className={styles.listTabs} aria-label="You often buy">
-          {suggestions.slice(0, 8).map((suggestion) => (
+      {favourites.length > 0 && (
+        <div className={styles.shelf} role="group" aria-label="Favourites" data-testid="favourites">
+          <div className={styles.shelfHead}>
+            <h3 className={styles.group}>Favourites</h3>
             <button
-              key={suggestion.text}
               type="button"
-              className={styles.listTab}
-              onClick={() => addLines(suggestion.text, 'typed')}
+              className={styles.shelfChange}
+              aria-pressed={tidying}
+              onClick={() => setTidying(!tidying)}
+              data-testid="favourites-change"
             >
-              + {suggestion.text}
+              {tidying ? 'Done' : 'Change'}
             </button>
-          ))}
+          </div>
+          <div className={styles.listTabs}>
+            {favourites.map((favourite) => {
+              const here = waiting.has(normalizeItem(favourite.text));
+              return tidying ? (
+                <button
+                  key={favourite.text}
+                  type="button"
+                  className={styles.chip}
+                  data-mode="remove"
+                  aria-label={`Take ${favourite.text} off the favourites shelf`}
+                  data-testid={`unfavourite-${favourite.text}`}
+                  onClick={() =>
+                    parent.tell('shopping.favourite', {
+                      text: favourite.text,
+                      picture: pictureOf(favourite),
+                      category: aisleOf(favourite),
+                      on: false,
+                    })
+                  }
+                >
+                  <span className={styles.chipPicture} aria-hidden="true">
+                    <ShoppingPicture id={pictureOf(favourite)} />
+                  </span>
+                  {favourite.text}
+                  <span className={styles.chipMark} aria-hidden="true">
+                    ×
+                  </span>
+                </button>
+              ) : (
+                <button
+                  key={favourite.text}
+                  type="button"
+                  className={styles.chip}
+                  disabled={here}
+                  aria-label={here ? `${favourite.text}: already on the list` : `Add ${favourite.text}`}
+                  data-testid={`favourite-${favourite.text}`}
+                  onClick={() => addFavourite(favourite)}
+                >
+                  <span className={styles.chipPicture} aria-hidden="true">
+                    <ShoppingPicture id={pictureOf(favourite)} />
+                  </span>
+                  {favourite.text}
+                  {here && (
+                    <span className={styles.chipMark} aria-hidden="true">
+                      {Glyph.tick}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {suggestions.some((suggestion) => !kept.has(normalizeItem(suggestion.text))) && (
+        <div className={styles.listTabs} role="group" aria-label="You often buy">
+          {suggestions
+            .filter((suggestion) => !kept.has(normalizeItem(suggestion.text)))
+            .slice(0, 8)
+            .map((suggestion) => (
+              <button
+                key={suggestion.text}
+                type="button"
+                className={styles.listTab}
+                onClick={() => addLines(suggestion.text, 'typed')}
+              >
+                + {suggestion.text}
+              </button>
+            ))}
         </div>
       )}
 
@@ -433,6 +537,9 @@ function EditItem({
   const [picture, setPicture] = useState(item.picture);
   const [listId, setListId] = useState(item.listId);
   const [busy, setBusy] = useState(false);
+  const shelf = parent.view.household.settings.shopping.favourites;
+  const wasFavourite = shelf.some((entry) => normalizeItem(entry.text) === normalizeItem(item.text));
+  const [favourite, setFavourite] = useState(wasFavourite);
 
   const save = async () => {
     // Only what changed is sent, so that two phones changing different things both keep their change.
@@ -447,6 +554,17 @@ function EditItem({
     if (category !== item.category) patch.category = category;
     if (picture !== item.picture) patch.picture = picture;
     if (listId !== item.listId) patch.listId = listId;
+    // The shelf is its own thing: kept under the words as they now are, with this picture and aisle. If the
+    // words changed, the old spelling comes off the shelf so that it does not sit there twice.
+    const renamed = normalizeItem(text) !== normalizeItem(item.text);
+    if (wasFavourite && (!favourite || renamed))
+      parent.tell('shopping.favourite', { text: item.text, picture, category, on: false });
+    if (
+      favourite &&
+      text.trim() !== '' &&
+      (!wasFavourite || renamed || 'picture' in patch || 'category' in patch || 'text' in patch)
+    )
+      parent.tell('shopping.favourite', { text: text.trim(), picture, category, on: true });
     if (Object.keys(patch).length === 0) return onClose();
     setBusy(true);
     const ok = await parent.ask('shopping.edit', { itemId: item.id, patch: patch as never });
@@ -513,6 +631,13 @@ function EditItem({
         </div>
       </Line>
       <Toggle label="Important" hint="Shown first, with a star." checked={priority} onChange={setPriority} />
+      <Toggle
+        label="A favourite"
+        hint="Kept on a shelf above the list, to put back with one tap."
+        checked={favourite}
+        onChange={setFavourite}
+        testId="item-favourite"
+      />
       <Field label="Aisle">
         <Select
           value={category}

@@ -128,6 +128,16 @@ a {
 }
 
 /*
+ * A wall that cannot be seen (src/wall/hidden.ts) holds every animation exactly where it is, and carries on from
+ * there when it is back in front: nothing is drawn for nobody, and nothing jumps on return.
+ */
+:root[data-hidden] *,
+:root[data-hidden] *::before,
+:root[data-hidden] *::after {
+  animation-play-state: paused !important;
+}
+
+/*
  * Printing a routine (src/parent/pages/PrintRoutine.tsx): the sheet is the only thing on the paper, without its
  * own buttons, and in the colours it was drawn in.
  */

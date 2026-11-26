@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { newId } from '../../../shared/ids';
 import type { Routine, RoutineRun, RoutineStep } from '../../../shared/model';
 import { ACTION_PICTURES } from '../../../shared/pictures';
 import { P } from '../../art/palette';
 import { ActionPicture } from '../../art/pictures';
-import { HandGlyph, HoldButton, TickGlyph } from '../chrome/chrome';
+import { CloseGlyph, HandGlyph, HoldButton, TickGlyph } from '../chrome/chrome';
 import { useWall } from '../context';
 import { childById, nextStep, routineNow, routinesFor, runOf, stepsToday } from '../derive';
 import type { Box } from '../home/layout';
@@ -32,22 +32,32 @@ export function Routines({ origin }: { origin: Box | null }) {
   const running = who
     ? view.runs.find((run) => run.profileId === who && run.date === view.today && run.status === 'active')
     : undefined;
+  // The go being walked through on this screen stays in front when its last step is ticked, so that "all done"
+  // is seen and heard — the list of routines comes back when the child taps, not the instant it is finished.
+  const [walking, setWalking] = useState<string | null>(null);
+  if (running && running.id !== walking) setWalking(running.id);
+  const justFinished =
+    !running && walking
+      ? view.runs.find((run) => run.id === walking && run.profileId === who && run.status === 'completed')
+      : undefined;
+  const shown = running ?? justFinished;
 
   useEffect(() => {
     if (!child) wall.tell('Who is here? Tap your picture.', 'wave');
-    else if (!running)
+    else if (!shown)
       wall.tell(routines.length === 0 ? 'Nothing to do just now.' : 'What shall we do?', 'point');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [child?.id, running?.id]);
+  }, [child?.id, shown?.id]);
 
   return (
     <Frame tone="honey" origin={origin} testId="scene-routines">
       {!child ? (
         <Who />
-      ) : running ? (
+      ) : shown ? (
         <Runner
-          run={running}
-          routine={view.routines.find((routine) => routine.id === running.routineId) ?? null}
+          run={shown}
+          routine={view.routines.find((routine) => routine.id === shown.routineId) ?? null}
+          onLeave={() => setWalking(null)}
         />
       ) : routines.length === 0 ? (
         <div className={styles.empty} data-testid="routines-empty">
@@ -127,9 +137,18 @@ function Beads({
   );
 }
 
-function Runner({ run, routine }: { run: RoutineRun; routine: Routine | null }) {
+function Runner({
+  run,
+  routine,
+  onLeave,
+}: {
+  run: RoutineRun;
+  routine: Routine | null;
+  onLeave: () => void;
+}) {
   const wall = useWall();
-  const step = nextStep(run);
+  // A finished go has no "now", even if a step that may be left out was left out.
+  const step = run.status === 'completed' ? null : nextStep(run);
   const index = step ? run.steps.findIndex((candidate) => candidate.id === step.id) : run.steps.length;
   const after = step
     ? (run.steps.slice(index + 1).find((candidate) => run.done[candidate.id] === undefined) ?? null)
@@ -149,10 +168,46 @@ function Runner({ run, routine }: { run: RoutineRun; routine: Routine | null }) 
   }, [step?.id]);
 
   if (!step) {
+    // The step ticked last, in the routine's own order: the one a slip of the finger would have been on.
+    const lastDone =
+      [...run.steps].reverse().find((candidate) => run.done[candidate.id] !== undefined) ?? null;
     return (
       <div className={styles.finished} data-testid="routine-finished">
+        <div className={styles.finishedPicture}>
+          <ActionPicture id={routine?.picture ?? 'rest'} />
+          <span className={styles.finishedTick}>
+            <Badge kind="done" />
+          </span>
+        </div>
         <Beads steps={run.steps} run={run} />
         <p className={styles.finishedWords}>All done!</p>
+        <div className={styles.finishedActions}>
+          {lastDone && (
+            <BigButton
+              tone="soft"
+              word="Oops, back"
+              testId="routine-undo"
+              onTap={() => {
+                // The last tick was a slip: it is taken back like any other, and the routine carries on.
+                wall.sound('oops');
+                wall.ask('run.step', { runId: run.id, stepId: lastDone.id, state: 'undo' });
+                wall.tell('That is all right. One more to do.', 'idle');
+              }}
+            >
+              <path
+                d="M72 50 h-44 M42 34 l-16 16 l16 16"
+                fill="none"
+                stroke={P.ink}
+                strokeWidth="9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </BigButton>
+          )}
+          <BigButton tone="soft" word="Back" testId="routine-leave" onTap={onLeave}>
+            <CloseGlyph />
+          </BigButton>
+        </div>
       </div>
     );
   }
@@ -211,7 +266,10 @@ function Runner({ run, routine }: { run: RoutineRun; routine: Routine | null }) 
           onTap={() => {
             wall.sound(after ? 'step' : 'done');
             wall.ask('run.step', { runId: run.id, stepId: step.id, state: 'done' });
-            if (!after) wall.tell('All done! Well done.', 'cheer');
+            if (!after) {
+              wall.celebrate();
+              wall.tell('All done! Well done.', 'cheer');
+            }
           }}
         >
           <TickGlyph />

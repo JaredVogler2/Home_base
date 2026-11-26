@@ -9,6 +9,7 @@ import {
   Badge,
   Button,
   Card,
+  ConfirmButton,
   Field,
   Line,
   Row,
@@ -54,9 +55,52 @@ const ACTION_WORDS: Record<string, string> = {
   'media.removed': 'A photo was removed',
   'academy.imported': 'Academy progress was brought in',
   'academy.unlinked': 'The Academy was disconnected for a child',
+  'history.forgot': 'A line of the day-by-day record was forgotten',
+  'profile.created': 'A child was added',
+  'profile.archived': 'A child was put away',
+  'profile.restored': 'A child was brought back',
+  'household.renamed': 'The household’s name or time zone was changed',
+  'ai.applied': 'Suggestions from the planning helper were applied',
+  'wall.pin_locked_out': 'Too many wrong PINs on the wall',
+  'weather.failed': 'The weather service stopped answering',
+  'weather.recovered': 'The weather service is answering again',
+  'sync.failed': 'A request from a screen could not be carried out',
   'shortcut.created': 'A Siri shortcut token was made',
   'shortcut.revoked': 'A Siri shortcut token was cancelled',
 };
+
+interface DayEvent {
+  id: string;
+  at: string;
+  kind: string;
+  profileId: string | null;
+  subjectId: string | null;
+  data: Record<string, unknown>;
+}
+
+/** What a line of the day-by-day record says, after the child's name. */
+const EVENT_WORDS: Record<string, string> = {
+  'mission.sent': 'said a mission was done',
+  'mission.done': 'finished a mission',
+  'mission.help': 'asked for a hand with a mission',
+  'mission.returned': 'was asked to have another go',
+  'mission.reversed': 'had a finished mission taken back',
+  'mission.skipped': 'said “not today”',
+  'mission.undone': 'took back “I did it”',
+  'reward.asked': 'asked for a reward',
+  'reward.approved': 'was told yes to a reward',
+  'reward.fulfilled': 'had a reward',
+  'reward.refunded': 'had the stars for a reward given back',
+  'routine.started': 'started a routine',
+  'routine.completed': 'finished a routine',
+  'routine.closed': 'had a routine closed by a grown-up',
+  'routine.help': 'asked for a hand during a routine',
+  'shopping.bought': 'was ticked off the shopping list',
+  'stars.bonus': 'was given stars',
+  'stars.corrected': 'had their stars corrected',
+};
+
+const LINES_AT_FIRST = 8;
 
 export function Records() {
   const parent = useParent();
@@ -65,6 +109,9 @@ export function Records() {
   const { view } = parent;
   const owner = parent.can('owner');
   const [changes, setChanges] = useState<Change[] | null>(null);
+  const [events, setEvents] = useState<DayEvent[] | null>(null);
+  // A handful of lines at first: this page is mostly about what is kept and how to take it away.
+  const [linesShown, setLinesShown] = useState(LINES_AT_FIRST);
   const [check, setCheck] = useState<boolean | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [typed, setTyped] = useState('');
@@ -81,6 +128,11 @@ export function Records() {
     api<{ changes: Change[] }>('GET', '/history/changes')
       .then((reply) => {
         if (current) setChanges(reply.changes);
+      })
+      .catch(() => undefined);
+    api<{ events: DayEvent[] }>('GET', '/history/events?days=14&limit=60')
+      .then((reply) => {
+        if (current) setEvents(reply.events);
       })
       .catch(() => undefined);
     api<{ ok: boolean }>('GET', '/history/reconcile')
@@ -185,6 +237,63 @@ export function Records() {
               )}
             </Stack>
           </Card>
+        </Section>
+      )}
+
+      {guardian && events && events.length > 0 && (
+        <Section
+          title="The day-by-day record"
+          hint="The last two weeks, newest first. If a line is simply wrong, forget it: it leaves the record, the export and the charts drawn from it. Stars are not changed here — correct those on the child’s page."
+          testId="day-record"
+        >
+          <table className={styles.table}>
+            <tbody>
+              {events.slice(0, linesShown).map((event) => {
+                const child = view.profiles.find((profile) => profile.id === event.profileId);
+                const subject =
+                  view.templates?.find((template) => template.id === event.subjectId)?.title ??
+                  view.routines.find((routine) => routine.id === event.subjectId)?.title ??
+                  view.rewards.find((reward) => reward.id === event.subjectId)?.title ??
+                  (typeof event.data.text === 'string' ? event.data.text : null);
+                const words = EVENT_WORDS[event.kind] ?? event.kind;
+                return (
+                  <tr key={event.id} data-kind={event.kind}>
+                    <td>
+                      {new Date(event.at).toLocaleString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </td>
+                    <td>
+                      {event.kind === 'shopping.bought'
+                        ? `${subject ? `“${subject}”` : 'Something'} ${words}`
+                        : `${child?.nickname ?? 'Someone'} ${words}${subject ? `: ${subject}` : ''}`}
+                    </td>
+                    <td>
+                      <ConfirmButton
+                        size="s"
+                        tone="plain"
+                        label="Forget"
+                        confirmLabel="Forget it"
+                        testId={`forget-${event.id}`}
+                        onConfirm={() => {
+                          setEvents(events.filter((entry) => entry.id !== event.id));
+                          parent.tell('history.forget', { eventId: event.id });
+                        }}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {events.length > linesShown && (
+            <Button tone="quiet" onClick={() => setLinesShown(linesShown + 20)} testId="day-record-more">
+              Show older lines
+            </Button>
+          )}
         </Section>
       )}
 

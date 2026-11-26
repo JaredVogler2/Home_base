@@ -118,6 +118,54 @@ describe('running a routine', () => {
     expect((rows.rows[0] as { c: number }).c).toBe(1);
   });
 
+  it('lets the last tick be taken back like any other, and never counts a routine as finished twice', async () => {
+    const family = await newFamily(server);
+    // This family gives a star for finishing a routine, so that a second finish would show as a second star.
+    await family.parent.do('household.settings', { patch: { routines: { awardStars: true, stars: 1 } } });
+    const kit = await addChild(family, 'Kit');
+    const steps = [step('Wake up'), step('Get dressed')];
+    const routine = await addRoutine(family, steps);
+    const wall = await pairWall(family);
+    const runId = newId();
+    const finishedLines = async () => {
+      const reply = await family.parent.get<{ events: { kind: string; subjectId: string | null }[] }>(
+        '/history/events?days=2',
+      );
+      return reply.body.events.filter(
+        (event) => event.kind === 'routine.completed' && event.subjectId === routine,
+      ).length;
+    };
+
+    await wall.do('run.start', { runId, routineId: routine, profileId: kit });
+    await wall.do('run.step', { runId, stepId: steps[0]!.id, state: 'done' });
+    const finished = await wall.do('run.step', { runId, stepId: steps[1]!.id, state: 'done' });
+    expect(finished.completed).toBe(true);
+    expect(wall.snapshot!.runs[0]).toMatchObject({ status: 'completed' });
+    expect(await finishedLines()).toBe(1);
+    expect(walletOf(wall.snapshot!, kit).lifetime).toBe(1);
+
+    // A slip of the finger on the last step: it is taken back, and the routine is under way again.
+    await wall.do('run.step', { runId, stepId: steps[1]!.id, state: 'undo' });
+    expect(wall.snapshot!.runs[0]).toMatchObject({ status: 'active', completedAt: null });
+    expect(wall.snapshot!.runs[0]!.done).toEqual({ [steps[0]!.id]: 'done' });
+    // The look-back no longer says it was finished; the star already given is not taken away from the child.
+    expect(await finishedLines()).toBe(0);
+    expect(walletOf(wall.snapshot!, kit).lifetime).toBe(1);
+
+    // Finished again, properly this time: one line, one finished go, and no second star.
+    await wall.do('run.step', { runId, stepId: steps[1]!.id, state: 'done' });
+    expect(wall.snapshot!.runs[0]).toMatchObject({ status: 'completed' });
+    expect(await finishedLines()).toBe(1);
+    expect(walletOf(wall.snapshot!, kit).lifetime).toBe(1);
+    const summary = await family.parent.get<{
+      routines: { routineId: string; started: number; completed: number }[];
+    }>('/history/summary?weeks=4');
+    expect(summary.body.routines.find((row) => row.routineId === routine)).toMatchObject({
+      started: 1,
+      completed: 1,
+    });
+  });
+
   it('lets a grown-up say “we did that together”, and only a grown-up leave a firm step out', async () => {
     const family = await newFamily(server);
     const kit = await addChild(family, 'Kit');

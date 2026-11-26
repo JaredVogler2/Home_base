@@ -157,4 +157,51 @@ test.describe('the shopping list', { tag: '@phone' }, () => {
     await wall.close();
     await other.close();
   });
+
+  test('favourites: kept from the editor, put back with one tap, taken off the shelf', async ({
+    page,
+    context,
+  }) => {
+    await enter(context, 'guardian');
+    await page.goto(`/parent/lists/${DEMO.toBuy}`);
+    const shelf = page.getByTestId('favourites');
+    const kept = async () =>
+      (await snapshot(context)).household.settings.shopping.favourites.map((entry) => entry.text);
+    // The made-up family already keeps a few; one tap puts one on this list.
+    await expect(shelf.getByTestId('favourite-Oats')).toBeEnabled();
+    await shelf.getByTestId('favourite-Oats').click();
+    await expect(page.getByTestId('item-Oats')).toBeVisible();
+    // Now that it is on the list the shelf says so, and a second tap cannot add it twice.
+    await expect(shelf.getByTestId('favourite-Oats')).toBeDisabled();
+    await expect(shelf.getByRole('button', { name: 'Oats: already on the list' })).toBeVisible();
+
+    // Something new, made a favourite from its own editor.
+    const add = page.getByTestId('add-item');
+    await add.fill('Sticky tape');
+    await add.press('Enter');
+    await page.getByTestId('edit-Sticky tape').click();
+    const editor = page.getByTestId('edit-item');
+    await expect(editor.getByTestId('item-favourite')).toHaveAttribute('aria-checked', 'false');
+    await editor.getByTestId('item-favourite').click();
+    await editor.getByTestId('save-item').click();
+    await expect(editor).toHaveCount(0);
+    await expect(shelf.getByTestId('favourite-Sticky tape')).toBeDisabled();
+    await expect.poll(kept).toContain('Sticky tape');
+
+    // Bought; next week one tap wants it again — the same line, not a second one.
+    await page.getByTestId('check-Sticky tape').click();
+    await expect(shelf.getByTestId('favourite-Sticky tape')).toBeEnabled();
+    await shelf.getByTestId('favourite-Sticky tape').click();
+    await expect(page.getByTestId('check-Sticky tape')).toHaveAttribute('aria-checked', 'false');
+    await expect(page.getByTestId('item-Sticky tape')).toHaveCount(1);
+
+    // Off the shelf again; the list keeps the thing itself.
+    await page.getByTestId('favourites-change').click();
+    await page.getByTestId('unfavourite-Sticky tape').click();
+    await expect(shelf.getByTestId('unfavourite-Sticky tape')).toHaveCount(0);
+    await page.getByTestId('favourites-change').click();
+    await expect(page.getByTestId('item-Sticky tape')).toBeVisible();
+    await expect.poll(kept).not.toContain('Sticky tape');
+    await expect.poll(kept).toContain('Oats');
+  });
 });
