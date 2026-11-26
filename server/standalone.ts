@@ -4,6 +4,7 @@ import { extname, join, normalize, resolve, sep } from 'node:path';
 import { getRequestListener } from '@hono/node-server';
 import { cacheControlFor, PAGE_HEADERS, TRANSPORT_HEADER } from './http/security.js';
 import { runtimeApp, runtimeDeps } from './runtime.js';
+import { describeError } from './log.js';
 
 /**
  * HOMEBASE as one ordinary Node server: the built app from ./dist and the API, on one port.
@@ -86,7 +87,7 @@ const server = createServer((request, response) => {
     if (request.headers['x-forwarded-proto'] === 'https') headers[TRANSPORT_HEADER[0]] = TRANSPORT_HEADER[1];
     response.writeHead(200, headers).end(request.method === 'HEAD' ? undefined : body);
   })().catch((error: unknown) => {
-    console.error('[site]', error instanceof Error ? error.message : error);
+    console.error(`[site] ${describeError(error)}`);
     if (!response.headersSent) response.writeHead(500).end();
     else response.end();
   });

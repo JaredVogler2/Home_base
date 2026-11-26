@@ -136,6 +136,12 @@ describe('history, export and deletion', () => {
     expect(lines).toHaveLength(3);
     expect(reply.body).toContain(`"'=HYPERLINK(""x"")"`);
     expect(csvCell('+1')).toBe("'+1");
+    expect(csvCell('-cmd|x')).toBe("'-cmd|x");
+    // A number stays a number, so a spreadsheet can add a column of stars up — even a line that took some back.
+    expect(csvCell(-3)).toBe('-3');
+    expect(csvCell('-3')).toBe('-3');
+    expect(csvCell(12.5)).toBe('12.5');
+    expect(csvCell('-3+cmd')).toBe("'-3+cmd");
     expect(csvCell('plain, with a comma')).toBe('"plain, with a comma"');
     expect(csvCell(null)).toBe('');
   });

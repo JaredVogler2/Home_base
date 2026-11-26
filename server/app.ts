@@ -16,6 +16,7 @@ import { pairRoutes, wallRoutes } from './http/routes/pair.js';
 import { shoppingRoutes } from './http/routes/shopping.js';
 import { shortcutRoutes } from './http/routes/shortcuts.js';
 import { syncRoutes } from './http/routes/sync.js';
+import { describeError } from './log.js';
 
 /**
  * The API, as one function from a request to a response. It runs the same way inside Vite on a laptop, behind
@@ -48,8 +49,10 @@ export function createApp(deps: Deps): Hono<AppEnv> {
         error.status as 400,
       );
     }
-    // Whatever went wrong inside stays inside: the log has it, the reply does not.
-    console.error('[api] unexpected error:', error);
+    // Whatever went wrong inside stays inside: the log has what kind of thing it was, the reply does not —
+    // and neither holds anything a family typed (server/log.ts).
+    const where = new URL(c.req.url).pathname.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/gi, ':id').slice(0, 80);
+    console.error(`[api] ${c.req.method} ${where} failed: ${describeError(error)}`);
     return c.json(
       { error: { code: 'internal', message: 'Something went wrong on our side. Nothing was changed.' } },
       500,
@@ -94,7 +97,7 @@ export function createApp(deps: Deps): Hono<AppEnv> {
       rls = db.rls;
       database = 'ok';
     } catch (error) {
-      console.error('[health] database:', error instanceof Error ? error.message : error);
+      console.error(`[health] database: ${describeError(error)}`);
     }
     return c.json(
       {
@@ -117,7 +120,7 @@ export function createApp(deps: Deps): Hono<AppEnv> {
     try {
       database = await deps.database();
     } catch (error) {
-      console.error('[api] database unavailable:', error instanceof Error ? error.message : error);
+      console.error(`[api] database unavailable: ${describeError(error)}`);
       throw new HttpError(
         'unavailable',
         'HOMEBASE cannot reach its database just now. Try again in a moment.',

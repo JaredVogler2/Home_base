@@ -12,7 +12,6 @@ export type ErrorCode =
   | 'too_many'
   | 'payload_too_large'
   | 'unavailable'
-  | 'setup_needed'
   | 'internal';
 
 const STATUS: Record<ErrorCode, number> = {
@@ -24,7 +23,6 @@ const STATUS: Record<ErrorCode, number> = {
   too_many: 429,
   payload_too_large: 413,
   unavailable: 503,
-  setup_needed: 503,
   internal: 500,
 };
 

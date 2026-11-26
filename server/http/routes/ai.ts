@@ -14,7 +14,7 @@ import { centsOf, spentSoFar } from '../../ai/budget.js';
 import { rewardSimulation } from '../../ai/economist.js';
 import { modelFor, providerFor, providersAvailable } from '../../ai/provider.js';
 import { AiRefused, applyOpId, executeRun, planRun } from '../../ai/run.js';
-import { attempt, type Limit } from '../../auth/rate-limit.js';
+import { attempt, LIMITS } from '../../auth/rate-limit.js';
 import { accessOf } from '../../auth/sessions.js';
 import { asSystem } from '../../db/client.js';
 import { aiProposals } from '../../db/schema.js';
@@ -34,9 +34,6 @@ import { badRequest, conflict, HttpError, notFound, tooMany, type ErrorCode } fr
  *   POST /ai/proposals/:id/apply      a parent       { changes?: number[] } → through the normal operation runner
  *   POST /ai/proposals/:id/dismiss    a parent       "no thanks"
  */
-
-/** A few runs a minute per household is plenty for a person, and stops a stuck button running up a bill. */
-const RUN_LIMIT: Limit = { max: 4, windowSeconds: 60 };
 
 const CODE_OF: Partial<Record<Rejection, ErrorCode>> = {
   forbidden: 'forbidden',
@@ -107,7 +104,7 @@ aiRoutes.post('/run', async (c) => {
   const database = c.get('database');
   const deps = c.get('deps');
   const limited = await asSystem(database, (tx) =>
-    attempt(tx, `ai-run:${session.householdId}`, RUN_LIMIT, c.get('now')),
+    attempt(tx, `ai-run:${session.householdId}`, LIMITS.ai, c.get('now')),
   );
   if (!limited.allowed) throw tooMany(limited.retryAfter);
   const envelope = await answering(async () => {

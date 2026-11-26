@@ -14,6 +14,7 @@ import { actorOf, readJson, requireSession, type AppEnv, type C } from '../env.j
 import { badRequest, unauthenticated } from '../errors.js';
 import { afterResponse } from '../../weather/background.js';
 import { refreshWeatherIfDue, wantsWeather } from '../../weather/service.js';
+import { describeError } from '../../log.js';
 
 /**
  * Keeping screens in step.
@@ -94,7 +95,10 @@ syncRoutes.get('/', async (c) => {
     c.req.query('access') ?? null,
     c.req.query('today') ?? null,
   );
-  if (swept) await sweepSystem(c).catch((error: unknown) => console.error('[sync] sweep failed:', error));
+  if (swept)
+    await sweepSystem(c).catch((error: unknown) =>
+      console.error(`[sync] sweep failed: ${describeError(error)}`),
+    );
   if (weather) {
     // The answer below does not wait for this: a new reading reaches the screens on their next ask.
     const deps = c.get('deps');

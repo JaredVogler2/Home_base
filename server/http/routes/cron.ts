@@ -7,6 +7,7 @@ import { keepHouse } from '../../domain/housekeeping.js';
 import type { AppEnv } from '../env.js';
 import { unauthenticated } from '../errors.js';
 import { sweepSystem } from './sync.js';
+import { describeError } from '../../log.js';
 
 /**
  * The once-a-day nudge, for a host that offers one (Vercel's free plan runs it once a day).
@@ -52,7 +53,7 @@ cronRoutes.all('/daily', async (c) => {
       if (did) kept += 1;
     } catch (error) {
       // One household's trouble must not stop the others' mornings.
-      console.error('[cron] a household could not be kept:', error instanceof Error ? error.message : error);
+      console.error(`[cron] a household could not be kept: ${describeError(error)}`);
     }
   }
   await sweepSystem(c);

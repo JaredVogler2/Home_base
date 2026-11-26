@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { newId } from '../../shared/ids.js';
+import { attempt, LIMITS } from '../../server/auth/rate-limit.js';
 import { asSystem } from '../../server/db/client.js';
 import { media, mediaBlobs } from '../../server/db/schema.js';
 import {
@@ -281,5 +282,25 @@ describe('photos', () => {
     // Their phone cannot take our photo's id for one of theirs either.
     const taken = await theirs.parent.post('/media', { mediaId, width: 10, height: 10 });
     expect(taken.status).toBe(409);
+  });
+
+  it('stops taking copies from a household that has sent very many in a short while', async () => {
+    const family = await newFamily(server);
+    const mediaId = newId();
+    await family.parent.post('/media', { mediaId, width: 1920, height: 1080 });
+    expect((await put(family.parent, mediaId, 960, jpeg())).status).toBe(200);
+    // Use the rest of the allowance up, as a run of uploads would.
+    await asSystem(server.database, async (tx) => {
+      for (let sent = 1; sent < LIMITS.upload.max; sent++) {
+        await attempt(tx, `upload:${family.householdId}`, LIMITS.upload, server.clock.now());
+      }
+    });
+    const refused = await put(family.parent, mediaId, 1920, jpeg(128));
+    expect(refused.status).toBe(429);
+    // Another family is not held up by it.
+    const other = await newFamily(server);
+    const theirs = newId();
+    await other.parent.post('/media', { mediaId: theirs, width: 1920, height: 1080 });
+    expect((await put(other.parent, theirs, 960, jpeg())).status).toBe(200);
   });
 });

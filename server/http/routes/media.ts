@@ -3,11 +3,13 @@ import { Hono } from 'hono';
 import * as v from 'valibot';
 import { isUuid } from '../../../shared/ids.js';
 import { hasAccess } from '../../../shared/model.js';
+import { attempt, LIMITS } from '../../auth/rate-limit.js';
 import { accessOf } from '../../auth/sessions.js';
+import { asSystem } from '../../db/client.js';
 import { media, mediaBlobs } from '../../db/schema.js';
 import { auditLog, bumpRevision } from '../../domain/context.js';
 import { readJson, requireSession, withHousehold, type AppEnv } from '../env.js';
-import { badRequest, conflict, forbidden, HttpError, notFound } from '../errors.js';
+import { badRequest, conflict, forbidden, HttpError, notFound, tooMany } from '../errors.js';
 
 /**
  * The family's own photos, for the wall's slideshow.
@@ -132,8 +134,14 @@ mediaRoutes.put('/:id/:width', async (c) => {
   const length = Number(c.req.header('content-length') ?? '0');
   if (length > MAX_COPY_BYTES) throw tooBig();
 
-  // Who may send is checked before the bytes are read, and the bytes are read before the household is held.
-  if (!hasAccess(accessOf(requireSession(c), false), 'guardian')) throw forbidden();
+  // Who may send, and how much lately, is checked before the bytes are read; the bytes are read before the
+  // household is held.
+  const session = requireSession(c);
+  if (!hasAccess(accessOf(session, false), 'guardian')) throw forbidden();
+  const limited = await asSystem(c.get('database'), (tx) =>
+    attempt(tx, `upload:${session.householdId}`, LIMITS.upload, c.get('now')),
+  );
+  if (!limited.allowed) throw tooMany(limited.retryAfter);
   const bytes = new Uint8Array(await c.req.arrayBuffer());
   if (bytes.length > MAX_COPY_BYTES) throw tooBig();
   const actual = sniff(bytes);

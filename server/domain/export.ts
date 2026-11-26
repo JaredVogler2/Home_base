@@ -277,7 +277,9 @@ export async function exportHousehold(ctx: Ctx): Promise<Record<string, unknown>
 /** One cell of a spreadsheet file. A cell that a spreadsheet would run as a formula is made plain text. */
 export function csvCell(value: unknown): string {
   let text = value === null || value === undefined ? '' : String(value);
-  if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
+  // A cell that begins like a formula is made plain text, so a spreadsheet never runs it. A plain number is left
+  // a number — "-3" stars is a figure, not a formula.
+  if (/^[=+\-@\t\r]/.test(text) && !/^-?\d+(\.\d+)?$/.test(text)) text = `'${text}`;
   return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 

@@ -1,4 +1,5 @@
 import { waitUntil } from '@vercel/functions';
+import { describeError } from '../log.js';
 
 /**
  * Work that should happen after a screen has had its answer, without making it wait.
@@ -18,7 +19,7 @@ export function afterResponse(label: string, work: () => Promise<unknown>): void
     .then(work)
     .then(
       () => undefined,
-      (error: unknown) => console.error(`[${label}] background work failed:`, error),
+      (error: unknown) => console.error(`[${label}] background work failed: ${describeError(error)}`),
     )
     .finally(() => running.delete(promise));
   running.add(promise);

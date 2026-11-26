@@ -11,9 +11,10 @@ import { badRequest, notFound } from '../errors.js';
  * grown-up to add back with one tap.
  *
  * What counts as bought is the "checked" line in each item's history. That history is only ever added to, so it
- * is still there after the nightly tidy has cleared ticked items off the list (it archives them, and never
- * deletes them), and it does not depend on the family's look-back record, which they may pause or thin out. A
- * thing ticked, unticked and ticked again on one day counts as one shop.
+ * is still there after the nightly tidy has cleared ticked items off the list (it archives them). An archived
+ * item, and its history with it, is deleted when the family's "keep details for" period has passed (90 days
+ * unless they change it), so the suggestions look back that far and no further. A thing ticked, unticked and
+ * ticked again on one day counts as one shop.
  *
  *   GET /shopping/suggestions?listId=…   up to 12, the most often bought first
  */

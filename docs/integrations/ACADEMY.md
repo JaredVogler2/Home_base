@@ -48,7 +48,9 @@ For a parent, step by step:
 3. The phone sends `POST /api/academy/import` with `{ profileId, consent: true, file }`. Requests are limited to
    about 2 MB.
 4. The server checks everything again, whatever the phone said:
-   - only a parent (owner or guardian) may do it: not a carer, not the wall, not a child's screen;
+   - only a parent (owner or guardian) may do it: not a carer, not a child's screen, and not the wall — unless a
+     parent has unlocked the wall with their PIN, when for a few minutes it acts as that parent (the export file
+     is saved on the screen the Academy was played on, which is usually the wall);
    - `consent` must be exactly `true`;
    - the child must be in this family and not put away;
    - the file must be an Academy export of a version HOMEBASE knows, the right shape, within size limits (at most

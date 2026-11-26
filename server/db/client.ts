@@ -10,8 +10,8 @@ import type { Db, Tx } from './types.js';
  *   inHousehold(...)  for everything done on behalf of a family. The transaction steps down to a role that the
  *                     database confines to that household's rows.
  *   asSystem(...)     for the little that happens before a household is known — signing in, pairing a screen —
- *                     and for housekeeping. Nothing else may use it; a lint rule and a test keep it to the files
- *                     that are allowed.
+ *                     and for housekeeping. Nothing else may use it: tests/shared/boundaries.test.ts names
+ *                     every file that does, with its reason, and fails when another one starts to.
  */
 
 export interface Database {

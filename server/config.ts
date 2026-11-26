@@ -18,8 +18,6 @@ export interface Config {
   autoMigrate: boolean;
   /** True when running as a Vercel function. */
   onVercel: boolean;
-  /** `production`, `preview` or `development`. */
-  environment: string;
   /** The commit this build was made from, where the host says. */
   commit: string | null;
   anthropicKey: string | null;
@@ -74,7 +72,6 @@ export function readConfig(env: Record<string, string | undefined> = process.env
     cronSecret: text(env.CRON_SECRET),
     autoMigrate: env.HOMEBASE_AUTO_MIGRATE !== '0',
     onVercel,
-    environment: text(env.VERCEL_ENV) ?? (env.NODE_ENV === 'production' ? 'production' : 'development'),
     commit: text(env.VERCEL_GIT_COMMIT_SHA)?.slice(0, 7) ?? null,
     anthropicKey: text(env.ANTHROPIC_API_KEY),
     openaiKey: text(env.OPENAI_API_KEY),

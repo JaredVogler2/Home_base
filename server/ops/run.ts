@@ -8,6 +8,7 @@ import { operations } from '../db/schema.js';
 import { awardBadges, BADGE_OPS } from '../domain/badges.js';
 import { bumpRevision, lockHousehold, makeCtx, Reject, type Actor, type Deploy } from '../domain/context.js';
 import { HANDLERS, type Done } from './handlers.js';
+import { describeError } from '../log.js';
 
 /**
  * Doing what a screen asked, once.
@@ -101,10 +102,7 @@ export async function applyOps(
       if (outcome.grownUp) usedGrownUpAccess = true;
       outcomes.push(outcome.outcome);
     } catch (error) {
-      console.error(
-        `[ops] ${String(shape?.type)} ${id} failed:`,
-        error instanceof Error ? error.message : error,
-      );
+      console.error(`[ops] ${String(shape?.type).slice(0, 40)} failed: ${describeError(error)}`);
       outcomes.push({ id, status: 'retry' });
     }
   }
