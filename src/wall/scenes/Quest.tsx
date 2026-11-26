@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { RETURN_REASONS, type Occurrence } from '../../../shared/model';
 import { ACTION_PICTURES } from '../../../shared/pictures';
+import { P } from '../../art/palette';
 import { ActionPicture } from '../../art/pictures';
 import { CloseGlyph, HandGlyph, TickGlyph } from '../chrome/chrome';
 import { useWall } from '../context';
@@ -8,6 +9,7 @@ import { childById, isDone, isSent, isToDo, missionsFor } from '../derive';
 import type { Box } from '../home/layout';
 import { Badge, BigButton, Stars } from './bits';
 import { Frame, Sheet } from './Frame';
+import { GentleTimer } from './GentleTimer';
 import styles from './Quest.module.css';
 import { Who } from './Who';
 
@@ -146,10 +148,18 @@ function MissionCard({
       className={styles.card}
       data-state={state}
       onClick={onTap}
-      aria-label={`${mission.title}: ${words}`}
+      aria-label={`${mission.title}${mission.kind === 'bonus' ? ' (an extra)' : ''}: ${words}`}
+      data-kind={mission.kind}
       data-testid={`mission-${mission.title}`}
     >
       <span className={styles.pin} aria-hidden="true" />
+      {/* An extra to choose, not part of the day: a ribbon on the card's corner. Never a star — stars are stars. */}
+      {mission.kind === 'bonus' && (
+        <svg className={styles.extra} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+          <path d="M0 0 H40 L0 40 Z" fill={P.lav} />
+          <path d="M12 5 Q13 11 19 12 Q13 13 12 19 Q11 13 5 12 Q11 11 12 5 Z" fill={P.white} />
+        </svg>
+      )}
       <span className={styles.picture}>
         <ActionPicture id={mission.picture} />
       </span>
@@ -257,6 +267,16 @@ function MissionSheet({
             </ul>
           )}
           <div className={styles.actions}>
+            {mission.timerSeconds !== null && mission.timerSeconds > 0 && !done && !sent && (
+              <GentleTimer
+                seconds={mission.timerSeconds}
+                word={wall.labels}
+                onDone={() => {
+                  wall.sound('done');
+                  wall.tell('Time is up. All done?', 'cheer');
+                }}
+              />
+            )}
             {!done && !sent && (
               <BigButton tone="go" word="I did it!" onTap={didIt} testId="did-it">
                 <TickGlyph />

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { newId } from '../../../shared/ids';
 import type { Profile, Reward, Snapshot } from '../../../shared/model';
 import { REWARD_PICTURES, type RewardPictureId } from '../../../shared/pictures';
+import { necessitiesIn } from '../../../shared/safety';
 import { useParent } from '../context';
 import {
   Button,
@@ -17,6 +18,7 @@ import {
   Toggle,
   useToast,
 } from '../ui/kit';
+import styles from './pages.module.css';
 
 /**
  * A reward a child can save for. Rewards are things a family does or small treats a grown-up has agreed to —
@@ -55,6 +57,8 @@ export function RewardEditor({ reward, onClose }: { reward: Reward | null; onClo
   const [picture, setPicture] = useState<RewardPictureId>(reward?.picture ?? 'game');
   const [title, setTitle] = useState(reward?.title ?? '');
   const [say, setSay] = useState(reward?.say ?? '');
+  // The words that will be on the wall: what was typed, or else the picture's own name.
+  const needs = necessitiesIn(title.trim() === '' ? REWARD_PICTURES[picture].label : title, say);
   const [price, setPrice] = useState(reward?.price ?? 10);
   const [limited, setLimited] = useState(reward?.stock != null);
   const [stock, setStock] = useState(reward?.stock ?? 1);
@@ -136,6 +140,15 @@ export function RewardEditor({ reward, onClose }: { reward: Reward | null; onClo
           </Field>
         </div>
       </Line>
+      {needs.length > 0 && (
+        <div className={styles.warning} role="note" data-testid="reward-needs-note">
+          <p>
+            This sounds like it touches on {needs.join(' and ')}. Those are things no child should have to
+            earn. A treat on top, or a little later than usual, is your call — as long as it is an extra and
+            never the only way to have it.
+          </p>
+        </div>
+      )}
       <Field
         label="What the guide says (optional)"
         hint={`Left empty, he says: “${REWARD_PICTURES[picture].say}”`}

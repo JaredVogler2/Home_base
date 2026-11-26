@@ -1,10 +1,23 @@
 import { useState } from 'react';
 import type { Reward, Routine, TaskTemplate } from '../../../shared/model';
+import { planLoadFor, unevenRates } from '../../../shared/plan';
 import { describeSchedule } from '../../../shared/schedule';
-import { ActionPicture, RewardPicture } from '../../art/pictures';
+import { ActionPicture, Avatar, RewardPicture } from '../../art/pictures';
 import { useParent } from '../context';
 import { PageHead } from '../ui/Page';
-import { Badge, Button, Card, Empty, Glyph, Row, Rows, Section, Segmented, StarCount } from '../ui/kit';
+import {
+  Badge,
+  Button,
+  Card,
+  Empty,
+  Glyph,
+  IconButton,
+  Row,
+  Rows,
+  Section,
+  Segmented,
+  StarCount,
+} from '../ui/kit';
 import { MissionEditor, MissionIdeas, type MissionSeed } from './MissionEditor';
 import { RewardEditor } from './RewardEditor';
 import { RoutineEditor } from './RoutineEditor';
@@ -43,6 +56,23 @@ export function Plan({ rest }: { rest: string[] }) {
   const routines = [...view.routines].sort((a, b) => a.sort - b.sort);
   const rewards = [...view.rewards].sort((a, b) => a.sort - b.sort);
 
+  const loads = view.profiles
+    .filter((child) => !child.archived && child.independent)
+    .map((child) => ({ child, load: planLoadFor(live, child.id) }));
+
+  // Moving a mission up or down within its own group; the wall's board follows the same order.
+  const move = (template: TaskTemplate, by: -1 | 1) => {
+    const group = live.filter((other) => other.kind === template.kind);
+    const from = group.findIndex((other) => other.id === template.id);
+    const to = from + by;
+    if (from < 0 || to < 0 || to >= group.length) return;
+    const moved = [...group];
+    moved.splice(to, 0, ...moved.splice(from, 1));
+    const rest = templates.filter((other) => other.status === 'archived' || other.kind !== template.kind);
+    const order = template.kind === 'core' ? [...moved, ...rest] : [...rest, ...moved];
+    parent.tell('task.reorder', { templateIds: order.map((other) => other.id) });
+  };
+
   const missionRow = (template: TaskTemplate) => (
     <Row
       key={template.id}
@@ -55,6 +85,18 @@ export function Plan({ rest }: { rest: string[] }) {
           {template.status === 'archived' && <Badge>Put away</Badge>}
           {template.stars > 0 && <StarCount n={template.stars} />}
         </>
+      }
+      right={
+        guardian && template.status !== 'archived' ? (
+          <>
+            <IconButton label={`Move ${template.title} up`} onClick={() => move(template, -1)}>
+              {Glyph.up}
+            </IconButton>
+            <IconButton label={`Move ${template.title} down`} onClick={() => move(template, 1)}>
+              {Glyph.down}
+            </IconButton>
+          </>
+        ) : undefined
       }
       onClick={guardian ? () => setMission(template) : undefined}
       testId={`template-${template.title}`}
@@ -101,6 +143,37 @@ export function Plan({ rest }: { rest: string[] }) {
                 </Section>
               )}
             </>
+          )}
+          {guardian && loads.length > 0 && (
+            <Section
+              title="What the plan asks of each child"
+              hint="In an ordinary week: their own missions, the effort you marked on them, and the stars on offer. This is about the plan, not about the children."
+              testId="plan-load"
+            >
+              <Rows>
+                {loads.map(({ child, load }) => (
+                  <Row
+                    key={child.id}
+                    round
+                    picture={<Avatar id={child.avatar} />}
+                    title={child.nickname}
+                    detail={
+                      load.missions === 0
+                        ? 'Nothing of their own yet'
+                        : `${load.missions} missions · effort ${load.effort} · up to ${load.stars} stars` +
+                          (load.rate === null ? '' : ` · ${load.rate} for each mark of effort`)
+                    }
+                  />
+                ))}
+              </Rows>
+              {unevenRates(loads.map((entry) => entry.load)) && (
+                <Card tone="blue">
+                  The same effort is worth quite different amounts to different children here. That may be
+                  just what you mean — a small child’s job is a small job — it is shown so that it is your
+                  choice and not an accident.
+                </Card>
+              )}
+            </Section>
           )}
           {old.length > 0 && (
             <Section

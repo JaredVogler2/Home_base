@@ -161,10 +161,12 @@ export async function setTaskStatus(ctx: Ctx, input: OpInput<'task.status'>): Pr
 export async function reorderTasks(ctx: Ctx, input: OpInput<'task.reorder'>): Promise<void> {
   let sort = 1;
   for (const templateId of input.templateIds) {
+    // A mission's place on the board is read from its template, so today's board follows at once.
     await ctx.tx
       .update(taskTemplates)
-      .set({ sort: sort++ })
+      .set({ sort })
       .where(and(eq(taskTemplates.id, templateId), eq(taskTemplates.householdId, ctx.household.id)));
+    sort += 1;
   }
 }
 

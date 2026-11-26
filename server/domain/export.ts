@@ -69,7 +69,11 @@ export async function exportHousehold(ctx: Ctx): Promise<Record<string, unknown>
       .from(taskOccurrences)
       .where(household(taskOccurrences.householdId, id))
       .orderBy(asc(taskOccurrences.localDate)),
-    await ctx.tx.select().from(ledger).where(household(ledger.householdId, id)).orderBy(asc(ledger.at)),
+    await ctx.tx
+      .select()
+      .from(ledger)
+      .where(household(ledger.householdId, id))
+      .orderBy(asc(ledger.at), asc(ledger.id)),
     await ctx.tx.select().from(wallets).where(household(wallets.householdId, id)),
     await ctx.tx
       .select()
@@ -97,7 +101,11 @@ export async function exportHousehold(ctx: Ctx): Promise<Record<string, unknown>
       .where(household(calendarDays.householdId, id))
       .orderBy(asc(calendarDays.localDate)),
     await ctx.tx.select().from(calendarRules).where(household(calendarRules.householdId, id)),
-    await ctx.tx.select().from(events).where(household(events.householdId, id)).orderBy(asc(events.at)),
+    await ctx.tx
+      .select()
+      .from(events)
+      .where(household(events.householdId, id))
+      .orderBy(asc(events.at), asc(events.id)),
     await ctx.tx
       .select()
       .from(weeklyTotals)
@@ -109,7 +117,11 @@ export async function exportHousehold(ctx: Ctx): Promise<Record<string, unknown>
       .where(household(academySessions.householdId, id))
       .orderBy(asc(academySessions.localDate)),
     await ctx.tx.select().from(badges).where(household(badges.householdId, id)),
-    await ctx.tx.select().from(audit).where(household(audit.householdId, id)).orderBy(asc(audit.at)),
+    await ctx.tx
+      .select()
+      .from(audit)
+      .where(household(audit.householdId, id))
+      .orderBy(asc(audit.at), asc(audit.id)),
   ];
 
   await auditLog(ctx, 'export.made', { format: 'json' });
@@ -294,7 +306,8 @@ export async function ledgerCsv(ctx: Ctx): Promise<string> {
     .select()
     .from(ledger)
     .where(eq(ledger.householdId, ctx.household.id))
-    .orderBy(asc(ledger.at));
+    // Two lines written in the same instant keep one order, whatever the database's mood.
+    .orderBy(asc(ledger.at), asc(ledger.id));
   await auditLog(ctx, 'export.made', { format: 'csv', what: 'ledger' });
   return toCsv(
     ['when', 'child', 'kind', 'to spend', 'set aside', 'earned in all', 'from', 'note', 'by'],

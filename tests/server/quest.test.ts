@@ -398,6 +398,32 @@ describe('editing a mission', () => {
     expect(occurrenceOf(await family.parent.pull(), task, kit).status).toBe('available');
   });
 
+  it('puts missions in the order a parent chooses, on today’s board at once', async () => {
+    const family = await newFamily(server);
+    const kit = await addChild(family, 'Kit');
+    const shoes = await addTask(family, { title: 'Shoes' });
+    const teeth = await addTask(family, { title: 'Teeth' });
+    const books = await addTask(family, { title: 'Books' });
+    const wall = await pairWall(family);
+    const titles = (snapshot: Awaited<ReturnType<typeof wall.pull>>) =>
+      snapshot.occurrences
+        .filter((o) => o.profileId === kit)
+        .sort((a, b) => a.sort - b.sort)
+        .map((o) => o.title);
+    expect(titles(await wall.pull())).toEqual(['Shoes', 'Teeth', 'Books']);
+
+    await family.parent.do('task.reorder', { templateIds: [books, shoes, teeth] });
+    expect(titles(await wall.pull())).toEqual(['Books', 'Shoes', 'Teeth']);
+    expect((await family.parent.pull()).templates?.map((template) => template.title)).toEqual([
+      'Books',
+      'Shoes',
+      'Teeth',
+    ]);
+    // The wall cannot rearrange the plan.
+    expect((await wall.op('task.reorder', { templateIds: [teeth, shoes, books] })).status).toBe('rejected');
+    expect(titles(await wall.pull())).toEqual(['Books', 'Shoes', 'Teeth']);
+  });
+
   it('refuses a mission that is not a mission', async () => {
     const family = await newFamily(server);
     const bad = await family.parent.op('task.create', { ...taskInput(newId()), stars: 9999 });

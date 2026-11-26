@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hazardsIn } from '../../shared/safety';
+import { hazardsIn, necessitiesIn } from '../../shared/safety';
 
 describe('a second look at a mission', () => {
   it('lets the ordinary things a small child does go by', () => {
@@ -32,5 +32,28 @@ describe('a second look at a mission', () => {
     expect(hazardsIn('Read a book about firefighters')).toEqual([]);
     expect(hazardsIn('Put on the broad hat')).toEqual([]);
     expect(hazardsIn('Find the ironing board picture')).toContain('heat');
+  });
+});
+
+describe('a second look at a reward', () => {
+  it('notices food, sleep, comfort and a grown-up’s company', () => {
+    expect(necessitiesIn('An ice cream')).toEqual(['food']);
+    expect(necessitiesIn('Stay up a little later')).toEqual(['sleep']);
+    expect(necessitiesIn('Dessert after dinner', 'and a cuddle')).toEqual(['food', 'comfort']);
+    expect(necessitiesIn('Time with Dad')).toEqual(['time with you']);
+  });
+
+  it('says nothing about treats that are things to do', () => {
+    for (const reward of [
+      'Family game',
+      'Pick the story',
+      'Playground',
+      'Bike ride',
+      'Pillow fort',
+      'Stickers',
+    ]) {
+      expect(necessitiesIn(reward)).toEqual([]);
+    }
+    expect(necessitiesIn(null, undefined, '')).toEqual([]);
   });
 });

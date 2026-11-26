@@ -63,6 +63,15 @@
 .card[data-state='done'] .picture {
   opacity: 0.55;
 }
+/* The ribbon on an "extra" card. */
+.extra {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 26%;
+  border-top-left-radius: 1.4cqw;
+  overflow: hidden;
+}
 .pin {
   position: absolute;
   top: 0.5cqw;

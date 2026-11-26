@@ -363,6 +363,20 @@ const REDUCERS: { [T in OpType]?: Reducer<T> } = {
       ) as unknown as Snapshot['household']['settings'],
     },
   }),
+  'task.reorder': (snapshot, input) => {
+    const place = new Map(input.templateIds.map((id, index) => [id, index + 1]));
+    return {
+      ...snapshot,
+      templates: snapshot.templates?.map((template) =>
+        place.has(template.id) ? { ...template, sort: place.get(template.id)! } : template,
+      ),
+      occurrences: snapshot.occurrences.map((occurrence) =>
+        occurrence.date === snapshot.today && place.has(occurrence.templateId)
+          ? { ...occurrence, sort: place.get(occurrence.templateId)! }
+          : occurrence,
+      ),
+    };
+  },
   'task.status': (snapshot, input) => ({
     ...snapshot,
     templates: snapshot.templates?.map((template) =>

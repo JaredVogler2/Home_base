@@ -53,9 +53,11 @@ kind; reorder with the arrows. On the wall a child sees *now*, *next*, and beads
 countdown is ever shown to a child. Routines earn no stars unless you decide otherwise (*Family → Stars and
 missions*): getting dressed is part of the day, not a job.
 
-**Plan → Rewards** are things to save for: choosing the story, a family game, an outing. Never food, rest,
-comfort or time with you. When you set a price, HOMEBASE tells you roughly how many weeks that is at the
-present missions, so nothing is out of reach by accident.
+**Plan → Rewards** are things to save for: choosing the story, a family game, an outing. Food, sleep, comfort
+and time with you are things no child should have to earn; if a reward's words sound like one of those,
+HOMEBASE says so and leaves the decision with you (an ice cream on top of the day is a treat; dinner is not a
+prize). When you set a price, HOMEBASE tells you roughly how many weeks that is at the present missions, so
+nothing is out of reach by accident.
 
 ## An ordinary day
 

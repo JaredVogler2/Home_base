@@ -38,3 +38,31 @@ export function hazardsIn(...words: (string | null | undefined)[]): string[] {
   for (const [pattern, kind] of HAZARDS) if (pattern.test(text)) found.add(kind);
   return [...found];
 }
+
+/**
+ * A second look at a reward a grown-up has written.
+ *
+ * Some things a child should never have to earn: food, sleep, comfort, a grown-up's company. A reward whose
+ * words sound like one of those gets a quiet note asking the grown-up to make sure it is an extra — a treat on
+ * top, a little later than usual — and never the only way to have it. The decision stays the grown-up's.
+ */
+const NECESSITIES: readonly (readonly [RegExp, string])[] = [
+  [
+    /\b(dinner|supper|lunch|breakfast|meals?|food|snacks?|dessert|pudding|sweets?|candy|chocolate|ice ?cream|treats?)\b/i,
+    'food',
+  ],
+  [/\b(sleep|bed ?time|naps?|rest|stay(?:ing)? up|late nights?)\b/i, 'sleep'],
+  [/\b(hugs?|cuddles?|kiss(?:es)?|comfort)\b/i, 'comfort'],
+  [
+    /\b(time with (?:mum|mom|mam|dad|mummy|mommy|daddy|you|me|us|a grown-?up)|one[- ]on[- ]one|attention)\b/i,
+    'time with you',
+  ],
+];
+
+/** The needs a reward's words touch on; empty when none do. */
+export function necessitiesIn(...words: (string | null | undefined)[]): string[] {
+  const text = words.filter(Boolean).join(' ');
+  const found = new Set<string>();
+  for (const [pattern, kind] of NECESSITIES) if (pattern.test(text)) found.add(kind);
+  return [...found];
+}

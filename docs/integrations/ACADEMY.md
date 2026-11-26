@@ -212,4 +212,6 @@ Until then, the file import is the one supported path.
   until the table in `shared/academy.ts` is updated.
 - How large real exports get. An Academy export can be up to 5 MB by its own limit, while HOMEBASE accepts about
   2 MB.
-- The parent-page UI for the import and the summary. It is not built yet.
+- The parent page for the import and the summary (*Family → Training Academy*, `src/parent/pages/AcademyPage.tsx`)
+  is built and reads a real export file in the browser, but no browser test picks a file through it: the server
+  side of the import is what the tests exercise.

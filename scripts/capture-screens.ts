@@ -54,6 +54,14 @@ const SHOTS: Shot[] = [
     taps: [t('room-quest'), june, t('mission-Shoes in the basket')],
   },
   {
+    name: 'wall-quest-timer',
+    as: 'wall',
+    path: '/wall?at=16:30',
+    size: WIDE,
+    taps: [t('room-quest'), june, t('mission-Brush teeth'), t('mission-timer')],
+    wait: 900,
+  },
+  {
     name: 'wall-quest-done',
     as: 'wall',
     path: '/wall?at=16:30',
