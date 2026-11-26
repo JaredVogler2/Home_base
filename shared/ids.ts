@@ -9,9 +9,22 @@ export function isUuid(value: unknown): value is string {
   return typeof value === 'string' && UUID.test(value);
 }
 
-/** A random (version 4) UUID. `crypto.randomUUID` exists in every browser HOMEBASE supports and in Node. */
+/**
+ * A random (version 4) UUID.
+ *
+ * `crypto.randomUUID` is in every browser HOMEBASE supports and in Node — but browsers withhold it from a page
+ * that was not fetched securely, and "not securely" includes a wall opened at http://192.168.… on the home
+ * network before the house has been put on the internet. The random numbers themselves are never withheld, so
+ * there the same kind of id is made from them by hand.
+ */
 export function newId(): string {
-  return globalThis.crypto.randomUUID();
+  const source = globalThis.crypto;
+  if (typeof source.randomUUID === 'function') return source.randomUUID();
+  const bytes = source.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6]! & 0x0f) | 0x40; // version 4
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80; // the standard variant
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 /** The id that stands for "nobody in particular" where a unique index needs a value (shared tasks). */

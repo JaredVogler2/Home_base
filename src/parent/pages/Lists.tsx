@@ -9,6 +9,7 @@ import {
 } from '../../../shared/pictures';
 import type { Favourite } from '../../../shared/settings';
 import { classifyItem, describeItem, listAsText, normalizeItem, parseLines } from '../../../shared/shopping';
+import { copyText } from '../../app/clipboard';
 import { ShoppingPicture } from '../../art/pictures';
 import { api } from '../../sync/api';
 import { useParent } from '../context';
@@ -190,10 +191,8 @@ export function Lists({ rest }: { rest: string[] }) {
     const words = listAsText(list.name, items);
     try {
       if (navigator.share) await navigator.share({ title: list.name, text: words });
-      else {
-        await navigator.clipboard.writeText(words);
-        toast('Copied. Paste it into a note or a message.');
-      }
+      else if (await copyText(words)) toast('Copied. Paste it into a note or a message.');
+      else toast('Could not copy the list on this screen.');
     } catch {
       // Sharing was cancelled: nothing to say.
     }

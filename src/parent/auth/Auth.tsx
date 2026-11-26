@@ -1,3 +1,4 @@
+import { copyText } from '../../app/clipboard';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import type { AvatarId } from '../../../shared/pictures';
 import { navigate } from '../../app/navigation';
@@ -148,10 +149,7 @@ export function Auth({ start = 'signin', code = null }: { start?: AuthMode; code
             <li key={value}>{value}</li>
           ))}
         </ul>
-        <Button
-          tone="quiet"
-          onClick={() => void navigator.clipboard?.writeText(codes.join('\n')).catch(() => undefined)}
-        >
+        <Button tone="quiet" onClick={() => void copyText(codes.join('\n'))}>
           Copy them
         </Button>
         <Button tone="primary" full testId="codes-done" onClick={() => void enter()}>

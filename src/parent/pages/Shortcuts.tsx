@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { copyText } from '../../app/clipboard';
 import { api, ApiError } from '../../sync/api';
 import { useParent } from '../context';
 import { PageHead } from '../ui/Page';
@@ -63,10 +64,9 @@ export function Shortcuts() {
   }, []);
 
   const copy = (text: string) =>
-    void navigator.clipboard
-      ?.writeText(text)
-      .then(() => toast('Copied.'))
-      .catch(() => undefined);
+    void copyText(text).then((copied) =>
+      toast(copied ? 'Copied.' : 'Could not copy. Select it and copy by hand.'),
+    );
 
   return (
     <>
