@@ -160,6 +160,28 @@ describe('the screen’s guess agrees with the server', () => {
     );
   });
 
+  it('the favourites shelf: kept once however it is spelled, changed in place, and taken off', async () => {
+    const { family } = await household();
+    const shelf = (s: Snapshot) => s.household.settings.shopping.favourites;
+    const milk = { text: 'Milk', picture: 'milk', category: 'dairy' } as const;
+    await guessAndAsk(family.parent, 'shopping.favourite', { ...milk, on: true }, shelf);
+    await guessAndAsk(
+      family.parent,
+      'shopping.favourite',
+      { text: 'Bananas', picture: 'banana', category: 'produce', on: true },
+      shelf,
+    );
+    // The same thing in another spelling and aisle: its place on the shelf is kept.
+    const { told } = await guessAndAsk(
+      family.parent,
+      'shopping.favourite',
+      { text: 'MILK ', picture: 'milk', category: 'drinks', on: true },
+      shelf,
+    );
+    expect(shelf(told).map((entry) => entry.text)).toEqual(['MILK', 'Bananas']);
+    await guessAndAsk(family.parent, 'shopping.favourite', { ...milk, on: false }, shelf);
+  });
+
   it('settings: only what was changed changes, on the screen as on the server', async () => {
     const { family } = await household();
     const settings = (s: Snapshot) => s.household.settings;

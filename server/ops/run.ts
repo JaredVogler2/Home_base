@@ -1,12 +1,13 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gte, sql } from 'drizzle-orm';
 import * as v from 'valibot';
 import { isUuid } from '../../shared/ids.js';
 import { hasAccess, type AccessLevel } from '../../shared/model.js';
 import { isOpType, OPS, type OpOutcome, type OpType, type Rejection } from '../../shared/ops.js';
 import { inHousehold, type Database } from '../db/client.js';
-import { operations } from '../db/schema.js';
+import { audit, operations } from '../db/schema.js';
 import { awardBadges, BADGE_OPS } from '../domain/badges.js';
 import { bumpRevision, lockHousehold, makeCtx, Reject, type Actor, type Deploy } from '../domain/context.js';
+import { noteConnection } from '../domain/health.js';
 import { HANDLERS, type Done } from './handlers.js';
 import { describeError } from '../log.js';
 
@@ -104,9 +105,40 @@ export async function applyOps(
     } catch (error) {
       console.error(`[ops] ${String(shape?.type).slice(0, 40)} failed: ${describeError(error)}`);
       outcomes.push({ id, status: 'retry' });
+      await noteFailedRequest(deps, requester, shape?.type).catch(() => undefined);
     }
   }
   return { outcomes, usedGrownUpAccess };
+}
+
+/**
+ * A request the server could not carry out — not a "no", a fault here. Nothing of the request was kept (that is
+ * the point of its transaction), so this is written afterwards, on its own, and at most once a day for each
+ * screen and kind of request: a screen that retries every few seconds must not fill the record. If the database
+ * itself is what failed, this fails too and is let go; the server's own log has it.
+ */
+async function noteFailedRequest(deps: OpsDeps, requester: Requester, type: unknown): Promise<void> {
+  const kind = isOpType(type) ? type : 'unknown';
+  const now = deps.now();
+  const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const { householdId, actor } = requester;
+  await inHousehold(deps.database, householdId, async (tx) => {
+    const already = await tx
+      .select({ id: audit.id })
+      .from(audit)
+      .where(
+        and(
+          eq(audit.householdId, householdId),
+          eq(audit.action, 'sync.failed'),
+          eq(audit.actor, actor.name),
+          gte(audit.at, dayAgo),
+          sql`${audit.detail}->>'type' = ${kind}`,
+        ),
+      )
+      .limit(1);
+    if (already.length === 0)
+      await noteConnection(tx, householdId, now, 'sync.failed', actor.name, { type: kind });
+  });
 }
 
 async function applyOne(

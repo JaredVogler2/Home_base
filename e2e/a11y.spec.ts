@@ -138,6 +138,7 @@ test.describe('accessibility: the grown-ups’ side', { tag: '@phone' }, () => {
       ['/parent/history', 'History', 'History'],
       ['/parent/more', 'Family', 'Family'],
       ['/parent/more/wall', 'The wall', 'the wall settings page'],
+      ['/parent/more/connections', 'Connections', 'the connections page'],
     ];
     for (const [path, heading, where] of pages) {
       await page.goto(path);

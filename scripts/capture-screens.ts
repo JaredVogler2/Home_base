@@ -207,6 +207,14 @@ const SHOTS: Shot[] = [
     wait: 900,
   },
   {
+    name: 'parent-connections',
+    as: 'guardian',
+    path: '/parent/more/connections',
+    size: PHONE,
+    fullPage: true,
+    wait: 900,
+  },
+  {
     name: 'parent-helper',
     as: 'guardian',
     path: '/parent/more/helper',

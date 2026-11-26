@@ -196,7 +196,7 @@ export const OPS = {
       itemId: id,
       listId: id,
       ...ItemFields,
-      via: v.optional(v.picklist(['typed', 'pasted', 'voice', 'picture'])),
+      via: v.optional(v.picklist(['typed', 'pasted', 'voice', 'picture', 'favourite'])),
     }),
   ),
   'shopping.check': op('household', v.object({ itemId: id, checked: v.boolean() })),
@@ -226,6 +226,16 @@ export const OPS = {
   'shopping.remove': op('caregiver', v.object({ itemId: id })),
   'shopping.restore': op('caregiver', v.object({ itemId: id })),
   'shopping.clearChecked': op('caregiver', v.object({ listId: id })),
+  /** Keep a thing the family always buys on the favourites shelf, or take it off. Nothing is added to a list. */
+  'shopping.favourite': op(
+    'caregiver',
+    v.object({
+      text: text(120),
+      picture: shoppingPicture,
+      category: v.picklist(SHOPPING_CATEGORIES),
+      on: v.boolean(),
+    }),
+  ),
 
   // --- a parent ------------------------------------------------------------------------------------------------
   'occurrence.reverse': op('guardian', v.object({ occurrenceId: id, note: optionalText(200) })),

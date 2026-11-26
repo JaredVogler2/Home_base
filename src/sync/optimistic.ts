@@ -8,6 +8,7 @@ import type {
 } from '../../shared/model';
 import type { OpEnvelope, OpInput, OpType } from '../../shared/ops';
 import { SHOPPING_PICTURES } from '../../shared/pictures';
+import { FAVOURITES_MAX } from '../../shared/settings';
 import { classifyItem, normalizeItem } from '../../shared/shopping';
 import { weekdayOf } from '../../shared/time';
 
@@ -351,6 +352,27 @@ const REDUCERS: { [T in OpType]?: Reducer<T> } = {
     mapItem(snapshot, input.itemId, (item) =>
       item.status === 'requested' ? { ...item, status: input.accept ? 'needed' : 'declined' } : item,
     ),
+
+  // The favourites shelf, by the server's own rule: one thing per folded spelling, saying it again keeps its place.
+  'shopping.favourite': (snapshot, input) => {
+    const settings = snapshot.household.settings;
+    const shelf = settings.shopping.favourites;
+    const key = normalizeItem(input.text);
+    const at = shelf.findIndex((entry) => normalizeItem(entry.text) === key);
+    const entry = { text: input.text.trim(), picture: input.picture, category: input.category };
+    let next = shelf;
+    if (!input.on) next = at < 0 ? shelf : shelf.filter((_, index) => index !== at);
+    else if (at >= 0) next = shelf.map((existing, index) => (index === at ? entry : existing));
+    else if (key !== '' && shelf.length < FAVOURITES_MAX) next = [...shelf, entry];
+    if (next === shelf) return snapshot;
+    return {
+      ...snapshot,
+      household: {
+        ...snapshot.household,
+        settings: { ...settings, shopping: { ...settings.shopping, favourites: next } },
+      },
+    };
+  },
 
   // --- a grown-up's switches: shown as flipped at once; the server's answer is what stays ---
   'household.settings': (snapshot, input) => ({

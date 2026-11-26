@@ -82,12 +82,52 @@ describe('history, export and deletion', () => {
     expect(check.body.ok).toBe(true);
   });
 
+  it('lets a parent forget a line that was simply wrong: it leaves the record, and the stars stay as they are', async () => {
+    interface Line {
+      id: string;
+      kind: string;
+      profileId: string | null;
+      subjectId: string | null;
+    }
+    const before = await family.parent.get<{ events: Line[] }>('/history/events?days=14');
+    const done = before.body.events.find((event) => event.kind === 'mission.done');
+    // The line says who and which mission, by id: the phone finds the words for both.
+    expect(done).toMatchObject({ profileId: childId, subjectId: taskId });
+    const stars = walletOf(await family.parent.pull(), childId).available;
+
+    // The wall cannot forget anything.
+    const refused = await wall.op('history.forget', { eventId: done!.id });
+    expect(refused).toMatchObject({ status: 'rejected', reason: 'forbidden' });
+    // Nor can another family's parent, even with the right id: the line is simply not there for them.
+    const others = await newFamily(server);
+    await others.parent.do('history.forget', { eventId: done!.id });
+    expect((await family.parent.get<{ events: Line[] }>('/history/events')).body.events).toHaveLength(
+      before.body.events.length,
+    );
+
+    await family.parent.do('history.forget', { eventId: done!.id });
+    const after = await family.parent.get<{ events: Line[] }>('/history/events?days=14');
+    expect(after.body.events.map((event) => event.id)).not.toContain(done!.id);
+    expect(after.body.events).toHaveLength(before.body.events.length - 1);
+    // Stars are a ledger of their own and are untouched; that it was forgotten is itself on the record.
+    expect(walletOf(await family.parent.pull(), childId).available).toBe(stars);
+    const changes = await family.parent.get<{ changes: { action: string }[] }>('/history/changes');
+    expect(changes.body.changes.map((change) => change.action)).toContain('history.forgot');
+    // The week's count of missions comes from the missions themselves, so the look-back still adds up.
+    const summary = await family.parent.get<Summary>('/history/summary?weeks=4');
+    expect(summary.body.children.find((child) => child.profileId === childId)?.cells[3]).toMatchObject({
+      offered: 1,
+      done: 1,
+    });
+  });
+
   it('is closed to the wall', async () => {
     for (const path of [
       '/history/summary',
       `/history/ledger?profileId=${childId}`,
       '/history/events',
       '/history/changes',
+      '/history/health',
       '/history/reconcile',
       '/export/household.json',
       '/export/ledger.csv',

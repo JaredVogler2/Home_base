@@ -179,6 +179,154 @@ describe('two phones and a wall, one list', () => {
   });
 });
 
+describe('the favourites shelf', () => {
+  const shelfOf = async (screen: Browser) =>
+    (await screen.pull()).household.settings.shopping.favourites.map((entry) => entry.text);
+
+  it('keeps what the family always buys, once however it is spelled, and puts it back with one tap', async () => {
+    const family = await newFamily(server);
+    const other = await secondParent(family);
+    const listId = await groceries(family);
+    await family.parent.do('shopping.favourite', {
+      text: 'Milk',
+      picture: 'milk',
+      category: 'dairy',
+      on: true,
+    });
+    await other.do('shopping.favourite', {
+      text: 'Bananas',
+      picture: 'banana',
+      category: 'produce',
+      on: true,
+    });
+    // Both phones see one shelf, in the order things were put on it.
+    expect(await shelfOf(family.parent)).toEqual(['Milk', 'Bananas']);
+    expect(await shelfOf(other)).toEqual(['Milk', 'Bananas']);
+
+    // "MILK!" is milk: nothing is added, and saying it again with another picture keeps its place.
+    const again = await family.parent.op('shopping.favourite', {
+      text: 'MILK!',
+      picture: 'milk',
+      category: 'dairy',
+      on: true,
+    });
+    expect(again.status).toBe('applied');
+    expect(await shelfOf(family.parent)).toEqual(['MILK!', 'Bananas']);
+    const same = await family.parent.op('shopping.favourite', {
+      text: 'MILK!',
+      picture: 'milk',
+      category: 'dairy',
+      on: true,
+    });
+    expect(same.status).toBe('noop');
+
+    // The shelf adds nothing by itself: the list is still empty until somebody taps.
+    expect((await family.parent.pull()).items).toEqual([]);
+    await family.parent.do(
+      'shopping.add',
+      item(listId, 'MILK!', { picture: 'milk', category: 'dairy', via: 'favourite' }),
+    );
+    expect((await other.pull()).items.map((entry) => entry.text)).toEqual(['MILK!']);
+
+    // Taking it off the shelf leaves the list alone.
+    await other.do('shopping.favourite', { text: 'milk', picture: 'milk', category: 'dairy', on: false });
+    expect(await shelfOf(family.parent)).toEqual(['Bananas']);
+    expect((await family.parent.pull()).items).toHaveLength(1);
+    const gone = await other.op('shopping.favourite', {
+      text: 'milk',
+      picture: 'milk',
+      category: 'dairy',
+      on: false,
+    });
+    expect(gone.status).toBe('noop');
+  });
+
+  it('is a shelf and not a second list: it stops at forty', async () => {
+    const family = await newFamily(server);
+    for (let index = 0; index < 40; index++) {
+      await family.parent.do('shopping.favourite', {
+        text: `Thing number ${index}`,
+        picture: 'other',
+        category: 'other',
+        on: true,
+      });
+    }
+    const full = await family.parent.op('shopping.favourite', {
+      text: 'One more',
+      picture: 'other',
+      category: 'other',
+      on: true,
+    });
+    expect(full).toMatchObject({ status: 'rejected', reason: 'limit_reached' });
+    expect(await shelfOf(family.parent)).toHaveLength(40);
+    // One already on the shelf can still be changed when it is full.
+    const changed = await family.parent.op('shopping.favourite', {
+      text: 'Thing number 3',
+      picture: 'milk',
+      category: 'dairy',
+      on: true,
+    });
+    expect(changed.status).toBe('applied');
+  });
+
+  it('is for grown-ups: the wall can read the shelf but cannot change it, and a child cannot type on it', async () => {
+    const family = await newFamily(server);
+    const wall = await pairWall(family);
+    await family.parent.do('shopping.favourite', {
+      text: 'Eggs',
+      picture: 'eggs',
+      category: 'dairy',
+      on: true,
+    });
+    expect(await shelfOf(wall)).toEqual(['Eggs']);
+    const refused = await wall.op('shopping.favourite', {
+      text: 'Sweets',
+      picture: 'other',
+      category: 'other',
+      on: true,
+    });
+    expect(refused).toMatchObject({ status: 'rejected', reason: 'forbidden' });
+    const empty = await family.parent.op('shopping.favourite', {
+      text: '!!!',
+      picture: 'other',
+      category: 'other',
+      on: true,
+    });
+    expect(empty.status).toBe('rejected');
+    const picture = await family.parent.op('shopping.favourite', {
+      text: 'Bread',
+      picture: 'not-a-picture' as 'bread',
+      category: 'bakery',
+      on: true,
+    });
+    expect(picture.status).toBe('rejected');
+    expect(await shelfOf(family.parent)).toEqual(['Eggs']);
+  });
+
+  it('goes with the household when it is exported, and a damaged shelf never unseats the other settings', async () => {
+    const family = await newFamily(server);
+    await family.parent.do('shopping.favourite', {
+      text: 'Oats',
+      picture: 'other',
+      category: 'pantry',
+      on: true,
+    });
+    const exported = await family.parent.get<{
+      household: { settings: { shopping: { favourites: { text: string }[] } } };
+    }>('/export/household.json');
+    expect(exported.body.household.settings.shopping.favourites.map((entry) => entry.text)).toEqual(['Oats']);
+    // A parent's own switch cannot be used to push nonsense onto the shelf.
+    const nonsense = await family.parent.op('household.settings', {
+      patch: { labels: false, shopping: { favourites: [{ text: '', picture: 5, category: null }] } },
+    });
+    expect(nonsense.status).toBe('applied');
+    const after = (await family.parent.pull()).household.settings;
+    // The shelf fell back to empty rather than the whole change being lost or the settings being reset.
+    expect(after.labels).toBe(false);
+    expect(after.shopping.favourites).toEqual([]);
+  });
+});
+
 describe('a child asking for something', () => {
   it('puts a picture on the list for a grown-up to answer, and buys nothing', async () => {
     const family = await newFamily(server);

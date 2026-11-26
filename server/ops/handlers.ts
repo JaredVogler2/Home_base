@@ -144,6 +144,7 @@ export const HANDLERS: Handlers = {
     const result = await shopping.clearChecked(ctx, input);
     return { changed: result.cleared > 0, data: { ...result } };
   },
+  'shopping.favourite': async (ctx, input) => shopping.setFavourite(ctx, input),
   'shopping.request': async (ctx, input) => changed({ ...(await shopping.requestItem(ctx, input)) }),
   'shopping.decide': async (ctx, input) => shopping.decideRequest(ctx, input),
   'list.create': async (ctx, input) => {

@@ -3,7 +3,8 @@ import type { ItemStatus, ShoppingItem, ShoppingList } from '../../shared/model.
 import type { OpInput } from '../../shared/ops.js';
 import { SHOPPING_PICTURES, type ShoppingCategory, type ShoppingPictureId } from '../../shared/pictures.js';
 import { classifyItem, normalizeItem, parseLines } from '../../shared/shopping.js';
-import { profiles, shoppingItemHistory, shoppingItems, shoppingLists } from '../db/schema.js';
+import { FAVOURITES_MAX, type Favourite } from '../../shared/settings.js';
+import { households, profiles, shoppingItemHistory, shoppingItems, shoppingLists } from '../db/schema.js';
 import { Reject, record, type Ctx } from './context.js';
 
 /**
@@ -386,6 +387,55 @@ export async function clearChecked(
     )
     .returning({ id: shoppingItems.id });
   return { cleared: rows.length };
+}
+
+/**
+ * The favourites shelf: things the family always buys, kept by a grown-up so that one tap puts them back on a
+ * list. "Milk", "milk!" and "MILK" are one favourite; saying it again changes its picture or aisle and keeps
+ * its place. The shelf holds words and a picture — it never adds to a list by itself and never buys anything.
+ */
+export async function setFavourite(
+  ctx: Ctx,
+  input: OpInput<'shopping.favourite'>,
+): Promise<{ changed: boolean }> {
+  const key = normalizeItem(input.text);
+  if (key === '') throw new Reject('invalid', 'That needs a word or two.');
+  const shelf: Favourite[] = ctx.household.settings.shopping.favourites;
+  const at = shelf.findIndex((entry) => normalizeItem(entry.text) === key);
+  let next: Favourite[];
+  if (!input.on) {
+    if (at < 0) return { changed: false };
+    next = shelf.filter((_, index) => index !== at);
+  } else {
+    const entry: Favourite = { text: input.text, picture: input.picture, category: input.category };
+    if (at >= 0) {
+      const current = shelf[at]!;
+      if (
+        current.text === entry.text &&
+        current.picture === entry.picture &&
+        current.category === entry.category
+      )
+        return { changed: false };
+      next = shelf.map((existing, index) => (index === at ? entry : existing));
+    } else {
+      if (shelf.length >= FAVOURITES_MAX)
+        throw new Reject(
+          'limit_reached',
+          `The favourites shelf holds ${FAVOURITES_MAX}. Take one off to make room.`,
+        );
+      next = [...shelf, entry];
+    }
+  }
+  const settings = {
+    ...ctx.household.settings,
+    shopping: { ...ctx.household.settings.shopping, favourites: next },
+  };
+  await ctx.tx
+    .update(households)
+    .set({ settings: settings as unknown as Record<string, unknown> })
+    .where(eq(households.id, ctx.household.id));
+  ctx.household.settings = settings;
+  return { changed: true };
 }
 
 /** A child taps a picture: "can we get this?" It waits for a grown-up. Nothing is bought. */

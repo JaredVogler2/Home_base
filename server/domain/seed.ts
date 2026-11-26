@@ -474,6 +474,9 @@ async function seedPast(ctx: Ctx, today: LocalDate, timeZone: string): Promise<v
         const steps = routine.steps
           .map((step, index) => ({ step, stepId: id(routine.n * 100 + index) }))
           .filter(({ step }) => !step.days || step.days.includes(weekday));
+        // How long a step takes belongs to the step — breakfast is not socks — give or take a minute, and a
+        // little longer on a hard morning. The look-back's "where it tends to wait" is drawn from these.
+        let clock = start.getTime();
         steps.forEach(({ step, stepId }, index) => {
           // An unfinished morning stops part-way: the later steps simply have no record.
           if (!finished && index >= Math.max(1, steps.length - 2)) return;
@@ -483,7 +486,10 @@ async function seedPast(ctx: Ctx, today: LocalDate, timeZone: string): Promise<v
           if (kind === 'together') together++;
           else if (kind === 'skipped') skipped++;
           else alone++;
-          const at = new Date(start.getTime() + (index + 1) * 4 * 60_000);
+          const usual = Math.max(1, Math.round((step.seconds ?? 120) / 60));
+          const sway = (chance(date, routine.n, profileId, step.title, 'pace') % 3) - 1;
+          clock += Math.max(1, usual + sway + (hard ? 2 : 0)) * 60_000;
+          const at = new Date(clock);
           stepRows.push({ runId, householdId: ctx.household.id, stepId, kind, at, actor: 'seed' });
           if (kind === 'together' && chance(date, routine.n, profileId, step.title, 'asked') < 30) {
             asked++;
@@ -491,7 +497,7 @@ async function seedPast(ctx: Ctx, today: LocalDate, timeZone: string): Promise<v
             event('routine.help', date, at, profileId, id(routine.n), { step: step.title });
           }
         });
-        const end = new Date(start.getTime() + (steps.length + 1) * 4 * 60_000 + (hard ? 9 * 60_000 : 0));
+        const end = new Date(clock);
         runRows.push({
           id: runId,
           householdId: ctx.household.id,
@@ -512,6 +518,7 @@ async function seedPast(ctx: Ctx, today: LocalDate, timeZone: string): Promise<v
             together,
             skipped,
             helpAsked: asked,
+            minutes: Math.round((end.getTime() - start.getTime()) / 60_000),
             kind: routine.kind,
           });
         }
@@ -655,6 +662,13 @@ export async function seedDemo(database: Database, options: SeedOptions): Promis
         ...DEFAULT_SETTINGS,
         // A made-up place in the middle of the country, so the demo's sun rises at a believable time.
         location: { lat: 39.1, lon: -94.58, label: 'Demo town' },
+        // Things this made-up family always buys, for the favourites shelf above the list.
+        shopping: {
+          favourites: ['Milk', 'Bread', 'Bananas', 'Oats', 'Coffee'].map((text) => ({
+            text,
+            ...classifyItem(text),
+          })),
+        },
         academy: {
           ...DEFAULT_SETTINGS.academy,
           enabled: options.academyUrl !== null,

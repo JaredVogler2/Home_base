@@ -40,6 +40,7 @@ const PARENT_PAGES = [
   '/parent/more/shortcuts',
   '/parent/more/records',
   '/parent/more/helper',
+  '/parent/more/connections',
 ];
 
 test.describe('layouts', () => {
