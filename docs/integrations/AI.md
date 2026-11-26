@@ -101,7 +101,7 @@ Prices live in one table, `server/ai/pricing.ts`, with their sources and the dat
 
 | Model (default in bold) | Input $/M tokens | Output $/M tokens | Source                                                            |
 | ----------------------- | ---------------- | ----------------- | ----------------------------------------------------------------- |
-| **`claude-haiku-5-5`**  | 0.10             | 0.50              | claude-api skill model table (cached 2026-11-03) → Anthropic pricing page; $0.50/$2.50 above 100K-token prompts |
+| **`claude-haiku-5-5`**  | 0.10             | 0.50              | Anthropic's developer documentation (model table dated 2026-11-03) and pricing page; $0.50/$2.50 above 100K-token prompts |
 | **`gpt-6-luna`**        | 0.10             | 0.50              | developers.openai.com/api/docs/pricing and /models/gpt-6-luna      |
 | others in the table     | …                | …                 | same pages                                                         |
 
@@ -207,7 +207,7 @@ idempotency, dismissing, transcripts, other households, both providers' request 
 | What                                                                                 | State                                     |
 | ------------------------------------------------------------------------------------ | ----------------------------------------- |
 | All of the above behaviour, with both providers' HTTP APIs faked in tests            | Verified (automated tests)                |
-| Anthropic request shape (Messages API, `output_config.format` json_schema, headers)  | Checked against the claude-api skill docs, 2026-11-26 |
+| Anthropic request shape (Messages API, `output_config.format` json_schema, headers)  | Checked against Anthropic's developer documentation, 2026-11-26 |
 | OpenAI request shape (Responses API, `text.format` json_schema strict, `store`)      | Checked against developers.openai.com docs, 2026-11-26 |
 | A real, paid call to either provider                                                 | **Not run** — no key was available, and none was attempted |
 | Whether each provider accepts every schema exactly as built (`anyOf`, enums)         | Not verified against a live API           |

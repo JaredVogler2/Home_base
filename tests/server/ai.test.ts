@@ -53,8 +53,8 @@ beforeEach(() => {
 // --- fixtures ---------------------------------------------------------------------------------------------------------
 
 /**
- * A Messages API success body, trimmed from https://platform.claude.com/docs/en/api/messages (and the claude-api
- * skill's curl/examples.md): content blocks, stop_reason, usage.
+ * A Messages API success body, trimmed from https://platform.claude.com/docs/en/api/messages and the raw-HTTP
+ * examples in Anthropic's developer documentation: content blocks, stop_reason, usage.
  */
 function anthropicReply(json: unknown, usage = { input_tokens: 812, output_tokens: 240 }): Response {
   return Response.json({

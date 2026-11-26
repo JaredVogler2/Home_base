@@ -6,9 +6,9 @@ import type { Config } from '../config.js';
  * US dollars per million tokens, standard (not batch, not priority, not cached) rates.
  *
  * Sources, read on 2026-11-26:
- *   - Anthropic: the claude-api skill's model table (cached from platform.claude.com on 2026-11-03), which points
- *     to https://platform.claude.com/docs/en/about-claude/pricing. claude-haiku-5-5 has two rate cards: the one
- *     below for prompts of 100K tokens or fewer, and $0.50 / $2.50 above that (`long`).
+ *   - Anthropic: the model and price table in Anthropic's developer documentation (a copy dated 2026-11-03);
+ *     the live page is https://platform.claude.com/docs/en/about-claude/pricing. claude-haiku-5-5 has two rate
+ *     cards: the one below for prompts of 100K tokens or fewer, and $0.50 / $2.50 above that (`long`).
  *   - OpenAI: https://developers.openai.com/api/docs/pricing (standard tier, short context ≤272K input tokens) and
  *     https://developers.openai.com/api/docs/models/gpt-6-luna.
  *

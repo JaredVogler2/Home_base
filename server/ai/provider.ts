@@ -110,8 +110,8 @@ function parseModelJson(text: string, usage: { inputTokens: number; outputTokens
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Anthropic — the Messages API with JSON outputs (output_config.format, type json_schema).
-// Shape verified against the claude-api skill (curl/examples.md, shared/tool-use-concepts.md "Structured
-// Outputs", shared/model-migration.md) on 2026-11-26; API version header 2026-10-21.
+// Shape checked against Anthropic's developer documentation (the raw-HTTP examples, "Structured outputs" and the
+// model migration notes) on 2026-11-26; API version header 2026-10-21.
 // ---------------------------------------------------------------------------------------------------------------------
 
 export const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
