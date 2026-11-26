@@ -31,11 +31,18 @@ const PACE_MS: Record<Pace, number> = {
   active: 4_000,
   /** The screen is on and nobody is touching it. */
   idle: 30_000,
-  /** Quiet hours, or the photos are showing. */
-  asleep: 180_000,
+  /**
+   * Nobody is touching it and there is nothing to keep fresh: quiet hours, or the photos are showing. A quarter
+   * of an hour is long enough for a database that sleeps when idle to sleep between askings; any touch asks at
+   * once (see `setPace`), so nothing a person does ever waits for it.
+   */
+  asleep: 900_000,
 };
 
 const BACKOFF_MS = [2_000, 4_000, 8_000, 16_000, 30_000];
+
+/** The longest a screen waits for the device to write a request down before showing it anyway. */
+const KEEP_WAIT_MS = 150;
 
 export interface Notice {
   id: string;
@@ -178,7 +185,11 @@ export class SyncStore {
     void this.sync();
   };
 
-  /** How often to ask: quickly while someone is here, slowly when nobody is, hardly at all at night. */
+  /**
+   * How often to ask: quickly while someone is here, slowly when nobody is, seldom at night. Moving to a quicker
+   * pace asks straight away, so a touch on a sleeping screen is answered with fresh news — and a screen that has
+   * been switched off by a parent finds that out the moment anyone touches it.
+   */
   setPace(pace: Pace): void {
     if (pace === this.pace) return;
     const faster = PACE_MS[pace] < PACE_MS[this.pace];
@@ -204,15 +215,38 @@ export class SyncStore {
 
   // --- asking for changes ----------------------------------------------------------------------------------------------
 
-  /** Ask for a change. Returns at once; the screen shows the likely result straight away. */
+  /**
+   * Ask for a change. Returns at once. The request is written to the device first and only then shown and sent:
+   * whatever a screen shows as "sent" has been kept, so a reload or a power cut a moment later cannot lose it.
+   * Writing takes a few thousandths of a second; storage that is slow or broken must not hold a child up, so
+   * the wait is capped and the screen carries on regardless.
+   */
   dispatch<T extends OpType>(type: T, input: OpInput<T>): string {
     const op: OpEnvelope<T> = { id: newId(), type, at: new Date(this.serverNow()).toISOString(), input };
-    this.outbox = [...this.outbox, op as OpEnvelope];
-    void this.cache.addToOutbox(op as OpEnvelope, ++this.seq).catch(() => undefined);
-    this.redraw();
-    void this.sync();
+    const epoch = this.epoch;
+    const written = this.cache.addToOutbox(op as OpEnvelope, ++this.seq).catch(() => undefined);
+    const kept = Promise.race([written, new Promise<void>((resolve) => setTimeout(resolve, KEEP_WAIT_MS))]);
+    // One after another, in the order they were asked for.
+    this.keeping = this.keeping
+      .then(() => kept)
+      .then(() => {
+        // Signed out, or switched off, in the meantime: there is nobody to do it for.
+        if (epoch !== this.epoch) return;
+        this.outbox = [...this.outbox, op as OpEnvelope];
+        this.redraw();
+        void this.sync();
+      });
     return op.id;
   }
+
+  /** Resolves when everything asked for so far has been written down and shown. */
+  settled(): Promise<void> {
+    return this.keeping;
+  }
+
+  private keeping: Promise<void> = Promise.resolve();
+  /** Counts up whenever this browser stops being who it was, so that work begun before is dropped. */
+  private epoch = 0;
 
   /** Ask for a change and wait to hear how it went. For a grown-up's screen, where "saved" should mean saved. */
   async request<T extends OpType>(type: T, input: OpInput<T>): Promise<OpOutcome> {
@@ -260,6 +294,7 @@ export class SyncStore {
       this.failures = 0;
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
+        if (error.extra.session === 'unknown' && (await this.reenterDemo())) return;
         await this.becomeStranger();
         return;
       }
@@ -324,8 +359,41 @@ export class SyncStore {
     }
   }
 
+  /**
+   * The demo with no database of its own lives in the server's memory, and a hosted server may be replaced by a
+   * fresh one at any moment — which knows the same made-up family and nothing of this browser. Rather than drop
+   * a visitor back at the front door, walk in again the way they came. Only ever for the demo, only when the
+   * server says it has never seen this browser's session (a screen that was switched off or signed out is
+   * remembered, and stays out), and at most once a minute.
+   */
+  private async reenterDemo(): Promise<boolean> {
+    const had = this.state.snapshot;
+    if (!had?.household.demo || this.now() - this.reentered < 60_000) return false;
+    this.reentered = this.now();
+    const as =
+      had.viewer.kind === 'device' ? 'wall' : had.viewer.access === 'caregiver' ? 'caregiver' : 'guardian';
+    try {
+      await api('POST', '/demo/enter', { as });
+      // What was asked of the old server is gone with it; start from what the new one says.
+      this.epoch += 1;
+      this.outbox = [];
+      for (const waiter of this.waiting.values()) waiter({ id: '', status: 'retry' });
+      this.waiting.clear();
+      await this.cache.wipe().catch(() => undefined);
+      this.redraw(null);
+      await this.pull();
+      this.failures = 0;
+      return this.state.snapshot !== null;
+    } catch {
+      return false;
+    }
+  }
+
+  private reentered = -Infinity;
+
   /** This browser is not signed in (any more): forget everything it had kept. */
   private async becomeStranger(): Promise<void> {
+    this.epoch += 1;
     this.outbox = [];
     for (const waiter of this.waiting.values()) waiter({ id: '', status: 'retry' });
     this.waiting.clear();
@@ -335,6 +403,7 @@ export class SyncStore {
 
   /** After signing in or pairing: start afresh as whoever this browser now is. */
   async reset(): Promise<void> {
+    this.epoch += 1;
     this.outbox = [];
     await this.cache.wipe().catch(() => undefined);
     this.set({ phase: 'starting', snapshot: null, view: null, pending: 0, pendingIds: NO_IDS });

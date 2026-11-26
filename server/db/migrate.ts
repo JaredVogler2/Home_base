@@ -41,10 +41,51 @@ export interface MigrationReport {
   current: string;
 }
 
+/**
+ * A role belongs to the whole database server, not to one database, and the lock above is only good within one
+ * database. So two databases on one fresh server, set up at the same moment, can both find the restricted role
+ * missing and both try to make it (or to grant it): one succeeds, and the other's whole migration is rolled
+ * back with one of the errors below. Nothing is wrong; tried again, it finds the role there. (Found by the first
+ * run of CI, where a new server meets twenty test databases at once.)
+ */
+export function isSharedRoleRace(error: unknown): boolean {
+  let root: unknown = error;
+  for (let depth = 0; depth < 5; depth++) {
+    const cause = (root as { cause?: unknown } | null)?.cause;
+    if (cause === undefined || cause === null) break;
+    root = cause;
+  }
+  const failure = root as { code?: unknown; constraint?: unknown; message?: unknown } | null;
+  const code = typeof failure?.code === 'string' ? failure.code : '';
+  const words = `${typeof failure?.constraint === 'string' ? failure.constraint : ''} ${
+    typeof failure?.message === 'string' ? failure.message : ''
+  }`;
+  // "duplicate key … pg_authid_rolname_index" / "… pg_auth_members_…": the role, or its membership, was made twice.
+  if (code === '23505' && /pg_authid|pg_auth_members/.test(words)) return true;
+  // "role "homebase_app" already exists", for a server that words it that way.
+  if (code === '42710' && /homebase_app/.test(words)) return true;
+  // Two sessions changing the same role's memberships at once.
+  return code === 'XX000' && /tuple concurrently updated/.test(words);
+}
+
+const RACE_TRIES = 6;
+
 export async function migrate(
   db: Db,
   migrations: readonly EmbeddedMigration[] = MIGRATIONS,
 ): Promise<MigrationReport> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await migrateOnce(db, migrations);
+    } catch (error) {
+      if (attempt >= RACE_TRIES || !isSharedRoleRace(error)) throw error;
+      // A little longer each time, and not the same for everybody, so that the racers stop tripping each other.
+      await new Promise((resolve) => setTimeout(resolve, 40 * attempt + Math.random() * 60));
+    }
+  }
+}
+
+async function migrateOnce(db: Db, migrations: readonly EmbeddedMigration[]): Promise<MigrationReport> {
   return db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(${LOCK_KEY})`);
     await tx.execute(sql`create schema if not exists "homebase"`);

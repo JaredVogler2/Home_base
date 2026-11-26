@@ -1,0 +1,321 @@
+/* Bits that belong to particular grown-ups' pages. The shared parts are in ui/kit.module.css. */
+
+.childHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.childFace {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--paper-warm);
+  box-shadow: inset 0 0 0 3px var(--wood-light);
+  flex: none;
+}
+.childName {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 21px;
+  line-height: 1.1;
+}
+.childMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.childSpace {
+  margin-left: auto;
+}
+.bar {
+  height: 10px;
+  border-radius: 99px;
+  background: var(--paper-shade);
+  overflow: hidden;
+}
+.barFill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--sage-deep);
+  transition: width var(--change) var(--ease);
+}
+.pair {
+  display: flex;
+  gap: 6px;
+}
+
+/* --- lists --- */
+.addRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+.listTabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.listTab {
+  flex: none;
+  min-height: 44px;
+  padding: 6px 16px;
+  border: 2px solid var(--line);
+  border-radius: 99px;
+  background: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.listTab[aria-selected='true'] {
+  background: var(--honey-light);
+  border-color: var(--honey-deep);
+}
+.group {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 6px 4px -4px;
+}
+.check {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  background: none;
+  flex: none;
+}
+.checkBox {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 2.5px solid var(--ink-soft);
+  background: #fff;
+  color: #fff;
+}
+.check[aria-checked='true'] .checkBox {
+  background: var(--sage-deep);
+  border-color: var(--sage-deep);
+}
+.checkBox svg {
+  width: 20px;
+  height: 20px;
+}
+.item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px 2px 2px;
+}
+.itemMain {
+  display: grid;
+  gap: 0;
+  min-height: 52px;
+  align-content: center;
+  padding: 4px 6px;
+  border: 0;
+  background: none;
+  text-align: left;
+  min-width: 0;
+}
+.itemText {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.item[data-checked='true'] .itemText {
+  text-decoration: line-through;
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+.itemNote {
+  font-size: 14px;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+.itemPicture {
+  width: 40px;
+  height: 40px;
+  flex: none;
+}
+
+/* --- plan --- */
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.step {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.stepPicture {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--paper-warm);
+}
+.stepButtons {
+  display: flex;
+}
+.gallery {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+}
+.idea {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 4px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+.idea > svg {
+  width: 68px;
+  height: 68px;
+}
+.warning {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--terra-light);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* --- history --- */
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.table th,
+.table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.table th {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.table td.num,
+.table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.big {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.photoGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+}
+.photo {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--paper-shade);
+}
+.photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.photo[data-hidden='true'] img {
+  opacity: 0.35;
+}
+.photoButtons {
+  position: absolute;
+  inset: auto 4px 4px 4px;
+  display: flex;
+  justify-content: space-between;
+}
+.photoButton {
+  min-width: 40px;
+  min-height: 36px;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.9);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.download {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 16px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}

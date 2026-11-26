@@ -17,7 +17,7 @@ import type { AppEnv } from '../../server/http/env.js';
  */
 
 export const ORIGIN = 'http://homebase.test';
-const PG_ADMIN =
+export const PG_ADMIN =
   process.env.HOMEBASE_TEST_PG_URL ?? 'postgres://hb_owner:local-test-only@127.0.0.1:54329/postgres';
 export const USING_POSTGRES = process.env.HOMEBASE_TEST_PG === '1';
 

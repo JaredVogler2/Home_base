@@ -271,7 +271,7 @@ function Runner({ run, routine }: { run: RoutineRun; routine: Routine | null }) 
         )}
         {together && (
           <HoldButton
-            label="We did that together"
+            label="Together: we did that together"
             className={styles.together}
             testId="step-together"
             onHeld={() => {

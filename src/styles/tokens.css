@@ -27,7 +27,7 @@
   /* Sage: growing things, "done". */
   --sage-light: #e2f1d6;
   --sage: #8fd08a;
-  --sage-deep: #3f8a55;
+  --sage-deep: #37794b;
 
   /* Teal: water, calm, the pantry. */
   --teal-light: #d6efec;
@@ -37,7 +37,7 @@
   /* Bluebird: Tock, links, focus. */
   --blue-light: #dff0ff;
   --blue: #58a8e8;
-  --blue-deep: #2f78c4;
+  --blue-deep: #2569b0;
 
   /* Rose: the piggy bank. */
   --rose-light: #fde2ea;
@@ -55,7 +55,7 @@
   --wood-deep: #8d5b36;
 
   --shadow: 58 46 77; /* ink, as r g b, for tinted shadows — never grey */
-  --focus: #2f78c4;
+  --focus: #2569b0;
 
   --font-display: 'Fredoka Variable', 'Fredoka', ui-rounded, 'Trebuchet MS', system-ui, sans-serif;
   --font-read: 'Andika', 'Fredoka Variable', ui-rounded, system-ui, sans-serif;

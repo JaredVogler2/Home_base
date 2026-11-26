@@ -29,7 +29,9 @@
     "icons": "tsx scripts/generate-icons.ts",
     "screens": "tsx scripts/capture-screens.ts",
     "measure": "tsx scripts/measure-wall.ts",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build && npm run test:e2e"
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build && npm run test:e2e",
+    "verify:deployment": "tsx scripts/verify-deployment.ts",
+    "record": "tsx scripts/record-journey.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.6.0",

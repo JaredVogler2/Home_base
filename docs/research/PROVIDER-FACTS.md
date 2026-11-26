@@ -63,8 +63,9 @@ device (`docs/DEVICE-CHECKLIST.md`).
 | Supabase's pooler in transaction mode (port 6543) does not support named prepared statements; settings last for the transaction only. Direct connections on the free plan are IPv6 only, so Vercel must use the pooler | `supabase.com/docs/guides/database/connecting-to-postgres` |
 
 **What follows.** A wall that asks "anything new?" every few seconds keeps a database awake. On Neon's free plan
-that alone would spend the month's compute, so the wall stops asking during quiet hours and asks slowly when idle;
-Supabase's free plan has no such meter. `docs/COSTS.md` does the arithmetic.
+that alone would spend the month's compute, so the wall asks only every 15 minutes in quiet hours (and while the
+photos show) and every 30 seconds when idle in the daytime; Supabase's free plan has no such meter.
+`docs/COSTS.md` does the arithmetic.
 
 ## 4. Kiosk: Fully Kiosk Browser
 

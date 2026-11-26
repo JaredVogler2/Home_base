@@ -28,8 +28,10 @@ export const LIMITS = {
   shortcut: { max: 60, windowSeconds: 10 * 60 },
   /** Calls with a shortcut key that does not exist, from one address. */
   shortcutUnknown: { max: 10, windowSeconds: 10 * 60 },
-  ai: { max: 20, windowSeconds: 10 * 60 },
-  upload: { max: 60, windowSeconds: 10 * 60 },
+  /** Runs of the planning helper for one household: plenty for a person, and a stuck button cannot run up a bill. */
+  ai: { max: 4, windowSeconds: 60 },
+  /** Photo copies sent by one household (a photo is up to four copies): room for a few dozen photos at a time. */
+  upload: { max: 300, windowSeconds: 10 * 60 },
 } as const satisfies Record<string, Limit>;
 
 export interface LimitState {

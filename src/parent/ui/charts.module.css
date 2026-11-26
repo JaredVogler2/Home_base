@@ -1,0 +1,149 @@
+/*
+ * Charts for the grown-ups' look-back. Quiet on purpose: thin marks, hairline rules, words in ink. The colours
+ * of the marks were checked for colour-blind separation as pairs (see docs/ART_DIRECTION.md); every chart also
+ * has its numbers as a table underneath, so nothing depends on telling two colours apart.
+ */
+.chart {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+.title {
+  font-weight: 700;
+  font-size: 15px;
+}
+.plot {
+  position: relative;
+}
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.rule {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.axis {
+  fill: var(--ink-soft);
+  font-family: var(--font-read);
+  font-size: 11px;
+}
+.slot {
+  fill: transparent;
+  outline: none;
+}
+.slot:focus-visible {
+  outline: none;
+  fill: rgb(var(--shadow) / 0.06);
+}
+.slot[data-on='true'] {
+  fill: rgb(var(--shadow) / 0.06);
+}
+.none {
+  fill: var(--ink-faint);
+}
+.tip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  z-index: 5;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 240px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.35;
+  pointer-events: none;
+}
+.tip strong {
+  display: block;
+  font-size: 14px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.key {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table th,
+.table td {
+  padding: 4px 6px;
+  text-align: right;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.table th:first-child,
+.table td:first-child {
+  text-align: left;
+}
+.table th {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.details summary {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-deep);
+  cursor: pointer;
+}
+
+.split {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--paper-shade);
+}
+.split > span {
+  display: block;
+  min-width: 2px;
+}
+.meterRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  align-items: baseline;
+}
+.meterName {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.meterFigure {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.meter {
+  grid-column: 1 / -1;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.meter > span {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+}

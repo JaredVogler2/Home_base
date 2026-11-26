@@ -109,6 +109,21 @@ export async function createDeviceSession(
  * Who is this? Returns nothing for a token that is unknown, expired or revoked, for a grown-up who is no longer
  * a member, and for a screen that has been unpaired. Must be called as the system: it reads the sessions table.
  */
+/**
+ * Has this server ever given out this token? A session that was signed out, switched off or has run out is
+ * still known; a token from a server that has since been replaced (the demo with no database lives in memory)
+ * is not. The demo uses the difference to tell "you were signed out" from "I am a fresh server".
+ */
+export async function knowsToken(db: Executor, token: string): Promise<boolean> {
+  if (token.length < 20 || token.length > 100) return false;
+  const rows = await db
+    .select({ id: sessions.id })
+    .from(sessions)
+    .where(eq(sessions.tokenHash, fingerprint(token)))
+    .limit(1);
+  return rows.length > 0;
+}
+
 export async function findSession(db: Executor, token: string, now: Date): Promise<Session | null> {
   if (token.length < 20 || token.length > 100) return null;
   const rows = await db

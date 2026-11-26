@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { ACTION_PICTURES } from '../../../shared/pictures';
 import { weekdayOf } from '../../../shared/time';
 import { Backdrop, Boat } from '../../art/house/Backdrop';
 import {
@@ -9,6 +10,7 @@ import {
   PantryRoom,
   QuestRoom,
 } from '../../art/house/rooms';
+import { ActionPicture } from '../../art/pictures';
 import '../../art/house/house.css';
 import { Face, Guide, KeyGlyph, Label, RoundButton, SpeakerGlyph } from '../chrome/chrome';
 import { useWall, type Scene } from '../context';
@@ -59,6 +61,7 @@ export function Home({ look }: { look: SkyLook }) {
   const academy = view.household.settings.academy;
   const resting = !academy.enabled || !academy.url;
   const guideName = view.household.settings.guideName;
+  const wear = wall.wear;
 
   const open = (room: RoomId) => {
     wall.sound('open');
@@ -231,9 +234,26 @@ export function Home({ look }: { look: SkyLook }) {
         side={layout.shape === 'tall' ? 'path' : 'lawn'}
         onTap={() => {
           wall.sound('chirp');
-          wall.tell(wall.said.words || `Hello! I am ${guideName}.`, 'wave');
+          // With nobody chosen and nothing just said, a tap on Tock is "show me round".
+          if (!who && !wall.said.words) wall.tour();
+          else wall.tell(wall.said.words || `Hello! I am ${guideName}.`, 'wave');
         }}
       />
+      {wear && (
+        <button
+          type="button"
+          className={styles.wear}
+          style={place(layout, layout.wear)}
+          aria-label={`For going out today: ${ACTION_PICTURES[wear].label}`}
+          data-testid="wear"
+          onClick={() => {
+            wall.sound('tap');
+            wall.tell(ACTION_PICTURES[wear].say, 'point');
+          }}
+        >
+          <ActionPicture id={wear} />
+        </button>
+      )}
       <RoundButton
         label="Say it again"
         style={{ position: 'absolute', ...place(layout, layout.sayAgain) }}

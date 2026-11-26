@@ -474,6 +474,8 @@ export async function listMedia(ctx: Ctx, slideshowOnly: boolean): Promise<Media
       and(
         eq(media.householdId, ctx.household.id),
         isNull(media.deletedAt),
+        // A photo whose copies are still on their way from a phone is not shown until one has arrived.
+        sql`cardinality(${media.widths}) > 0`,
         slideshowOnly ? eq(media.inSlideshow, true) : undefined,
       ),
     )

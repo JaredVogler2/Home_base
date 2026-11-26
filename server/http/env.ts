@@ -15,6 +15,8 @@ export interface AppEnv {
     database: Database;
     now: Date;
     session: Session | null;
+    /** Demo only: the browser showed a session token this server has never given out (see `knowsToken`). */
+    strangerToken: boolean;
     /** Whether the request arrived over https (decides the cookie's name and its Secure flag). */
     secure: boolean;
   };

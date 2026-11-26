@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, types, tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      # Every test, with the database that ships inside the app (PostgreSQL built to WebAssembly).
+      - run: npm test
+      - run: npm run build
+
+  postgres:
+    name: Server tests on PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        # The same major version as the pg_dump on GitHub's runners, so that the backup-and-restore test runs
+        # (it skips itself, saying so, when the two differ). Locally the suite is also run on PostgreSQL 16.
+        image: postgres:17
+        env:
+          POSTGRES_USER: hb_owner
+          # A throwaway database that lives for one run of this job. Not a secret.
+          POSTGRES_PASSWORD: local-test-only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hb_owner"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      HOMEBASE_TEST_PG_URL: postgres://hb_owner:local-test-only@127.0.0.1:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # The same server tests again, against a real PostgreSQL. Work done for a household steps down to the
+      # restricted role (homebase_app) there exactly as in production, so this is what proves row-level
+      # security does the isolating and not the tests' own good manners.
+      - run: npm run test:pg
+
+  browser:
+    name: Browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # With a trace of every step kept for any test that fails (uploaded below), so a failure can be replayed.
+      - run: npx playwright test --trace retain-on-failure
+      # The offline shell is installed by a service worker, which only a built app has: those tests again,
+      # against the production server.
+      - run: npm run build
+      - run: npx playwright test e2e/offline.spec.ts --trace off
+        env:
+          E2E_SERVER: production
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7

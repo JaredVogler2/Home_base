@@ -4,6 +4,9 @@
  *   npm run screens                     every screen, into docs/review/screens
  *   npm run screens -- wall-quest       only the ones whose name starts with that
  *   OUT=/some/dir npm run screens       somewhere else
+ *   FULL=1 npm run screens              lossless PNGs at the display's full density (large: not for the repository)
+ *
+ * By default the pictures are JPEGs at a modest density, so that the set kept in the repository stays small.
  *
  * It needs a server started with HOMEBASE_DEMO=1 (npm run dev does that for a fresh checkout).
  */
@@ -13,6 +16,7 @@ import { chromium, type BrowserContext, type Page } from 'playwright';
 const base = process.env.BASE_URL ?? 'http://127.0.0.1:5173';
 const out = process.env.OUT ?? 'docs/review/screens';
 const only = process.argv.slice(2);
+const full = process.env.FULL === '1';
 mkdirSync(out, { recursive: true });
 
 interface Shot {
@@ -24,6 +28,8 @@ interface Shot {
   taps?: string[];
   fullPage?: boolean;
   wait?: number;
+  /** Leave the first-visit showing-round on, as a screen that has never been used would. */
+  firstVisit?: boolean;
 }
 
 const WIDE: [number, number, number] = [1920, 1080, 2];
@@ -46,6 +52,22 @@ const SHOTS: Shot[] = [
     path: '/wall?at=16:30',
     size: WIDE,
     taps: [t('room-quest'), june, t('mission-Shoes in the basket')],
+  },
+  {
+    name: 'wall-quest-timer',
+    as: 'wall',
+    path: '/wall?at=16:30',
+    size: WIDE,
+    taps: [t('room-quest'), june, t('mission-Brush teeth'), t('mission-timer')],
+    wait: 900,
+  },
+  {
+    name: 'wall-quest-done',
+    as: 'wall',
+    path: '/wall?at=16:30',
+    size: WIDE,
+    taps: [t('room-quest'), june, t('mission-Shoes in the basket'), t('did-it'), t('sheet-close')],
+    wait: 900,
   },
   { name: 'wall-bank', as: 'wall', path: '/wall?at=16:30', size: WIDE, taps: [t('room-bank'), june] },
   {
@@ -86,7 +108,113 @@ const SHOTS: Shot[] = [
   { name: 'wall-home-phone', as: 'wall', path: '/wall?at=10:30', size: PHONE },
   { name: 'wall-home-phone-who', as: 'wall', path: '/wall?at=16:40', size: PHONE, taps: [t('face-June')] },
   { name: 'wall-home-golden', as: 'wall', path: '/wall?at=16:40', size: WIDE },
+  // The display's own size, one picture to one pixel; and a tablet held upright.
+  { name: 'wall-home-4k', as: 'wall', path: '/wall?at=10:30', size: [3840, 2160, 1] },
+  {
+    name: 'wall-quest-4k',
+    as: 'wall',
+    path: '/wall?at=16:30',
+    size: [3840, 2160, 1],
+    taps: [t('room-quest'), june],
+  },
+  { name: 'wall-home-tall', as: 'wall', path: '/wall?at=10:30', size: [820, 1180, 2] },
   { name: 'wall-home-dawn', as: 'wall', path: '/wall?at=06:50', size: WIDE },
+  { name: 'wall-tour', as: 'wall', path: '/wall?at=10:30', size: WIDE, firstVisit: true, wait: 5600 },
+  { name: 'wall-tour-phone', as: 'wall', path: '/wall?at=10:30', size: PHONE, firstVisit: true, wait: 10200 },
+  { name: 'wall-home-wear', as: 'wall', path: '/wall?at=15:00&sky=rain', size: WIDE },
+  { name: 'front-door', as: null, path: '/', size: PHONE },
+  { name: 'parent-signin', as: null, path: '/parent', size: PHONE },
+  { name: 'parent-today', as: 'guardian', path: '/parent', size: PHONE, fullPage: true },
+  { name: 'parent-lists', as: 'guardian', path: '/parent/lists', size: PHONE, fullPage: true },
+  {
+    name: 'parent-list-edit',
+    as: 'guardian',
+    path: '/parent/lists',
+    size: PHONE,
+    taps: [t('edit-Milk')],
+  },
+  { name: 'parent-plan', as: 'guardian', path: '/parent/plan', size: PHONE, fullPage: true },
+  {
+    name: 'parent-mission-editor',
+    as: 'guardian',
+    path: '/parent/plan',
+    size: PHONE,
+    taps: [t('template-Shoes in the basket')],
+  },
+  {
+    name: 'parent-mission-ideas',
+    as: 'guardian',
+    path: '/parent/plan',
+    size: PHONE,
+    taps: [t('new-mission')],
+  },
+  { name: 'parent-routines', as: 'guardian', path: '/parent/plan/routines', size: PHONE, fullPage: true },
+  {
+    name: 'parent-routine-editor',
+    as: 'guardian',
+    path: '/parent/plan/routines',
+    size: PHONE,
+    taps: [t('routine-Morning')],
+  },
+  {
+    name: 'parent-routine-print',
+    as: 'guardian',
+    path: '/parent/plan/routines',
+    size: [820, 1180, 2],
+    taps: [t('routine-Morning'), t('print-routine-open')],
+  },
+  { name: 'parent-rewards', as: 'guardian', path: '/parent/plan/rewards', size: PHONE, fullPage: true },
+  {
+    name: 'parent-reward-editor',
+    as: 'guardian',
+    path: '/parent/plan/rewards',
+    size: PHONE,
+    taps: [t('reward-Movie night')],
+  },
+  {
+    name: 'parent-history',
+    as: 'guardian',
+    path: '/parent/history',
+    size: PHONE,
+    fullPage: true,
+    wait: 1200,
+  },
+  {
+    name: 'parent-moment',
+    as: 'guardian',
+    path: '/parent/history',
+    size: PHONE,
+    wait: 1200,
+    taps: [t('new-moment')],
+  },
+  { name: 'parent-family', as: 'guardian', path: '/parent/more', size: PHONE, fullPage: true },
+  { name: 'parent-children', as: 'guardian', path: '/parent/more/children', size: PHONE },
+  { name: 'parent-grownups', as: 'guardian', path: '/parent/more/grownups', size: PHONE, fullPage: true },
+  { name: 'parent-screens', as: 'guardian', path: '/parent/more/screens', size: PHONE, fullPage: true },
+  { name: 'parent-wall-settings', as: 'guardian', path: '/parent/more/wall', size: PHONE, fullPage: true },
+  { name: 'parent-rules', as: 'guardian', path: '/parent/more/rules', size: PHONE, fullPage: true },
+  { name: 'parent-sky', as: 'guardian', path: '/parent/more/sky', size: PHONE, fullPage: true },
+  { name: 'parent-calendar', as: 'guardian', path: '/parent/more/calendar', size: PHONE },
+  { name: 'parent-photos', as: 'guardian', path: '/parent/more/photos', size: PHONE, fullPage: true },
+  { name: 'parent-academy', as: 'guardian', path: '/parent/more/academy', size: PHONE, fullPage: true },
+  { name: 'parent-shortcuts', as: 'guardian', path: '/parent/more/shortcuts', size: PHONE, fullPage: true },
+  {
+    name: 'parent-records',
+    as: 'guardian',
+    path: '/parent/more/records',
+    size: PHONE,
+    fullPage: true,
+    wait: 900,
+  },
+  {
+    name: 'parent-helper',
+    as: 'guardian',
+    path: '/parent/more/helper',
+    size: PHONE,
+    fullPage: true,
+    wait: 900,
+  },
+  { name: 'parent-today-wide', as: 'guardian', path: '/parent', size: SMALL },
   {
     name: 'wall-quest-phone',
     as: 'wall',
@@ -118,7 +246,11 @@ async function take(page: Page, shot: Shot): Promise<string[]> {
     await page.locator(selector).first().click({ timeout: 5000 });
     await page.waitForTimeout(650);
   }
-  await page.screenshot({ path: `${out}/${shot.name}.png`, fullPage: shot.fullPage ?? false });
+  await page.screenshot(
+    full
+      ? { path: `${out}/${shot.name}.png`, fullPage: shot.fullPage ?? false }
+      : { path: `${out}/${shot.name}.jpg`, type: 'jpeg', quality: 84, fullPage: shot.fullPage ?? false },
+  );
   return problems;
 }
 
@@ -139,11 +271,21 @@ for (const shot of SHOTS) {
   const [width, height, scale] = shot.size ?? WIDE;
   const context = await browser.newContext({
     viewport: { width, height },
-    deviceScaleFactor: scale,
+    // The wall at one pixel per unit (1920×1080) and the phone at two, unless the full set is asked for.
+    deviceScaleFactor: full ? scale : Math.min(scale, width < 600 ? 2 : 1),
     reducedMotion: 'reduce',
     hasTouch: true,
   });
   try {
+    if (!shot.firstVisit) {
+      await context.addInitScript(() => {
+        try {
+          window.localStorage.setItem('homebase.tour-seen', '1');
+        } catch {
+          // A page with no storage shows no tour anyway.
+        }
+      });
+    }
     await enter(context, shot.as);
     const problems = await take(await context.newPage(), shot);
     console.log(

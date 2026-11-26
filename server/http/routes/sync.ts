@@ -12,6 +12,9 @@ import { applyOps } from '../../ops/run.js';
 import { localDateOf } from '../../../shared/time.js';
 import { actorOf, readJson, requireSession, type AppEnv, type C } from '../env.js';
 import { badRequest, unauthenticated } from '../errors.js';
+import { afterResponse } from '../../weather/background.js';
+import { refreshWeatherIfDue, wantsWeather } from '../../weather/service.js';
+import { describeError } from '../../log.js';
 
 /**
  * Keeping screens in step.
@@ -54,14 +57,16 @@ async function snapshotFor(c: C, since: number | null, seenAccess: string | null
     }
     const access = accessOf(session, household.settings.wall.holdGate);
     const upToDate = since === household.revision && seenAccess === access && seenToday === today;
-    if (upToDate) return { snapshot: null, swept };
+    const weather = wantsWeather(household.settings);
+    if (upToDate) return { snapshot: null, swept, weather };
     const ctx = makeCtx(tx, household, actorOf(session, access), now, deploy);
-    return { snapshot: await buildSnapshot(ctx, viewerOf(session, household.settings.wall.holdGate)), swept };
+    const snapshot = await buildSnapshot(ctx, viewerOf(session, household.settings.wall.holdGate));
+    return { snapshot, swept, weather };
   });
 }
 
 /** The chores that belong to no household: yesterday's counters, codes that ran out, sessions that ended. */
-async function sweepSystem(c: C): Promise<void> {
+export async function sweepSystem(c: C): Promise<void> {
   const now = c.get('now');
   const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
@@ -74,19 +79,32 @@ async function sweepSystem(c: C): Promise<void> {
     );
     // An answer is remembered for a month: far longer than any queue waits to be replayed.
     await tx.execute(sql`delete from "homebase"."operations" where "created_at" < ${monthAgo}::timestamptz`);
+    // The record of who changed the set-up is kept for thirteen months, then let go.
+    const yearAgo = new Date(now.getTime() - 400 * 24 * 60 * 60 * 1000).toISOString();
+    await tx.execute(sql`delete from "homebase"."audit" where "at" < ${yearAgo}::timestamptz`);
+    await tx.execute(sql`delete from "homebase"."ai_usage" where "at" < ${yearAgo}::timestamptz`);
   });
 }
 
 syncRoutes.get('/', async (c) => {
   const sinceText = c.req.query('since');
   const since = sinceText !== undefined && /^\d{1,9}$/.test(sinceText) ? Number(sinceText) : null;
-  const { snapshot, swept } = await snapshotFor(
+  const { snapshot, swept, weather } = await snapshotFor(
     c,
     since,
     c.req.query('access') ?? null,
     c.req.query('today') ?? null,
   );
-  if (swept) await sweepSystem(c).catch((error: unknown) => console.error('[sync] sweep failed:', error));
+  if (swept)
+    await sweepSystem(c).catch((error: unknown) =>
+      console.error(`[sync] sweep failed: ${describeError(error)}`),
+    );
+  if (weather) {
+    // The answer below does not wait for this: a new reading reaches the screens on their next ask.
+    const deps = c.get('deps');
+    const householdId = requireSession(c).householdId;
+    afterResponse('weather', () => refreshWeatherIfDue(deps, householdId));
+  }
   if (!snapshot) return c.body(null, 204);
   return c.json(snapshot);
 });

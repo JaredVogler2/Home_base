@@ -1,6 +1,15 @@
-import { and, eq, isNull, lt, sql } from 'drizzle-orm';
+import { and, eq, isNotNull, isNull, lt, ne, sql } from 'drizzle-orm';
 import { addDays, startOfWeek, weekdayOf, type LocalDate } from '../../shared/time.js';
-import { events, households, profiles, shoppingItems, weeklyTotals } from '../db/schema.js';
+import {
+  events,
+  households,
+  media,
+  profiles,
+  routineRuns,
+  shoppingItems,
+  taskOccurrences,
+  weeklyTotals,
+} from '../db/schema.js';
 import type { Ctx } from './context.js';
 import { post, spendable } from './ledger.js';
 import { ensureOccurrences } from './quest.js';
@@ -74,6 +83,93 @@ async function thinHistory(ctx: Ctx): Promise<void> {
       .delete(events)
       .where(and(eq(events.householdId, ctx.household.id), lt(events.localDate, cutoff)));
   }
+
+  // The missions and routine runs themselves go the same way: counted into the week they belonged to (so that
+  // "how many of how many" still has its "of how many"), and then forgotten. A mission still waiting for a
+  // grown-up's answer is kept however old it is.
+  const settled = and(
+    eq(taskOccurrences.householdId, ctx.household.id),
+    lt(taskOccurrences.localDate, cutoff),
+    ne(taskOccurrences.status, 'submitted'),
+  );
+  const oldMissions = await ctx.tx
+    .select({
+      localDate: taskOccurrences.localDate,
+      profileId: taskOccurrences.profileId,
+      offered: sql<number>`count(*)::int`,
+      helped: sql<number>`count(*) filter (where ${taskOccurrences.helpAsked})::int`,
+    })
+    .from(taskOccurrences)
+    .where(and(settled, isNotNull(taskOccurrences.profileId)))
+    .groupBy(taskOccurrences.localDate, taskOccurrences.profileId);
+  const oldRuns = await ctx.tx
+    .select({
+      localDate: routineRuns.localDate,
+      profileId: routineRuns.profileId,
+      started: sql<number>`count(*)::int`,
+    })
+    .from(routineRuns)
+    .where(and(eq(routineRuns.householdId, ctx.household.id), lt(routineRuns.localDate, cutoff)))
+    .groupBy(routineRuns.localDate, routineRuns.profileId);
+  const counted = new Map<
+    string,
+    { weekStart: LocalDate; profileId: string; metric: string; value: number }
+  >();
+  const count = (date: LocalDate, profileId: string, metric: string, value: number) => {
+    if (value <= 0) return;
+    const week = startOfWeek(date, weekStart);
+    const key = `${week}:${profileId}:${metric}`;
+    const total = counted.get(key) ?? { weekStart: week, profileId, metric, value: 0 };
+    total.value += value;
+    counted.set(key, total);
+  };
+  for (const row of oldMissions) {
+    if (!row.profileId) continue;
+    count(row.localDate, row.profileId, 'mission.offered', Number(row.offered));
+    count(row.localDate, row.profileId, 'mission.help', Number(row.helped));
+  }
+  for (const row of oldRuns) count(row.localDate, row.profileId, 'routine.started', Number(row.started));
+  for (const total of counted.values()) {
+    await ctx.tx
+      .insert(weeklyTotals)
+      .values({ householdId: ctx.household.id, ...total })
+      .onConflictDoUpdate({
+        target: [
+          weeklyTotals.householdId,
+          weeklyTotals.weekStart,
+          weeklyTotals.profileId,
+          weeklyTotals.metric,
+        ],
+        set: { value: sql`${weeklyTotals.value} + ${total.value}` },
+      });
+  }
+  await ctx.tx.delete(taskOccurrences).where(settled);
+  await ctx.tx
+    .delete(routineRuns)
+    .where(and(eq(routineRuns.householdId, ctx.household.id), lt(routineRuns.localDate, cutoff)));
+  // Things bought or taken off the list long ago leave it for good.
+  const longAgo = new Date(ctx.now.getTime() - detailDays * 24 * 60 * 60 * 1000);
+  await ctx.tx
+    .delete(shoppingItems)
+    .where(
+      and(
+        eq(shoppingItems.householdId, ctx.household.id),
+        sql`coalesce(${shoppingItems.archivedAt}, ${shoppingItems.deletedAt}) < ${longAgo.toISOString()}::timestamptz`,
+      ),
+    );
+
+  // A photo that was begun and never arrived (a phone went out of signal half-way) is cleared away.
+  const yesterday = new Date(ctx.now.getTime() - 24 * 60 * 60 * 1000);
+  await ctx.tx
+    .delete(media)
+    .where(
+      and(
+        eq(media.householdId, ctx.household.id),
+        sql`cardinality(${media.widths}) = 0`,
+        lt(media.createdAt, yesterday),
+      ),
+    );
+
   const oldest = addDays(ctx.today, -trendMonths * 31);
   await ctx.tx
     .delete(weeklyTotals)

@@ -1,0 +1,9 @@
+{
+  "properties": {
+    "gridId": "EAX",
+    "gridX": 44,
+    "gridY": 51,
+    "forecast": "https://api.weather.gov/gridpoints/EAX/44,51/forecast",
+    "forecastHourly": "https://api.weather.gov/gridpoints/EAX/44,51/forecast/hourly"
+  }
+}

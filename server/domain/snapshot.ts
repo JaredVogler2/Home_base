@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { hasAccess, type Snapshot, type Viewer, type Wallet } from '../../shared/model.js';
 import { wallets } from '../db/schema.js';
+import { listBadges } from './badges.js';
 import { listGoals, listRedemptions, listRewards } from './bank.js';
 import type { Ctx } from './context.js';
 import {
@@ -15,6 +16,7 @@ import {
 import { listOccurrences, listTemplates } from './quest.js';
 import { listRoutines, listRuns } from './routines.js';
 import { listItems, listLists } from './shopping.js';
+import { readWeather } from '../weather/service.js';
 
 /**
  * Everything a screen needs, in one piece, as of one revision of the household.
@@ -60,6 +62,8 @@ export async function buildSnapshot(ctx: Ctx, viewer: Viewer): Promise<Snapshot>
     calendar: await listCalendar(ctx),
     media: ctx.household.settings.memories.hidden && !grownUp ? [] : await listMedia(ctx, !grownUp),
     members: await listMembers(ctx),
+    badges: await listBadges(ctx),
+    weather: await readWeather(ctx),
   };
   if (grownUp) {
     snapshot.templates = await listTemplates(ctx);

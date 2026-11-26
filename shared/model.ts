@@ -6,6 +6,7 @@ import type {
   ShoppingCategory,
   ShoppingPictureId,
 } from './pictures.js';
+import type { BadgeId } from './badges.js';
 import type { Schedule } from './schedule.js';
 import type { HouseholdSettings } from './settings.js';
 import type { LocalDate, LocalTime } from './time.js';
@@ -498,6 +499,10 @@ export interface Snapshot {
   media: MediaItem[];
   /** Guardians' pictures and names, for the wall's "which grown-up?" */
   members: Member[];
+  /** Keepsakes each child has earned. Never taken away. */
+  badges: { profileId: string; badge: BadgeId; earnedOn: LocalDate }[];
+  /** The real weather where the family lives, when they have switched it on; null otherwise. */
+  weather: Weather | null;
   // --- grown-ups only (absent on a wall that is not unlocked) ---
   templates?: TaskTemplate[];
   devices?: Device[];

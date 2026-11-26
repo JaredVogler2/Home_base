@@ -5,8 +5,10 @@ import { hasAccess, type AccessLevel } from '../../shared/model.js';
 import { isOpType, OPS, type OpOutcome, type OpType, type Rejection } from '../../shared/ops.js';
 import { inHousehold, type Database } from '../db/client.js';
 import { operations } from '../db/schema.js';
+import { awardBadges, BADGE_OPS } from '../domain/badges.js';
 import { bumpRevision, lockHousehold, makeCtx, Reject, type Actor, type Deploy } from '../domain/context.js';
 import { HANDLERS, type Done } from './handlers.js';
+import { describeError } from '../log.js';
 
 /**
  * Doing what a screen asked, once.
@@ -100,10 +102,7 @@ export async function applyOps(
       if (outcome.grownUp) usedGrownUpAccess = true;
       outcomes.push(outcome.outcome);
     } catch (error) {
-      console.error(
-        `[ops] ${String(shape?.type)} ${id} failed:`,
-        error instanceof Error ? error.message : error,
-      );
+      console.error(`[ops] ${String(shape?.type).slice(0, 40)} failed: ${describeError(error)}`);
       outcomes.push({ id, status: 'retry' });
     }
   }
@@ -158,6 +157,8 @@ async function applyOne(
           );
           stored = { status: done.changed ? 'applied' : 'noop', data: done.data ?? {} };
           if (done.changed) {
+            // A keepsake for something that has just added up, written in the same breath as the thing itself.
+            if (BADGE_OPS.has(type)) await awardBadges(ctx);
             await bumpRevision(ctx);
             grownUp = hasAccess(spec.level, 'caregiver');
           }

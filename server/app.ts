@@ -1,14 +1,29 @@
 import { Hono } from 'hono';
-import { cookieName, findSession, readCookie, sessionCookie, touchSession } from './auth/sessions.js';
+import {
+  cookieName,
+  findSession,
+  knowsToken,
+  readCookie,
+  sessionCookie,
+  touchSession,
+} from './auth/sessions.js';
 import { asSystem } from './db/client.js';
 import { LATEST_MIGRATION } from './db/migrate.js';
 import type { Deps } from './deps.js';
 import type { AppEnv } from './http/env.js';
 import { HttpError } from './http/errors.js';
+import { academyRoutes } from './http/routes/academy.js';
+import { aiRoutes } from './http/routes/ai.js';
 import { authRoutes } from './http/routes/auth.js';
+import { exportRoutes, familyRoutes, historyRoutes } from './http/routes/history.js';
+import { cronRoutes } from './http/routes/cron.js';
 import { demoRoutes } from './http/routes/demo.js';
+import { mediaRoutes } from './http/routes/media.js';
 import { pairRoutes, wallRoutes } from './http/routes/pair.js';
+import { shoppingRoutes } from './http/routes/shopping.js';
+import { shortcutRoutes } from './http/routes/shortcuts.js';
 import { syncRoutes } from './http/routes/sync.js';
+import { describeError } from './log.js';
 
 /**
  * The API, as one function from a request to a response. It runs the same way inside Vite on a laptop, behind
@@ -36,13 +51,17 @@ export function createApp(deps: Deps): Hono<AppEnv> {
   app.onError((error, c) => {
     if (error instanceof HttpError) {
       if (typeof error.extra.retryAfter === 'number') c.header('Retry-After', String(error.extra.retryAfter));
+      // In the demo only: "I have never seen that session" (a fresh server), so the demo's screen can walk back in.
+      const fresh = error.code === 'unauthenticated' && c.get('strangerToken') ? { session: 'unknown' } : {};
       return c.json(
-        { error: { code: error.code, message: error.message, ...error.extra } },
+        { error: { code: error.code, message: error.message, ...error.extra, ...fresh } },
         error.status as 400,
       );
     }
-    // Whatever went wrong inside stays inside: the log has it, the reply does not.
-    console.error('[api] unexpected error:', error);
+    // Whatever went wrong inside stays inside: the log has what kind of thing it was, the reply does not —
+    // and neither holds anything a family typed (server/log.ts).
+    const where = new URL(c.req.url).pathname.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/gi, ':id').slice(0, 80);
+    console.error(`[api] ${c.req.method} ${where} failed: ${describeError(error)}`);
     return c.json(
       { error: { code: 'internal', message: 'Something went wrong on our side. Nothing was changed.' } },
       500,
@@ -60,6 +79,7 @@ export function createApp(deps: Deps): Hono<AppEnv> {
     const secure = (forwardedProto ?? new URL(c.req.url).protocol.replace(':', '')) === 'https';
     c.set('secure', secure);
     c.set('session', null);
+    c.set('strangerToken', false);
 
     // Nothing the API says is ever to be kept by a browser or a cache, or read by another site.
     c.header('Cache-Control', 'no-store');
@@ -87,7 +107,7 @@ export function createApp(deps: Deps): Hono<AppEnv> {
       rls = db.rls;
       database = 'ok';
     } catch (error) {
-      console.error('[health] database:', error instanceof Error ? error.message : error);
+      console.error(`[health] database: ${describeError(error)}`);
     }
     return c.json(
       {
@@ -110,7 +130,7 @@ export function createApp(deps: Deps): Hono<AppEnv> {
     try {
       database = await deps.database();
     } catch (error) {
-      console.error('[api] database unavailable:', error instanceof Error ? error.message : error);
+      console.error(`[api] database unavailable: ${describeError(error)}`);
       throw new HttpError(
         'unavailable',
         'HOMEBASE cannot reach its database just now. Try again in a moment.',
@@ -124,7 +144,12 @@ export function createApp(deps: Deps): Hono<AppEnv> {
       const now = c.get('now');
       const session = await asSystem(database, async (tx) => {
         const found = await findSession(tx, token, now);
-        if (!found) return null;
+        if (!found) {
+          // The demo with no database forgets everything when its server is replaced. Tell that apart from a
+          // session that was signed out or switched off, which this server still remembers.
+          if (deps.config.demo && !(await knowsToken(tx, token))) c.set('strangerToken', true);
+          return null;
+        }
         const renewed = await touchSession(tx, found, now);
         return { found, renewed };
       });
@@ -142,6 +167,15 @@ export function createApp(deps: Deps): Hono<AppEnv> {
   app.route('/wall', wallRoutes);
   app.route('/sync', syncRoutes);
   app.route('/demo', demoRoutes);
+  app.route('/cron', cronRoutes);
+  app.route('/history', historyRoutes);
+  app.route('/export', exportRoutes);
+  app.route('/family', familyRoutes);
+  app.route('/academy', academyRoutes);
+  app.route('/media', mediaRoutes);
+  app.route('/shortcuts', shortcutRoutes);
+  app.route('/shopping', shoppingRoutes);
+  app.route('/ai', aiRoutes);
 
   return app;
 }

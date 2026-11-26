@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
+import { registerServiceWorker } from './app/register-sw';
 import './styles/base.css';
 
 const root = document.getElementById('root');
@@ -11,3 +12,5 @@ if (root) {
     </StrictMode>,
   );
 }
+
+registerServiceWorker();

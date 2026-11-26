@@ -46,12 +46,15 @@ function toItem(row: ItemRow): ShoppingItem {
   };
 }
 
-/** A short name for whoever is asking, as it reads on the list: "Sam", "the wall", "Siri". */
+/** A short name for whoever is asking, as it reads on the list: "Sam", "the wall", "Siri (Sam)". */
 function byline(ctx: Ctx): string {
   const name = ctx.actor.name;
   if (name.startsWith('guardian:')) return name.slice('guardian:'.length).replace(/ \(at .*\)$/, '');
   if (name.startsWith('wall:')) return 'the wall';
-  if (name.startsWith('shortcut:')) return 'Siri';
+  if (name.startsWith('shortcut:')) {
+    const who = name.slice('shortcut:'.length);
+    return who ? `Siri (${who})` : 'Siri';
+  }
   return name;
 }
 
@@ -148,6 +151,12 @@ export async function addItem(ctx: Ctx, input: OpInput<'shopping.add'>): Promise
   if (normalized === '') throw new Reject('invalid', 'That needs a word or two.');
   const same = await sameThing(ctx, input.listId, normalized);
   if (same && (same.status === 'needed' || same.status === 'requested')) {
+    // "2 milk" when milk is already wanted: the line stays one line, and the amount just said is the amount.
+    // Said with no amount, the amount already there is kept.
+    const amount =
+      input.quantity !== null && (input.quantity !== same.quantity || input.unit !== same.unit)
+        ? { quantity: input.quantity, unit: input.unit }
+        : null;
     await ctx.tx
       .update(shoppingItems)
       .set({
@@ -155,10 +164,24 @@ export async function addItem(ctx: Ctx, input: OpInput<'shopping.add'>): Promise
         // A grown-up adding what a child asked for is the grown-up saying yes.
         status: 'needed',
         priority: same.priority || input.priority,
+        ...(amount
+          ? {
+              ...amount,
+              fieldVersions: {
+                ...same.fieldVersions,
+                quantity: (same.fieldVersions.quantity ?? 0) + 1,
+                unit: (same.fieldVersions.unit ?? 0) + 1,
+              },
+            }
+          : {}),
         updatedAt: ctx.now,
       })
       .where(eq(shoppingItems.id, same.id));
-    await history(ctx, same.id, 'asked-again', null, { by: byline(ctx), text: input.text });
+    await history(ctx, same.id, 'asked-again', amount ? { quantity: same.quantity, unit: same.unit } : null, {
+      by: byline(ctx),
+      text: input.text,
+      ...(amount ?? {}),
+    });
     return { outcome: 'already', itemId: same.id };
   }
   if (same && same.status === 'checked') {

@@ -1,0 +1,31 @@
+.timer {
+  display: grid;
+  justify-items: center;
+  gap: 0.3cqw;
+  width: 8.4cqw;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-read);
+  font-weight: 700;
+  font-size: 1.2cqw;
+  color: var(--ink);
+  transition: transform var(--press) var(--ease);
+}
+.timer > svg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  filter: drop-shadow(0 0.3cqw 0 rgb(var(--shadow) / 0.16));
+}
+.timer:active {
+  transform: scale(0.95);
+}
+/* The ring fills smoothly from one second to the next; where nothing may move it simply steps. */
+.ring {
+  transition: stroke-dasharray 1s linear;
+}
+:global([data-shape='tall']) .timer {
+  width: 20cqw;
+  font-size: 3cqw;
+}

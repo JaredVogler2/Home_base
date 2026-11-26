@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { RETURN_REASONS, type Occurrence } from '../../../shared/model';
 import { ACTION_PICTURES } from '../../../shared/pictures';
+import { P } from '../../art/palette';
 import { ActionPicture } from '../../art/pictures';
 import { CloseGlyph, HandGlyph, TickGlyph } from '../chrome/chrome';
 import { useWall } from '../context';
@@ -8,6 +9,7 @@ import { childById, isDone, isSent, isToDo, missionsFor } from '../derive';
 import type { Box } from '../home/layout';
 import { Badge, BigButton, Stars } from './bits';
 import { Frame, Sheet } from './Frame';
+import { GentleTimer } from './GentleTimer';
 import styles from './Quest.module.css';
 import { Who } from './Who';
 
@@ -21,22 +23,24 @@ import { Who } from './Who';
 
 const sayOf = (mission: Occurrence): string => mission.say ?? ACTION_PICTURES[mission.picture].say;
 
+/** How many finished missions the tray shows (the latest ones). */
+const TRAY = 8;
+
 export function Quest({ origin }: { origin: Box | null }) {
   const wall = useWall();
   const { view, who, nowMs } = wall;
   const child = childById(view, who);
   const [openId, setOpenId] = useState<string | null>(null);
   const missions = who ? missionsFor(view, who, nowMs) : [];
-  const limit = view.household.settings.quest.showAtOnce;
-  // What is still to do comes first; what is done stays on the board, quietly, so the day's work can be seen.
-  const shown = [...missions.filter((mission) => !isDone(mission)), ...missions.filter(isDone)].slice(
-    0,
-    Math.max(limit, 3),
-  );
-  const open =
-    shown.find((mission) => mission.id === openId) ??
-    missions.find((mission) => mission.id === openId) ??
-    null;
+  const limit = Math.max(view.household.settings.quest.showAtOnce, 3);
+  // What is still to do is on the board, a few at a time. What is done is never lost sight of: while there is
+  // more to do it moves to the tray along the bottom, each with its tick; when everything is done the finished
+  // cards have the board to themselves.
+  const finished = missions.filter(isDone);
+  const waiting = missions.filter((mission) => !isDone(mission));
+  const shown = waiting.length > 0 ? waiting.slice(0, limit) : finished.slice(0, limit);
+  const tray = waiting.length > 0 ? finished.slice(-TRAY) : [];
+  const open = missions.find((mission) => mission.id === openId) ?? null;
   const toDo = missions.filter(isToDo).length;
 
   useEffect(() => {
@@ -87,6 +91,30 @@ export function Quest({ origin }: { origin: Box | null }) {
               </li>
             ))}
           </ul>
+          {tray.length > 0 && (
+            <ul className={styles.tray} data-testid="done-tray" aria-label="Done today">
+              {tray.map((mission) => (
+                <li key={mission.id}>
+                  <button
+                    type="button"
+                    className={styles.stamp}
+                    aria-label={`${mission.title}: done`}
+                    data-testid={`done-${mission.title}`}
+                    onClick={() => {
+                      wall.sound('tap');
+                      setOpenId(mission.id);
+                      wall.tell(`${mission.title}. Done!`, 'cheer');
+                    }}
+                  >
+                    <ActionPicture id={mission.picture} />
+                    <span className={styles.stampTick}>
+                      <Badge kind="done" />
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
       {open && child && <MissionSheet mission={open} profileId={child.id} onClose={() => setOpenId(null)} />}
@@ -120,10 +148,18 @@ function MissionCard({
       className={styles.card}
       data-state={state}
       onClick={onTap}
-      aria-label={`${mission.title}: ${words}`}
+      aria-label={`${mission.title}${mission.kind === 'bonus' ? ' (an extra)' : ''}: ${words}`}
+      data-kind={mission.kind}
       data-testid={`mission-${mission.title}`}
     >
       <span className={styles.pin} aria-hidden="true" />
+      {/* An extra to choose, not part of the day: a ribbon on the card's corner. Never a star — stars are stars. */}
+      {mission.kind === 'bonus' && (
+        <svg className={styles.extra} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+          <path d="M0 0 H40 L0 40 Z" fill={P.lav} />
+          <path d="M12 5 Q13 11 19 12 Q13 13 12 19 Q11 13 5 12 Q11 11 12 5 Z" fill={P.white} />
+        </svg>
+      )}
       <span className={styles.picture}>
         <ActionPicture id={mission.picture} />
       </span>
@@ -173,6 +209,7 @@ function MissionSheet({
     wall.ask('occurrence.submit', { occurrenceId: mission.id, profileId });
     if (mission.verification === 'auto') {
       wall.sound(mission.stars > 0 ? 'star' : 'done');
+      wall.celebrate();
       wall.tell('You did it!', 'cheer');
     } else {
       wall.sound('sent');
@@ -230,6 +267,16 @@ function MissionSheet({
             </ul>
           )}
           <div className={styles.actions}>
+            {mission.timerSeconds !== null && mission.timerSeconds > 0 && !done && !sent && (
+              <GentleTimer
+                seconds={mission.timerSeconds}
+                word={wall.labels}
+                onDone={() => {
+                  wall.sound('done');
+                  wall.tell('Time is up. All done?', 'cheer');
+                }}
+              />
+            )}
             {!done && !sent && (
               <BigButton tone="go" word="I did it!" onTap={didIt} testId="did-it">
                 <TickGlyph />

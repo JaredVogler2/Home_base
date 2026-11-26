@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import type { SkyState, Snapshot } from '../../shared/model';
+import { BADGES } from '../../shared/badges';
+import type { SkyState, Snapshot, Weather } from '../../shared/model';
 import type { OpInput, OpType } from '../../shared/ops';
 import { instantOf, inWindow, isLocalTime, zonedParts } from '../../shared/time';
 import type { TockPose } from '../art/guide/Tock';
 import { useSync } from '../sync/hooks';
 import { store } from '../sync/store';
+import { Celebration } from './Celebration';
 import { StatusCloud } from './chrome/chrome';
-import { WallContext, type Scene, type Wall as WallApi } from './context';
-import { childById } from './derive';
+import { useWall, WallContext, type Scene, type Wall as WallApi } from './context';
+import { childById, gladTidings, wearFor } from './derive';
 import { Home } from './home/Home';
+import { Tour, tourSeen } from './home/Tour';
 import type { Box } from './home/layout';
+import { keepsUp, sampleFrames } from './pace';
 import { Pair } from './Pair';
+import { cameBackFromAcademy } from './scenes/Academy';
 import { Scenes } from './scenes/Scenes';
 import { lookOfSky } from './sky';
 import { configureSound, play, unlockSound, type Sound } from './sound';
@@ -80,6 +85,8 @@ function WallReady({
   const [realNowMs, setNowMs] = useState(() => store.serverNow());
   const lastTouch = useRef(0);
   const [idle, setIdle] = useState(false);
+  const [glad, setGlad] = useState({ count: 0, showing: false });
+  const [touring, setTouring] = useState(false);
 
   // The clock, by the minute: enough for a sky and for "is it bedtime".
   useEffect(() => {
@@ -106,15 +113,36 @@ function WallReady({
   const reducedMotion = useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, []);
   const still = settings.calm || quiet || reducedMotion;
 
+  // A display that cannot draw the ambient movement smoothly does without it (see ./pace). Judged once the
+  // house has been up for a few seconds, and again later in case the first look was during start-up.
+  const [light, setLight] = useState(false);
+  useEffect(() => {
+    if (still || light) return;
+    let sample: ReturnType<typeof sampleFrames> | null = null;
+    const look = () => {
+      sample = sampleFrames(3_000);
+      void sample.done.then((frames) => {
+        if (keepsUp(frames) === false) setLight(true);
+      });
+    };
+    const first = window.setTimeout(look, 5_000);
+    const second = window.setTimeout(look, 60_000);
+    return () => {
+      window.clearTimeout(first);
+      window.clearTimeout(second);
+      sample?.cancel();
+    };
+  }, [still, light]);
+
   useEffect(() => {
     const root = document.documentElement;
-    root.dataset.motion = still ? 'still' : 'full';
+    root.dataset.motion = still ? 'still' : light ? 'light' : 'full';
     root.dataset.contrast = settings.contrast;
     return () => {
       delete root.dataset.motion;
       delete root.dataset.contrast;
     };
-  }, [still, settings.contrast]);
+  }, [still, light, settings.contrast]);
 
   useEffect(() => {
     configureVoice(settings.voice, quiet);
@@ -161,10 +189,25 @@ function WallReady({
     };
   }, [settings.wall.idleHomeSeconds, settings.wall.slideshowAfterMinutes, settings.memories.hidden]);
 
-  // Ask the server often while someone is here, seldom when nobody is, and hardly at all at night.
+  // Ask the server often while someone is here (at any hour), seldom when nobody is, and only now and then when
+  // nobody is and there is nothing to keep fresh: at night, or while the photos are showing.
+  const resting = quiet || scene === 'memories';
   useEffect(() => {
-    store.setPace(quiet ? 'asleep' : idle ? 'idle' : 'active');
-  }, [quiet, idle]);
+    store.setPace(!idle ? 'active' : resting ? 'asleep' : 'idle');
+  }, [resting, idle]);
+
+  // The weather the wall goes by: what the server last heard, if the family has switched the weather on.
+  const weather: Weather | null = override.weather
+    ? {
+        state: override.weather,
+        temperature: null,
+        units: 'metric',
+        at: new Date(nowMs).toISOString(),
+        stale: false,
+      }
+    : settings.sky.weather
+      ? view.weather
+      : null;
 
   const look = useMemo(
     () =>
@@ -173,7 +216,7 @@ function WallReady({
         timeZone: view.household.timeZone,
         location: settings.location,
         daylight: settings.sky.daylight,
-        weather: override.weather,
+        weather: override.weather ?? (settings.sky.weather ? (view.weather?.state ?? null) : null),
         decor: settings.decor,
       }),
     [
@@ -183,6 +226,8 @@ function WallReady({
       settings.sky.daylight,
       settings.decor,
       override.weather,
+      settings.sky.weather,
+      view.weather?.state,
     ],
   );
 
@@ -204,6 +249,9 @@ function WallReady({
     tell,
     said,
     sound: (name: Sound) => play(name),
+    celebrate: () => setGlad((value) => ({ count: value.count + 1, showing: true })),
+    wear: wearFor(weather),
+    tour: () => setTouring(true),
     quiet,
     still,
     online,
@@ -216,11 +264,59 @@ function WallReady({
       <Stage layout={layout} vars={look.vars}>
         <Home look={look} />
         {scene !== 'home' && <Scenes origin={origin} />}
+        {scene === 'home' && touring && !quiet && <Tour onDone={() => setTouring(false)} />}
+        {glad.showing && (
+          <Celebration key={glad.count} onDone={() => setGlad((value) => ({ ...value, showing: false }))} />
+        )}
+        <Watcher view={view} onFirstVisit={() => setTouring(true)} />
         <StatusCloud online={online} pending={pending} />
         {quiet && settings.quietHours.dim && (
-          <div className={styles.night} aria-hidden="true" style={{ '--shade': '0.3' } as CSSProperties} />
+          <div
+            className={styles.night}
+            aria-hidden="true"
+            style={{ '--shade': '0.3' } as CSSProperties}
+            data-testid="night"
+          />
         )}
       </Stage>
     </WallContext.Provider>
   );
+}
+
+/**
+ * Notices what has just happened and has Tock be glad about it: a grown-up said yes on their phone, a badge
+ * was reached, a reward was agreed. It also greets a child coming home from the Academy, and starts the
+ * showing-round the first time a screen is used.
+ */
+function Watcher({ view, onFirstVisit }: { view: Snapshot; onFirstVisit: () => void }) {
+  const wall = useWall();
+  const before = useRef<Snapshot | null>(null);
+
+  useEffect(() => {
+    if (cameBackFromAcademy()) wall.tell('Welcome home!', 'wave');
+    else if (!tourSeen() && !wall.quiet) onFirstVisit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const earlier = before.current;
+    before.current = view;
+    if (!earlier || wall.quiet) return;
+    const tidings = gladTidings(earlier, view, wall.who);
+    const first = tidings[0];
+    if (!first) return;
+    wall.celebrate();
+    wall.sound(first.kind === 'badge' ? 'star' : 'done');
+    if (first.kind === 'badge') wall.tell(BADGES[first.badge].say, 'cheer');
+    else if (first.kind === 'stars')
+      wall.tell(
+        first.stars === 1 ? 'A grown-up said yes. A star for you!' : 'A grown-up said yes. Stars for you!',
+        'cheer',
+      );
+    else if (first.kind === 'reward-yes') wall.tell(`Yes! ${first.title}.`, 'cheer');
+    else wall.tell(`${first.title}. Enjoy!`, 'cheer');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
+
+  return null;
 }

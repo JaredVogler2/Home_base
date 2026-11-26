@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import type { Config } from '../config.js';
+import { describeError } from '../log.js';
 import { migrate, type MigrationReport } from './migrate.js';
 import * as schema from './schema.js';
 import type { Db, Tx } from './types.js';
@@ -10,8 +11,8 @@ import type { Db, Tx } from './types.js';
  *   inHousehold(...)  for everything done on behalf of a family. The transaction steps down to a role that the
  *                     database confines to that household's rows.
  *   asSystem(...)     for the little that happens before a household is known — signing in, pairing a screen —
- *                     and for housekeeping. Nothing else may use it; a lint rule and a test keep it to the files
- *                     that are allowed.
+ *                     and for housekeeping. Nothing else may use it: tests/shared/boundaries.test.ts names
+ *                     every file that does, with its reason, and fails when another one starts to.
  */
 
 export interface Database {
@@ -35,7 +36,7 @@ async function openPostgres(config: Config): Promise<{ db: Db; close: () => Prom
     connectionTimeoutMillis: 10_000,
     ssl: config.databaseSsl ? { rejectUnauthorized: true } : undefined,
   });
-  pool.on('error', (error) => console.error('[db] idle connection error:', error.message));
+  pool.on('error', (error) => console.error(`[db] idle connection error: ${describeError(error)}`));
   if (config.onVercel) {
     // Lets the platform close idle connections before it freezes the function.
     const { attachDatabasePool } = await import('@vercel/functions');

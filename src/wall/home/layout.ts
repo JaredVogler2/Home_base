@@ -36,6 +36,8 @@ export interface Layout {
   /** Where the row of faces is centred, how big one is, and the gap between two. */
   faces: { cx: number; cy: number; size: number; gap: number };
   sayAgain: Box;
+  /** Where "what to put on today" is shown, when the weather says something about it. */
+  wear: Box;
   /** Where the lawn begins. */
   ground: number;
   sun: { left: number; right: number; top: number; low: number; r: number };
@@ -68,6 +70,7 @@ export const WIDE: Layout = {
   guide: { x: 1470, y: 850, w: 200, h: 210 },
   faces: { cx: 960, cy: 1004, size: 122, gap: 22 },
   sayAgain: { x: 1774, y: 936, w: 120, h: 120 },
+  wear: { x: 1492, y: 400, w: 112, h: 112 },
   ground: 880,
   sun: { left: 120, right: 1800, top: 96, low: 420, r: 70 },
   // A room's name is on the beam over its doorway, which leaves the ground free for faces and for Tock's words.
@@ -108,6 +111,7 @@ export const TALL: Layout = {
   guide: { x: 610, y: 1456, w: 156, h: 164 },
   faces: { cx: 400, cy: 1572, size: 112, gap: 14 },
   sayAgain: { x: 648, y: 28, w: 104, h: 104 },
+  wear: { x: 28, y: 28, w: 104, h: 104 },
   ground: 1420,
   sun: { left: 70, right: 520, top: 70, low: 300, r: 52 },
   labels: {

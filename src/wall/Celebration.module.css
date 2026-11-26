@@ -1,0 +1,66 @@
+.celebration {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 0;
+  height: 0;
+  z-index: 40;
+  pointer-events: none;
+  animation: celebration-fade 1600ms linear both;
+}
+.ray {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+.spark {
+  position: absolute;
+  left: -2.2cqw;
+  top: -2.2cqw;
+  width: 4.4cqw;
+  height: 4.4cqw;
+  animation: celebration-fly 1400ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes celebration-fly {
+  from {
+    transform: translateY(-4cqw) scale(0.2);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-24cqw) scale(1);
+    opacity: 0;
+  }
+}
+@keyframes celebration-fade {
+  0%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/*
+ * Calm mode and quiet hours — and a display that cannot keep up (light motion): the sparkles are simply there
+ * for a moment, in a ring, and do not move.
+ */
+:global(:root[data-motion='still']) .spark,
+:global(:root[data-motion='light']) .spark {
+  animation: none;
+  transform: translateY(-14cqw);
+  opacity: 0.9;
+}
+:global(:root[data-motion='light']) .celebration {
+  animation: none;
+}
+:global([data-shape='tall']) .spark {
+  left: -4.5cqw;
+  top: -4.5cqw;
+  width: 9cqw;
+  height: 9cqw;
+}

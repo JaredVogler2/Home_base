@@ -78,3 +78,38 @@
 .faces > * {
   pointer-events: auto;
 }
+
+/* What to put on before going out: a picture on a round card, hung from the end of the eaves. */
+.wear {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow:
+    inset 0 0 0 0.3cqw var(--wood-light),
+    0 0.3cqw 0 rgb(var(--shadow) / 0.2);
+  transition: transform var(--press) var(--ease);
+}
+.wear svg {
+  display: block;
+  width: 74%;
+  height: 74%;
+  margin: 13%;
+}
+/* Its string. */
+.wear::before {
+  content: '';
+  position: absolute;
+  left: calc(50% - 0.1cqw);
+  bottom: 98%;
+  width: 0.2cqw;
+  height: 38%;
+  background: var(--wood);
+}
+.wear:active {
+  transform: scale(0.94);
+}
+:global([data-shape='tall']) .wear::before {
+  display: none;
+}
