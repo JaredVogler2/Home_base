@@ -78,7 +78,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      # With a trace of every step kept for any test that fails (uploaded below), so a failure can be replayed.
+      - run: npx playwright test --trace retain-on-failure
       # The offline shell is installed by a service worker, which only a built app has: those tests again,
       # against the production server.
       - run: npm run build

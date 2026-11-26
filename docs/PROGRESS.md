@@ -47,11 +47,13 @@ Every requirement of the brief, one row each: [`TRACEABILITY.md`](TRACEABILITY.m
 
 ## The evidence
 
-- **Tests:** [`TEST_RESULTS.md`](TEST_RESULTS.md) — 453 unit and integration tests; 252 server tests again on
+- **Tests:** [`TEST_RESULTS.md`](TEST_RESULTS.md) — 456 unit and integration tests; 252 server tests again on
   PostgreSQL; 30 browser tests at four sizes; the deployment check; the wall measured.
 - **Continuous integration:** `.github/workflows/ci.yml` runs all of it on every pull request. Its very first
-  run (pull request #3) found a real problem — a newer `pg_dump` than the database it was restoring into —
-  which is fixed and written into the deployment guide. See the pull request for the current run.
+  runs (pull request #3) found two real problems that only a brand-new database server shows — two databases
+  racing to create the role they share, and a backup made by a newer `pg_dump` than the database it was put
+  back into. Both were reproduced here, fixed, and proven on a fresh server. See the pull request for the
+  current run.
 - **Pictures:** [`review/screens/`](review/screens) — 61 screenshots of the wall (day, evening, night, rain,
   snow; 3840×2160, 1920×1080, 1280×720, an upright tablet, a phone) and of every page of the grown-ups' side.
   [`review/recordings/wall-journey.webm`](review/recordings/wall-journey.webm) is a half-minute film of a child's

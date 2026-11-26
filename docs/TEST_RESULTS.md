@@ -10,8 +10,8 @@ against a hosted database** — those are listed at the end.
 | What | Command | Result |
 | --- | --- | --- |
 | Formatting, lint, types | `npm run format:check`, `npm run lint`, `npm run typecheck` | Clean |
-| Unit and integration tests, built-in database | `npm test` | **453 passed**, 1 skipped (33 files) |
-| Server tests on real PostgreSQL 16 | `npm run test:pg` | **252 passed** (21 files), including backup and restore |
+| Unit and integration tests, built-in database | `npm test` | **456 passed**, 1 skipped (34 files) |
+| Server tests on real PostgreSQL 16 | `npm run test:pg` | **252 passed** (21 files), including backup and restore — on the long-lived local server and again on a brand-new one |
 | Production build | `npm run build` | Built: 1.4 MB on disk, 43 files in the offline shell |
 | Browser tests, four screen sizes | `npm run test:e2e` | **29 passed**, 1 skipped (needs a built app) |
 | The skipped one, against the built app | `E2E_SERVER=production npx playwright test e2e/offline.spec.ts` | **2 passed** |
@@ -47,7 +47,7 @@ holds, and a network that reaches nothing — and talks to it over HTTP as phone
 | `tests/server/store.test.ts` | 8 | The screen's own store against the real server: offline queue through a reload, a lost answer, a refusal, a revoked screen, the demo |
 | `tests/server/demo.test.ts`, `cron.test.ts`, `log.test.ts` | 12 | The made-up family; the daily nudge; nothing a family typed in the server's log |
 | `tests/server/backup.test.ts` | 1 | `pg_dump` and restore into an empty database: the same household (PostgreSQL only) |
-| `tests/shared/*.test.ts` | 47 | Colour and sky, deployment configuration, Academy export format, safety words, badges, the plan's fairness sums, code boundaries |
+| `tests/shared/*.test.ts` | 50 | Colour and sky, deployment configuration, Academy export format, safety words, badges, the plan's fairness sums, code boundaries, migrating beside another database |
 | `tests/client/pictures.test.tsx` | 129 | Every drawing a parent can choose exists and draws cleanly: no broken number, no words inside a picture, none too heavy |
 | `tests/client/*` (the rest) | 26 | ZIP lookup; photo shrinking; the wall's helpers (what to wear, glad tidings, whether the display keeps up); the gentle timer |
 
@@ -125,6 +125,16 @@ Bugs found by the browser tests and the two audits, and fixed (each with a test 
 - Photo uploads had no rate limit.
 - A mission's timer was saved and never shown; the order of missions could not be changed from the phone.
 - Adding "2 milk" when milk was already on the list kept the old amount.
+
+And two that only the first run of CI on GitHub could find, because both need a database server that has never
+seen HOMEBASE before:
+
+- **Two databases set up at the same moment on one new server both tried to create the role they share**, and all
+  but one failed. Reproduced here on a fresh server (1 of 21 test files failing), fixed in the migration runner
+  (it tries again), and proven on another fresh server: 252 passed, with the database's own log showing the race
+  happen once and be survived.
+- **A backup made with a newer `pg_dump` than the database could not be put back.** The test now insists the two
+  match, CI's database matches its `pg_dump`, and the deployment guide says so.
 
 ## What is not tested, and why
 

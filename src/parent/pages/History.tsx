@@ -117,6 +117,16 @@ export function History({ rest }: { rest: string[] }) {
   }, [weeks, rev]);
 
   const children = view.profiles.filter((profile) => !profile.archived && profile.independent);
+  // What each child is saving for: their own choice, set on the wall, against the stars they have to spend.
+  const saving = view.goals.flatMap((goal) => {
+    const child = children.find((profile) => profile.id === goal.profileId);
+    const reward = view.rewards.find((entry) => entry.id === goal.rewardId && entry.status === 'active');
+    if (!child || !reward) return [];
+    const have = view.wallets.find((wallet) => wallet.profileId === child.id)?.available ?? 0;
+    return [
+      { child: child.nickname, title: reward.title, price: reward.price, have: Math.min(have, reward.price) },
+    ];
+  });
   const ticks = summary?.weeks.map(tickOf) ?? [];
   const last = (summary?.weeks.length ?? 1) - 1;
 
@@ -248,6 +258,30 @@ export function History({ rest }: { rest: string[] }) {
             </Section>
           );
         })}
+
+      {saving.length > 0 && (
+        <Section
+          title="Saving up"
+          hint="What each child has chosen to save for, and how far along they are with the stars they have now."
+          testId="goals"
+        >
+          <Card>
+            <MeterList
+              colour={CHART.earned}
+              track="#f6e3bd"
+              rows={saving.map((row) => ({
+                name: `${row.child}: ${row.title}`,
+                value: row.have,
+                total: row.price,
+                figure:
+                  row.have >= row.price
+                    ? `${row.price} of ${row.price} — enough`
+                    : `${row.have} of ${row.price}`,
+              }))}
+            />
+          </Card>
+        </Section>
+      )}
 
       {summary && summary.help.length > 0 && (
         <Section

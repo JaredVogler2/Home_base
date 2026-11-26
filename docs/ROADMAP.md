@@ -102,6 +102,7 @@ row), and the parents' **moments worth keeping**.
 
 The brief rules these out and so does this project: advertisements, external links or shops on a child's
 screen, open-ended chat for a child, anything that listens, ranking children against each other, taking stars
-away for a day that went badly, rewards a child needs (food, rest, comfort, a parent's time), streaks or
-countdowns that keep a child at the screen, scraping Apple Notes or iCloud, undocumented device APIs, and any
-paid service the family did not choose.
+away for a day that went badly, making anything a child needs depend on stars (HOMEBASE never does, and says
+so when a parent writes a reward that sounds like food, sleep or comfort — the decision stays the parent's),
+streaks or countdowns that keep a child at the screen, scraping Apple Notes or iCloud, undocumented device APIs,
+and any paid service the family did not choose.
