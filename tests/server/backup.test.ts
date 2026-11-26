@@ -18,7 +18,9 @@ import {
 /**
  * Backing up and putting back, the way docs/DEPLOYMENT.md says to: `pg_dump --schema=homebase --no-owner`, then
  * the file into an empty database. Run only against a real PostgreSQL (`npm run test:pg`), and only where the
- * `pg_dump` and `psql` on this machine are at least as new as the server — an older pg_dump refuses to run.
+ * `pg_dump` on this machine is the same major version as the server: an older one refuses to run, and a newer
+ * one writes settings into the file that the older server refuses when it is put back (found the first time
+ * this ran in CI, with pg_dump 17 and a PostgreSQL 16).
  */
 
 function toolsFit(): boolean {
@@ -28,8 +30,12 @@ function toolsFit(): boolean {
     const server = Number(
       /^(\d+)/.exec(execFileSync('psql', [PG_ADMIN, '-Atc', 'show server_version']).toString())?.[1] ?? 99,
     );
-    execFileSync('psql', ['--version']);
-    return tool >= server;
+    if (tool !== server) {
+      console.warn(
+        `[backup test] skipped: pg_dump is version ${tool} and the server is ${server}; they must match.`,
+      );
+    }
+    return tool === server;
   } catch {
     return false;
   }

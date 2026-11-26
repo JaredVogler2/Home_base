@@ -154,6 +154,22 @@ nothing.
 pg_dump "$DATABASE_URL" --schema=homebase --no-owner --file=homebase-backup.sql
 ```
 
+  Use a `pg_dump` of the **same major version** as your database (`pg_dump --version`; your host's dashboard says
+  which PostgreSQL you have). An older one refuses to run; a newer one writes settings into the file that the
+  older server refuses when the file is put back. To put a backup back, create an empty database and run
+  `psql "<its address>" -v ON_ERROR_STOP=1 -f homebase-backup.sql`, then point `DATABASE_URL` at it. This is
+  tested (`tests/server/backup.test.ts`): the same household signs in, with the same stars, record and list.
+
+  The test puts the backup back on the *same* database server, where the restricted role `homebase_app`
+  already exists. On a different server (a new project at your host) the role is not there yet, and the file's
+  `GRANT … TO homebase_app` lines would stop the restore. Create it first, as the database's owner — *(this
+  part is written from the migration that normally does it, and has not been run against a second server)*:
+
+```sql
+create role homebase_app nologin;
+grant homebase_app to current_user with set true, inherit false;
+```
+
 - **Locked out?** If the owner forgets the password and has lost the recovery codes, whoever holds the
   database connection string can make a one-day reset code:
 

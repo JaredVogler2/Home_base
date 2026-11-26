@@ -37,7 +37,9 @@ jobs:
     timeout-minutes: 15
     services:
       postgres:
-        image: postgres:16
+        # The same major version as the pg_dump on GitHub's runners, so that the backup-and-restore test runs
+        # (it skips itself, saying so, when the two differ). Locally the suite is also run on PostgreSQL 16.
+        image: postgres:17
         env:
           POSTGRES_USER: hb_owner
           # A throwaway database that lives for one run of this job. Not a secret.
