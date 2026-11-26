@@ -30,6 +30,26 @@ export interface Config {
   offline: boolean;
   /** Hosts the Academy may be opened at, beyond its own public address. */
   academyHosts: string[];
+  /** Which weather service to ask, for households that switch the weather on. See docs/integrations/WEATHER.md. */
+  weather: WeatherMode;
+  /** How many bytes of photos one household may keep, all copies counted. */
+  mediaLimitBytes: number;
+}
+
+/** `auto`: the US National Weather Service inside the US, Open-Meteo elsewhere. `off`: never ask anyone. */
+export type WeatherMode = 'auto' | 'nws' | 'open-meteo' | 'off';
+
+/** An unrecognised value turns the weather off: a mistyped "off" must not reach out. */
+function weatherMode(value: string | undefined): WeatherMode {
+  const mode = (value ?? '').trim().toLowerCase();
+  if (mode === '') return 'auto';
+  return mode === 'auto' || mode === 'nws' || mode === 'open-meteo' ? mode : 'off';
+}
+
+/** A whole number of megabytes, as bytes; anything else gives the default. */
+function megabytes(value: string | undefined, fallback: number): number {
+  const mb = Number((value ?? '').trim());
+  return (Number.isInteger(mb) && mb > 0 ? mb : fallback) * 1024 * 1024;
 }
 
 const flag = (value: string | undefined): boolean => value === '1' || value === 'true';
@@ -62,5 +82,7 @@ export function readConfig(env: Record<string, string | undefined> = process.env
       .split(',')
       .map((host) => host.trim().toLowerCase())
       .filter((host) => /^[a-z0-9.-]+$/.test(host)),
+    weather: weatherMode(env.HOMEBASE_WEATHER),
+    mediaLimitBytes: megabytes(env.HOMEBASE_MEDIA_LIMIT_MB, 200),
   };
 }

@@ -5,9 +5,14 @@ import { LATEST_MIGRATION } from './db/migrate.js';
 import type { Deps } from './deps.js';
 import type { AppEnv } from './http/env.js';
 import { HttpError } from './http/errors.js';
+import { academyRoutes } from './http/routes/academy.js';
 import { authRoutes } from './http/routes/auth.js';
+import { exportRoutes, familyRoutes, historyRoutes } from './http/routes/history.js';
 import { demoRoutes } from './http/routes/demo.js';
+import { mediaRoutes } from './http/routes/media.js';
 import { pairRoutes, wallRoutes } from './http/routes/pair.js';
+import { shoppingRoutes } from './http/routes/shopping.js';
+import { shortcutRoutes } from './http/routes/shortcuts.js';
 import { syncRoutes } from './http/routes/sync.js';
 
 /**
@@ -142,6 +147,13 @@ export function createApp(deps: Deps): Hono<AppEnv> {
   app.route('/wall', wallRoutes);
   app.route('/sync', syncRoutes);
   app.route('/demo', demoRoutes);
+  app.route('/history', historyRoutes);
+  app.route('/export', exportRoutes);
+  app.route('/family', familyRoutes);
+  app.route('/academy', academyRoutes);
+  app.route('/media', mediaRoutes);
+  app.route('/shortcuts', shortcutRoutes);
+  app.route('/shopping', shoppingRoutes);
 
   return app;
 }

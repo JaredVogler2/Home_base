@@ -15,6 +15,7 @@ import {
 import { listOccurrences, listTemplates } from './quest.js';
 import { listRoutines, listRuns } from './routines.js';
 import { listItems, listLists } from './shopping.js';
+import { readWeather } from '../weather/service.js';
 
 /**
  * Everything a screen needs, in one piece, as of one revision of the household.
@@ -60,6 +61,7 @@ export async function buildSnapshot(ctx: Ctx, viewer: Viewer): Promise<Snapshot>
     calendar: await listCalendar(ctx),
     media: ctx.household.settings.memories.hidden && !grownUp ? [] : await listMedia(ctx, !grownUp),
     members: await listMembers(ctx),
+    weather: await readWeather(ctx),
   };
   if (grownUp) {
     snapshot.templates = await listTemplates(ctx);

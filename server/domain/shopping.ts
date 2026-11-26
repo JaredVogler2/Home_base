@@ -46,12 +46,15 @@ function toItem(row: ItemRow): ShoppingItem {
   };
 }
 
-/** A short name for whoever is asking, as it reads on the list: "Sam", "the wall", "Siri". */
+/** A short name for whoever is asking, as it reads on the list: "Sam", "the wall", "Siri (Sam)". */
 function byline(ctx: Ctx): string {
   const name = ctx.actor.name;
   if (name.startsWith('guardian:')) return name.slice('guardian:'.length).replace(/ \(at .*\)$/, '');
   if (name.startsWith('wall:')) return 'the wall';
-  if (name.startsWith('shortcut:')) return 'Siri';
+  if (name.startsWith('shortcut:')) {
+    const who = name.slice('shortcut:'.length);
+    return who ? `Siri (${who})` : 'Siri';
+  }
   return name;
 }
 

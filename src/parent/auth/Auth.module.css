@@ -1,0 +1,72 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 18px;
+  padding: calc(24px + var(--safe-top)) 16px calc(40px + var(--safe-bottom));
+  background: linear-gradient(#cfeafb, var(--paper) 340px);
+}
+.hero {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  text-align: center;
+}
+.tock {
+  width: 108px;
+  height: 114px;
+}
+.hero h1 {
+  font-size: 30px;
+}
+.hero p {
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+.card {
+  width: min(100%, 460px);
+  display: grid;
+  gap: 18px;
+  padding: 22px 20px 24px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 6px 0 rgb(var(--shadow) / 0.07);
+}
+.card h2 {
+  font-size: 23px;
+}
+.form {
+  display: grid;
+  gap: 14px;
+}
+.problem {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--terra-light);
+  font-weight: 700;
+}
+.links {
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+}
+.codes {
+  list-style: none;
+  margin: 0;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  border-radius: 14px;
+  background: var(--paper-warm);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  font-weight: 700;
+  font-size: 16px;
+}
+.small {
+  font-size: 14px;
+  color: var(--ink-soft);
+}

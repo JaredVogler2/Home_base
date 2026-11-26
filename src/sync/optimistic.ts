@@ -351,7 +351,81 @@ const REDUCERS: { [T in OpType]?: Reducer<T> } = {
     mapItem(snapshot, input.itemId, (item) =>
       item.status === 'requested' ? { ...item, status: input.accept ? 'needed' : 'declined' } : item,
     ),
+
+  // --- a grown-up's switches: shown as flipped at once; the server's answer is what stays ---
+  'household.settings': (snapshot, input) => ({
+    ...snapshot,
+    household: {
+      ...snapshot.household,
+      settings: mergePlain(
+        snapshot.household.settings as unknown as Record<string, unknown>,
+        input.patch,
+      ) as unknown as Snapshot['household']['settings'],
+    },
+  }),
+  'task.status': (snapshot, input) => ({
+    ...snapshot,
+    templates: snapshot.templates?.map((template) =>
+      template.id === input.templateId ? { ...template, status: input.status } : template,
+    ),
+  }),
+  'routine.status': (snapshot, input) => ({
+    ...snapshot,
+    routines: snapshot.routines.map((routine) =>
+      routine.id === input.routineId ? { ...routine, status: input.status } : routine,
+    ),
+  }),
+  'reward.status': (snapshot, input) => ({
+    ...snapshot,
+    rewards: snapshot.rewards.map((reward) =>
+      reward.id === input.rewardId ? { ...reward, status: input.status } : reward,
+    ),
+  }),
+  'profile.archive': (snapshot, input) => ({
+    ...snapshot,
+    profiles: snapshot.profiles.map((profile) =>
+      profile.id === input.profileId ? { ...profile, archived: input.archived } : profile,
+    ),
+  }),
+  'list.update': (snapshot, input) => ({
+    ...snapshot,
+    lists: snapshot.lists.map((list) =>
+      list.id === input.listId ? { ...list, name: input.name, archived: input.archived } : list,
+    ),
+  }),
+  'calendar.setDay': (snapshot, input) => ({
+    ...snapshot,
+    calendar: [
+      ...snapshot.calendar.filter((day) => day.date !== input.date),
+      ...(input.labels.length > 0 ? [{ date: input.date, labels: input.labels }] : []),
+    ].sort((a, b) => a.date.localeCompare(b.date)),
+  }),
+  'media.update': (snapshot, input) => ({
+    ...snapshot,
+    media: snapshot.media.map((item) =>
+      item.id === input.mediaId ? { ...item, inSlideshow: input.inSlideshow } : item,
+    ),
+  }),
+  'media.remove': (snapshot, input) => ({
+    ...snapshot,
+    media: snapshot.media.filter((item) => item.id !== input.mediaId),
+  }),
 };
+
+function isPlain(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** The same merge the server does for a change of settings: what is not mentioned is left as it was. */
+function mergePlain(base: Record<string, unknown>, patch: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(patch)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    const current = out[key];
+    out[key] = isPlain(value) && isPlain(current) ? mergePlain(current, value) : value;
+  }
+  return out;
+}
 
 /** The ids of the things a request is about, so that a screen can mark them as "being saved". */
 export function touchedBy(op: OpEnvelope): string[] {

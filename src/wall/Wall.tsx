@@ -173,7 +173,7 @@ function WallReady({
         timeZone: view.household.timeZone,
         location: settings.location,
         daylight: settings.sky.daylight,
-        weather: override.weather,
+        weather: override.weather ?? (settings.sky.weather ? (view.weather?.state ?? null) : null),
         decor: settings.decor,
       }),
     [
@@ -183,6 +183,8 @@ function WallReady({
       settings.sky.daylight,
       settings.decor,
       override.weather,
+      settings.sky.weather,
+      view.weather?.state,
     ],
   );
 

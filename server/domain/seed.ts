@@ -3,7 +3,15 @@ import type { ActionPictureId } from '../../shared/pictures.js';
 import type { Schedule } from '../../shared/schedule.js';
 import { DEFAULT_SETTINGS } from '../../shared/settings.js';
 import { classifyItem, normalizeItem } from '../../shared/shopping.js';
-import { addDays, coarse, instantOf, localDateOf, weekdayOf, type LocalDate } from '../../shared/time.js';
+import {
+  addDays,
+  coarse,
+  instantOf,
+  localDateOf,
+  startOfWeek,
+  weekdayOf,
+  type LocalDate,
+} from '../../shared/time.js';
 import { hashPassword, hashPin, type HashCost } from '../auth/crypto.js';
 import { asSystem, inHousehold, type Database } from '../db/client.js';
 import {
@@ -13,8 +21,12 @@ import {
   memberships,
   milestones,
   profiles,
+  redemptions,
+  routineRuns,
+  routineStepEvents,
   shoppingItems,
   shoppingLists,
+  taskOccurrences,
   users,
   wallets,
 } from '../db/schema.js';
@@ -356,169 +368,270 @@ export async function removeDemo(database: Database): Promise<void> {
   });
 }
 
+/** How far back the made-up family's past goes. */
+const PAST_DAYS = 56;
+
+/**
+ * Eight weeks of an ordinary family, written as the real records would have been: a mission for each child for
+ * each day it was due (done, left, or "not today"), routine runs with their steps, the stars week by week, and a
+ * reward chosen now and then. Most things get done most days; Monday mornings are harder.
+ */
 async function seedPast(ctx: Ctx, today: LocalDate, timeZone: string): Promise<void> {
-  // Four weeks of an ordinary family: most things done most days, mornings harder on Mondays.
   const eventRows: (typeof events.$inferInsert)[] = [];
+  const missionRows: (typeof taskOccurrences.$inferInsert)[] = [];
+  const runRows: (typeof routineRuns.$inferInsert)[] = [];
+  const stepRows: (typeof routineStepEvents.$inferInsert)[] = [];
   let n = 0;
-  const totals = new Map<string, number>([
-    [DEMO.june, 0],
-    [DEMO.milo, 0],
+  const next = () => id(10_000 + n++);
+  /** Stars earned, by child and by the week they were earned in. */
+  const earned = new Map<string, Map<LocalDate, number>>([
+    [DEMO.june, new Map()],
+    [DEMO.milo, new Map()],
   ]);
-  for (let back = 28; back >= 1; back--) {
+  const event = (
+    kind: string,
+    date: LocalDate,
+    at: Date,
+    profileId: string | null,
+    subjectId: string,
+    data: Record<string, unknown>,
+  ) =>
+    eventRows.push({
+      id: next(),
+      householdId: ctx.household.id,
+      at,
+      localDate: date,
+      kind,
+      profileId,
+      subjectId,
+      data,
+      actor: 'seed',
+    });
+
+  for (let back = PAST_DAYS; back >= 1; back--) {
     const date = addDays(today, -back);
     const weekday = weekdayOf(date);
+    const week = startOfWeek(date, 0);
     for (const task of TASKS) {
       const offered =
         task.schedule.kind === 'daily' ||
         (task.schedule.kind === 'weekdays' && weekday >= 1 && weekday <= 5) ||
         (task.schedule.kind === 'weekly' && task.schedule.days.includes(weekday)) ||
-        task.schedule.kind === 'flexible';
+        (task.schedule.kind === 'flexible' && chance(date, task.n, 'offered') < 55);
       if (!offered) continue;
       const who = task.shared ? [DEMO.june] : task.who;
       for (const profileId of who) {
         const roll = chance(date, task.n, profileId);
-        const at = coarse(instantOf(date, task.kind === 'core' ? '17:40' : '16:10', timeZone));
-        if (roll < task.rate) {
-          eventRows.push({
-            id: id(10_000 + n++),
-            householdId: ctx.household.id,
-            at,
-            localDate: date,
-            kind: 'mission.done',
-            profileId,
-            subjectId: id(task.n),
-            data: {
-              stars: task.stars,
-              effort: task.effort,
-              by: task.verification === 'auto' ? 'auto' : 'grownup',
-            },
-            actor: 'seed',
+        const hour =
+          task.kind === 'core' ? (chance(date, task.n, profileId, 'when') < 35 ? '07:50' : '17:40') : '16:10';
+        const at = coarse(instantOf(date, hour, timeZone));
+        const done = roll < task.rate;
+        const skipped = !done && roll > 94 && task.kind === 'core';
+        const helped = chance(date, task.n, profileId, 'help') < (task.needsAdult ? 24 : 6);
+        missionRows.push({
+          id: next(),
+          householdId: ctx.household.id,
+          templateId: id(task.n),
+          templateVersion: 1,
+          profileId: task.shared ? null : profileId,
+          localDate: date,
+          status: done ? 'approved' : skipped ? 'skipped' : 'available',
+          stars: task.stars,
+          doneBy: done ? profileId : null,
+          submittedAt: done ? at : null,
+          decidedAt: done || skipped ? at : null,
+          decidedBy: done ? (task.verification === 'auto' ? 'auto' : 'guardian:Sam') : null,
+          helpAsked: helped,
+          createdAt: coarse(instantOf(date, '06:00', timeZone)),
+          updatedAt: at,
+        });
+        if (helped) event('mission.help', date, at, profileId, id(task.n), {});
+        if (done) {
+          event('mission.done', date, at, profileId, id(task.n), {
+            stars: task.stars,
+            effort: task.effort,
+            by: task.verification === 'auto' ? 'auto' : 'grownup',
           });
-          totals.set(profileId, (totals.get(profileId) ?? 0) + task.stars);
-        } else if (roll > 94 && task.kind === 'core') {
-          eventRows.push({
-            id: id(10_000 + n++),
-            householdId: ctx.household.id,
-            at,
-            localDate: date,
-            kind: 'mission.skipped',
-            profileId,
-            subjectId: id(task.n),
-            data: {},
-            actor: 'seed',
-          });
+          const weeks = earned.get(profileId);
+          weeks?.set(week, (weeks.get(week) ?? 0) + task.stars);
+        } else if (skipped) {
+          event('mission.skipped', date, at, profileId, id(task.n), {});
         }
       }
     }
     for (const routine of ROUTINES.slice(0, 2)) {
       for (const profileId of [DEMO.june, DEMO.milo]) {
-        if (chance(date, routine.n, profileId, 'ran') > 86) continue;
-        const steps = routine.steps.filter((step) => !step.days || step.days.includes(weekday));
+        if (!routine.days.includes(weekday) || chance(date, routine.n, profileId, 'ran') > 86) continue;
         const hard = routine.kind === 'morning' && weekday === 1;
+        const start = coarse(instantOf(date, routine.kind === 'morning' ? '07:05' : '19:10', timeZone));
+        const finished = chance(date, routine.n, profileId, 'finished') < (hard ? 78 : 93);
+        const runId = next();
         let together = 0;
         let skipped = 0;
-        for (const step of steps) {
+        let alone = 0;
+        let asked = 0;
+        const steps = routine.steps
+          .map((step, index) => ({ step, stepId: id(routine.n * 100 + index) }))
+          .filter(({ step }) => !step.days || step.days.includes(weekday));
+        steps.forEach(({ step, stepId }, index) => {
+          // An unfinished morning stops part-way: the later steps simply have no record.
+          if (!finished && index >= Math.max(1, steps.length - 2)) return;
           const roll = chance(date, routine.n, profileId, step.title);
           const helpRate = (step.needsAdult ? 55 : profileId === DEMO.milo ? 28 : 10) + (hard ? 18 : 0);
-          if (roll < helpRate) together++;
-          else if (roll > 96) skipped++;
-        }
-        const planned = steps.reduce((sum, step) => sum + (step.seconds ?? 120), 0) / 60;
-        const minutes = Math.round(
-          planned * (0.8 + chance(date, routine.n, profileId, 'pace') / 140) + (hard ? 9 : 0),
-        );
-        const start = routine.kind === 'morning' ? '07:05' : '19:10';
-        eventRows.push({
-          id: id(10_000 + n++),
+          const kind = roll < helpRate ? 'together' : roll > 96 ? 'skipped' : 'done';
+          if (kind === 'together') together++;
+          else if (kind === 'skipped') skipped++;
+          else alone++;
+          const at = new Date(start.getTime() + (index + 1) * 4 * 60_000);
+          stepRows.push({ runId, householdId: ctx.household.id, stepId, kind, at, actor: 'seed' });
+          if (kind === 'together' && chance(date, routine.n, profileId, step.title, 'asked') < 30) {
+            asked++;
+            stepRows.push({ runId, householdId: ctx.household.id, stepId, kind: 'help', at, actor: 'seed' });
+            event('routine.help', date, at, profileId, id(routine.n), { step: step.title });
+          }
+        });
+        const end = new Date(start.getTime() + (steps.length + 1) * 4 * 60_000 + (hard ? 9 * 60_000 : 0));
+        runRows.push({
+          id: runId,
           householdId: ctx.household.id,
-          at: coarse(instantOf(date, start, timeZone)),
-          localDate: date,
-          kind: 'routine.completed',
+          routineId: id(routine.n),
+          routineVersion: 1,
           profileId,
-          subjectId: id(routine.n),
-          data: {
+          localDate: date,
+          status: finished ? 'completed' : 'suspended',
+          startedAt: start,
+          completedAt: finished ? end : null,
+          updatedAt: end,
+        });
+        event('routine.started', date, start, profileId, id(routine.n), {});
+        if (finished) {
+          event('routine.completed', date, end, profileId, id(routine.n), {
             steps: steps.length,
-            alone: steps.length - together - skipped,
+            alone,
             together,
             skipped,
-            helpAsked: together > 2 ? 1 : 0,
-            minutes,
+            helpAsked: asked,
             kind: routine.kind,
-          },
-          actor: 'seed',
-        });
+          });
+        }
       }
     }
     if (weekday === 6) {
       for (const [index, text] of ['milk', 'bread', 'banana', 'egg', 'yogurt'].entries()) {
-        eventRows.push({
-          id: id(10_000 + n++),
-          householdId: ctx.household.id,
-          at: coarse(instantOf(date, '10:30', timeZone)),
-          localDate: date,
-          kind: 'shopping.bought',
-          subjectId: id(400 + index),
-          data: {
-            item: text,
-            text,
-            category: classifyItem(text).category,
-            picture: classifyItem(text).picture,
-          },
-          actor: 'seed',
+        if (index > 2 && chance(date, 'shop', text) < 35) continue;
+        event('shopping.bought', date, coarse(instantOf(date, '10:30', timeZone)), null, id(400 + index), {
+          item: text,
+          text,
+          category: classifyItem(text).category,
+          picture: classifyItem(text).picture,
         });
       }
     }
   }
-  for (let start = 0; start < eventRows.length; start += 200) {
-    await ctx.tx.insert(events).values(eventRows.slice(start, start + 200));
-  }
-  // What all that would have earned, as one opening line each; then a little spending.
-  for (const [profileId, stars] of totals) {
-    await post(ctx, {
-      profileId,
-      kind: 'grant',
-      available: stars,
-      lifetime: stars,
-      source: 'task',
-      key: `seed:opening:${profileId}`,
-      note: 'Stars earned before today',
-      actor: 'seed',
-    });
-  }
-  // …and what had already been spent on rewards before today, so that the bank looks like a real one: a few
-  // stars on the tray, not a hoard.
+  const inBatches = async <T>(rows: T[], insert: (batch: T[]) => Promise<unknown>) => {
+    for (let start = 0; start < rows.length; start += 200) await insert(rows.slice(start, start + 200));
+  };
+  await inBatches(missionRows, (batch) => ctx.tx.insert(taskOccurrences).values(batch));
+  await inBatches(runRows, (batch) => ctx.tx.insert(routineRuns).values(batch));
+  await inBatches(stepRows, (batch) => ctx.tx.insert(routineStepEvents).values(batch));
+  await inBatches(eventRows, (batch) => ctx.tx.insert(events).values(batch));
+
+  // The stars, as one line for each child's week, written on the last day of that week that has gone by — and
+  // a reward chosen whenever enough had been saved, so that the bank looks like a real one: a few stars on the
+  // tray, not a hoard.
   const keep = new Map<string, number>([
     [DEMO.june, 17],
     [DEMO.milo, 8],
   ]);
-  for (const [profileId, left] of keep) {
-    const balance = await ctx.tx
-      .select({ available: wallets.available })
-      .from(wallets)
-      .where(eq(wallets.profileId, profileId))
-      .limit(1);
-    const spent = (balance[0]?.available ?? 0) - left;
-    if (spent <= 0) continue;
-    await post(ctx, {
-      profileId,
-      kind: 'reserve',
-      available: -spent,
-      reserved: spent,
-      source: 'redemption',
-      key: `seed:spent:${profileId}:reserve`,
-      note: 'Rewards chosen before today',
-      actor: 'seed',
-    });
-    await post(ctx, {
-      profileId,
-      kind: 'spend',
-      reserved: -spent,
-      source: 'redemption',
-      key: `seed:spent:${profileId}:spend`,
-      note: 'Rewards chosen before today',
-      actor: 'seed',
-    });
+  const wishes = [REWARDS[0], REWARDS[2], REWARDS[1], REWARDS[3], REWARDS[0], REWARDS[4]];
+  const redemptionRows: (typeof redemptions.$inferInsert)[] = [];
+  for (const [profileId, weeks] of earned) {
+    const ordered = [...weeks.entries()].sort(([a], [b]) => a.localeCompare(b));
+    const remaining = ordered.reduce((sum, [, stars]) => sum + stars, 0);
+    const mustSpend = Math.max(0, remaining - (keep.get(profileId) ?? 0));
+    let balance = 0;
+    let spent = 0;
+    let wish = profileId === DEMO.june ? 0 : 2;
+    for (const [week, stars] of ordered) {
+      const lastDay = addDays(week, 6) < today ? addDays(week, 6) : addDays(today, -1);
+      const when = coarse(instantOf(lastDay, '18:10', timeZone));
+      await post(
+        { ...ctx, now: when, today: lastDay },
+        {
+          profileId,
+          kind: 'grant',
+          available: stars,
+          lifetime: stars,
+          source: 'task',
+          key: `seed:week:${profileId}:${week}`,
+          note: 'Missions that week',
+          actor: 'seed',
+        },
+      );
+      balance += stars;
+      // Something wished for is chosen whenever there is enough for it, at its real price; what is left over at
+      // the end is simply what is on the tray today.
+      while (spent < mustSpend) {
+        const reward = wishes[wish % wishes.length] ?? REWARDS[0];
+        const price = reward.price;
+        if (balance < price || spent + price > mustSpend) {
+          // Too dear just now: try the cheapest thing once, then wait for next week.
+          const small = REWARDS[0];
+          if (reward === small || balance < small.price || spent + small.price > mustSpend) break;
+          wish = wishes.indexOf(small) + wishes.length * Math.ceil(wish / wishes.length);
+          continue;
+        }
+        const redemptionId = next();
+        const asked = new Date(when.getTime() + (wish % 3) * 60 * 60_000 + 20 * 60_000);
+        const given = new Date(asked.getTime() + 40 * 60_000);
+        redemptionRows.push({
+          id: redemptionId,
+          householdId: ctx.household.id,
+          profileId,
+          rewardId: id(reward.n),
+          rewardVersion: 1,
+          title: reward.title,
+          picture: reward.picture,
+          price,
+          status: 'fulfilled',
+          requestedAt: asked,
+          decidedAt: given,
+          decidedBy: 'guardian:Sam',
+          fulfilledAt: given,
+          updatedAt: given,
+        });
+        await post(
+          { ...ctx, now: asked, today: lastDay },
+          {
+            profileId,
+            kind: 'reserve',
+            available: -price,
+            reserved: price,
+            source: 'redemption',
+            sourceId: redemptionId,
+            key: `redemption:${redemptionId}:reserve`,
+            actor: 'seed',
+          },
+        );
+        await post(
+          { ...ctx, now: given, today: lastDay },
+          {
+            profileId,
+            kind: 'spend',
+            reserved: -price,
+            source: 'redemption',
+            sourceId: redemptionId,
+            key: `redemption:${redemptionId}:spend`,
+            actor: 'seed',
+          },
+        );
+        balance -= price;
+        spent += price;
+        wish += 1;
+      }
+    }
   }
+  if (redemptionRows.length > 0) await ctx.tx.insert(redemptions).values(redemptionRows);
 }
 
 /** Build the Maple Street family in an empty corner of the database. Does nothing if they are already there. */
@@ -644,8 +757,6 @@ export async function seedDemo(database: Database, options: SeedOptions): Promis
       { profileId: DEMO.bea, householdId: DEMO.householdId },
     ]);
 
-    await seedPast(ctx, today, timeZone);
-
     for (const task of TASKS) {
       await createTask(ctx, {
         templateId: id(task.n),
@@ -700,6 +811,9 @@ export async function seedDemo(database: Database, options: SeedOptions): Promis
         profiles: [],
       });
     }
+
+    // The past is written once the plan exists, because it is a record of that plan being followed.
+    await seedPast(ctx, today, timeZone);
 
     await tx.insert(shoppingLists).values([
       {

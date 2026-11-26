@@ -498,6 +498,8 @@ export interface Snapshot {
   media: MediaItem[];
   /** Guardians' pictures and names, for the wall's "which grown-up?" */
   members: Member[];
+  /** The real weather where the family lives, when they have switched it on; null otherwise. */
+  weather: Weather | null;
   // --- grown-ups only (absent on a wall that is not unlocked) ---
   templates?: TaskTemplate[];
   devices?: Device[];
