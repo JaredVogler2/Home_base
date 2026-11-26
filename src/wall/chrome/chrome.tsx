@@ -202,8 +202,12 @@ export function Guide({
   pose: TockPose;
   onTap: () => void;
   style?: CSSProperties;
-  /** Which side of him the words go. */
-  side?: 'left' | 'right' | 'above';
+  /**
+   * Where his words go, chosen so that they never lie over something to tap: `left` beside him (a room on a
+   * wide screen), `up` over him (a room on a tall one), `lawn` over him and away to the right (the house, wide),
+   * `path` beside his head (the house, tall).
+   */
+  side?: 'left' | 'up' | 'lawn' | 'path';
   name: string;
 }) {
   return (

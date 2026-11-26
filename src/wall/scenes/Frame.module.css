@@ -113,8 +113,9 @@
   }
 }
 
+/* On a tall screen Tock's words go over him, in a band of their own between the room and the floor. */
 :global([data-shape='tall']) .content {
-  inset: 2.5% 4% 13% 4%;
+  inset: 2.5% 4% 16.5% 4%;
 }
 :global([data-shape='tall']) .frame[data-floor='true']::after {
   height: 11%;

@@ -84,6 +84,9 @@ const SHOTS: Shot[] = [
   { name: 'wall-pair', as: null, path: '/wall', size: SMALL },
   { name: 'wall-home-small', as: 'wall', path: '/wall?at=10:30', size: SMALL },
   { name: 'wall-home-phone', as: 'wall', path: '/wall?at=10:30', size: PHONE },
+  { name: 'wall-home-phone-who', as: 'wall', path: '/wall?at=16:40', size: PHONE, taps: [t('face-June')] },
+  { name: 'wall-home-golden', as: 'wall', path: '/wall?at=16:40', size: WIDE },
+  { name: 'wall-home-dawn', as: 'wall', path: '/wall?at=06:50', size: WIDE },
   {
     name: 'wall-quest-phone',
     as: 'wall',

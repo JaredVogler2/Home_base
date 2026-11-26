@@ -128,15 +128,19 @@ button.face[data-active='true']:active {
   pointer-events: none;
   animation: bubble-in var(--change) var(--spring);
 }
-.guide[data-side='right'] .bubble {
+.guide[data-side='up'] .bubble {
+  right: 4%;
+  bottom: 100%;
+}
+.guide[data-side='lawn'] .bubble {
   right: auto;
-  left: 92%;
+  left: 10%;
+  bottom: 97%;
   border-radius: 1.3cqw 1.3cqw 1.3cqw 0.3cqw;
 }
-.guide[data-side='above'] .bubble {
-  right: 10%;
-  bottom: 98%;
-  border-radius: 1.3cqw 1.3cqw 0.3cqw 1.3cqw;
+.guide[data-side='path'] .bubble {
+  right: 94%;
+  bottom: 72%;
 }
 @keyframes bubble-in {
   from {
@@ -212,6 +216,9 @@ button.face[data-active='true']:active {
   max-width: 54cqw;
   padding: 1.6cqw 2.4cqw;
   border-radius: 3cqw 3cqw 0.8cqw 3cqw;
+}
+:global([data-shape='tall']) .guide[data-side='up'] .bubble {
+  max-width: 72cqw;
 }
 :global([data-shape='tall']) .label {
   font-size: 2.7cqw;

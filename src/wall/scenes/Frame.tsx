@@ -98,7 +98,7 @@ export function Frame({
           width: layout.shape === 'tall' ? '20%' : '8.6%',
           aspectRatio: '200 / 210',
         }}
-        side="left"
+        side={layout.shape === 'tall' ? 'up' : 'left'}
         onTap={() => {
           wall.sound('chirp');
           wall.tell(wall.said.words || `I am ${guideName}.`, 'wave');

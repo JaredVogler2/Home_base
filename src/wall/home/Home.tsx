@@ -228,7 +228,7 @@ export function Home({ look }: { look: SkyLook }) {
         words={wall.said.words}
         pose={wall.said.pose}
         style={place(layout, layout.guide)}
-        side={layout.shape === 'tall' ? 'above' : 'left'}
+        side={layout.shape === 'tall' ? 'path' : 'lawn'}
         onTap={() => {
           wall.sound('chirp');
           wall.tell(wall.said.words || `Hello! I am ${guideName}.`, 'wave');

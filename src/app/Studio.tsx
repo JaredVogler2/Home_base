@@ -11,7 +11,9 @@ import {
   SHOPPING_PICTURE_IDS,
   SHOPPING_PICTURES,
 } from '../../shared/pictures';
+import { Tock, type TockPose } from '../art/guide/Tock';
 import { ActionPicture, Avatar, DayPicture, RewardPicture, ShoppingPicture } from '../art/pictures';
+import { SAMPLE_COUNT, SamplePicture } from '../art/samples';
 import styles from './Studio.module.css';
 
 /**
@@ -82,6 +84,35 @@ export function Studio({ view }: { view: string }) {
           </ul>
         </section>
       ))}
+      {(view === 'all' || view === 'guide') && (
+        <section className={styles.sheet} data-sheet="guide">
+          <h2>The guide</h2>
+          <ul className={styles.poses}>
+            {POSES.map((pose) => (
+              <li key={pose}>
+                <div className={styles.pose} data-motion={play ? undefined : 'still'}>
+                  <Tock pose={pose} />
+                </div>
+                <code className={styles.id}>{pose}</code>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {(view === 'all' || view === 'samples') && (
+        <section className={styles.sheet} data-sheet="samples">
+          <h2>Sample photographs (the demo only)</h2>
+          <ul className={styles.samples}>
+            {Array.from({ length: SAMPLE_COUNT }, (_, index) => (
+              <li key={index}>
+                <SamplePicture index={index} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
   );
 }
+
+const POSES: TockPose[] = ['idle', 'wave', 'point', 'cheer', 'think', 'listen', 'sleep'];

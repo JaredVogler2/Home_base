@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mix, mix3 } from '../../src/art/colour';
+import { mix, mix3, ramp } from '../../src/art/colour';
 import { lookOfSky, seasonOf } from '../../src/wall/sky';
 
 describe('mixing colours', () => {
@@ -9,6 +9,20 @@ describe('mixing colours', () => {
     expect(mix('#000000', '#ffffff', 0.5)).toBe('rgb(128 128 128)');
     expect(mix(mix('#000000', '#ffffff', 0.5), '#ffffff', 1)).toBe('rgb(255 255 255)');
     expect(mix3('#000000', '#808080', '#ffffff', 0.5)).toBe('rgb(128 128 128)');
+  });
+
+  it('runs through any number of colours, and holds the ends', () => {
+    const stops = [
+      [0, '#000000'],
+      [0.5, '#ff0000'],
+      [1, '#ffffff'],
+    ] as const;
+    expect(ramp(stops, -1)).toBe('rgb(0 0 0)');
+    expect(ramp(stops, 0)).toBe('rgb(0 0 0)');
+    expect(ramp(stops, 0.25)).toBe('rgb(128 0 0)');
+    expect(ramp(stops, 0.5)).toBe('rgb(255 0 0)');
+    expect(ramp(stops, 0.75)).toBe('rgb(255 128 128)');
+    expect(ramp(stops, 2)).toBe('rgb(255 255 255)');
   });
 });
 
@@ -51,6 +65,20 @@ describe('the look of the sky', () => {
   it('follows the real sun: light late on a June evening, dark early on a December one', () => {
     expect(at('2026-06-21T20:15:00-05:00').now.light).toBeGreaterThan(0.5);
     expect(at('2026-12-21T17:45:00-06:00').now.light).toBeLessThan(0.3);
+  });
+
+  it('warms the low sky as the sun goes down, and not under heavy cloud', () => {
+    const channels = (value: string | undefined) => (value?.match(/\d+/g) ?? []).map(Number);
+    // About twenty minutes before sunset in Kansas City at the end of November.
+    const golden = at('2026-11-25T16:40:00-06:00');
+    const [red = 0, , blue = 0] = channels(golden.vars['--sky-low']);
+    expect(red - blue).toBeGreaterThan(40);
+    const overcast = at('2026-11-25T16:40:00-06:00', { weather: 'rain' });
+    const [greyRed = 0, , greyBlue = 0] = channels(overcast.vars['--sky-low']);
+    expect(Math.abs(greyRed - greyBlue)).toBeLessThan(red - blue);
+    // At midday the low sky is cool again.
+    const [noonRed = 0, , noonBlue = 0] = channels(at('2026-11-25T12:00:00-06:00').vars['--sky-low']);
+    expect(noonBlue).toBeGreaterThanOrEqual(noonRed);
   });
 
   it('hides the stars and greys the sky under cloud', () => {

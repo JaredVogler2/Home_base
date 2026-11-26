@@ -211,7 +211,12 @@ export function Pantry({ origin }: { origin: Box | null }) {
         <Sheet onClose={() => setAsking(null)} testId="ask-sheet" label="Ask for something">
           {asking === 'child' && !child ? (
             <div className={styles.whoWrap}>
-              <Who onlyIndependent={false} />
+              <Who
+                onlyIndependent={false}
+                onPick={(picked) =>
+                  wall.tell(`${picked.nickname}, what would you like? Tap a picture.`, 'point')
+                }
+              />
             </div>
           ) : (
             <div className={styles.ask}>

@@ -1,7 +1,7 @@
 import type { SkyState } from '../../shared/model';
 import { skyAt, skyByClock, type SkyNow } from '../../shared/sun';
 import { zonedParts } from '../../shared/time';
-import { mix, mix3 } from '../art/colour';
+import { mix, ramp } from '../art/colour';
 
 /**
  * What the sky over the house looks like right now: its colours, where the sun or the moon is, how many clouds.
@@ -47,8 +47,25 @@ const NIGHT = {
   pondA: '#4a6fa8',
   pondB: '#2c4780',
 };
-/** The colour low in the sky when the sun is on the horizon. */
-const GLOW = '#ffc9a3';
+/**
+ * The sky's two colours — overhead and down by the hills — by how light it is. Light is 0 in deep night, 0.6 as
+ * the sun crosses the horizon and 1 once it is well up (see shared/sun.ts), so the stops below are: night, the
+ * blue hour, sunrise or sunset, the golden hour, day.
+ */
+const SKY_TOP: readonly (readonly [number, string])[] = [
+  [0, NIGHT.top],
+  [0.3, '#34397a'],
+  [0.6, '#7d9fd6'],
+  [0.82, '#9dcdf1'],
+  [1, DAY.top],
+];
+const SKY_LOW: readonly (readonly [number, string])[] = [
+  [0, NIGHT.low],
+  [0.3, '#a2749f'],
+  [0.6, '#ffc39a'],
+  [0.82, '#ffe9c6'],
+  [1, DAY.low],
+];
 const GREY = { top: '#b6c4d4', low: '#e3e9ee' };
 
 export function seasonOf(month: number, latitude: number | null): Season {
@@ -104,16 +121,14 @@ export function lookOfSky(input: SkyInput): SkyLook {
       : input.decor;
 
   const light = now.light;
-  // Near sunrise and sunset the low sky warms; under cloud everything greys a little.
-  const warm = now.phase === 'dawn' || now.phase === 'dusk' ? 1 - Math.abs(light - 0.5) * 2 : 0;
+  // Under heavy cloud there is no sunset to see: everything greys, more so the lighter it is.
   const grey = cloud > 0.6 ? (cloud - 0.6) / 0.4 : 0;
-  const top = mix(mix(NIGHT.top, DAY.top, light), GREY.top, grey * light * 0.75);
-  const low = mix(mix3(NIGHT.low, mix(NIGHT.low, GLOW, 0.8), DAY.low, light), GREY.low, grey * light * 0.7);
-  const lowWarm = mix(low, GLOW, warm * 0.55 * (1 - grey));
+  const top = mix(ramp(SKY_TOP, light), GREY.top, grey * (0.25 + light * 0.5));
+  const low = mix(ramp(SKY_LOW, light), mix(NIGHT.low, GREY.low, light), grey * 0.8);
 
   const vars: Record<string, string> = {
     '--sky-top': top,
-    '--sky-low': lowWarm,
+    '--sky-low': low,
     '--hill-far': mix(NIGHT.far, DAY.far, light),
     '--hill-near': mix(NIGHT.near, DAY.near, light),
     '--lawn-top': mix(NIGHT.lawnTop, DAY.lawnTop, light),

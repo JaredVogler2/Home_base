@@ -180,8 +180,9 @@ export function Backdrop({ layout, look }: { layout: Layout; look: SkyLook }) {
       </defs>
 
       {/* sky */}
-      <rect x={-BLEED} y={-BLEED} width={w + BLEED * 2} height={BLEED + ground} fill="url(#hb-sky)" />
-      <rect x={-BLEED} y={-BLEED} width={w + BLEED * 2} height={BLEED} className="house-sky-top" />
+      {/* The gradient is as tall as the sky you can see; above the sheet it carries on in the top colour. */}
+      <rect x={-BLEED} y={0} width={w + BLEED * 2} height={ground} fill="url(#hb-sky)" />
+      <rect x={-BLEED} y={-BLEED} width={w + BLEED * 2} height={BLEED + 1} className="house-sky-top" />
       <g className="house-stars" fill={P.white}>
         {Array.from({ length: wide ? 26 : 16 }, (_, index) => (
           <circle

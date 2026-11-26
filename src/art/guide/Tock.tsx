@@ -6,9 +6,27 @@ import './tock.css';
  *
  * Tock is how the house talks to a child who cannot read: he looks at what he means, lifts a wing at it, and is
  * glad when it is done. He is drawn in parts — body, tail, two wings, crest, face — so that each can move a
- * little. He never moves fast, never flashes, and when motion is switched off he simply holds the pose.
+ * little: the wing on his right waves, the one on his left points at the room, both go up to cheer. He never
+ * moves fast, never flashes, and when motion is switched off he simply holds the pose.
  */
 export type TockPose = 'idle' | 'wave' | 'point' | 'cheer' | 'think' | 'sleep' | 'listen';
+
+/** One wing, hanging from its shoulder at (0, 0). */
+function Wing({ side }: { side: 'l' | 'r' }) {
+  return (
+    <g className={`tock-wing tock-wing-${side}`}>
+      <path d="M-3 -9 C17 -7 27 16 17 38 C13 47 5 51 -4 51 C-13 36 -14 10 -3 -9 Z" fill={P.blueDeep} />
+      <path
+        d="M5 8 C11 18 10 30 4 40"
+        fill="none"
+        stroke={P.blue}
+        strokeWidth="4.5"
+        strokeLinecap="round"
+        opacity="0.9"
+      />
+    </g>
+  );
+}
 
 export function Tock({
   pose = 'idle',
@@ -37,10 +55,11 @@ export function Tock({
           <path d="M84 170 v22 m-12 5 l12 -5 l12 5" />
           <path d="M118 170 v22 m-12 5 l12 -5 l12 5" />
         </g>
-        {/* the cocked tail */}
+        {/* the tail: a small fan low at the back, where a tail is */}
         <g className="tock-tail" fill={P.blueDeep}>
-          <rect x="24" y="64" width="26" height="74" rx="13" transform="rotate(-38 37 138)" />
-          <rect x="40" y="56" width="24" height="76" rx="12" transform="rotate(-22 52 132)" />
+          <rect x="57" y="150" width="15" height="46" rx="7.5" transform="rotate(34 64 152)" />
+          <rect x="57" y="150" width="15" height="48" rx="7.5" transform="rotate(54 64 152)" />
+          <rect x="57" y="150" width="15" height="44" rx="7.5" transform="rotate(74 64 152)" />
         </g>
         <path
           d="M100 38 c44 0 66 34 66 72 c0 40 -28 66 -66 66 c-38 0 -66 -26 -66 -66 c0 -38 22 -72 66 -72 z"
@@ -56,20 +75,12 @@ export function Tock({
           fill="#ffb98a"
         />
         <ellipse cx="102" cy="152" rx="30" ry="20" fill="#fff3e2" />
-        <path
-          className="tock-wing-rest"
-          d="M40 108 c-6 30 6 50 30 56 c-8 -22 -8 -40 -2 -58 c-10 -6 -20 -6 -28 2 z"
-          fill={P.blueDeep}
-        />
-        <g className="tock-wing">
-          <path d="M152 118 c26 -8 40 -30 40 -56 c-24 4 -42 18 -50 42 z" fill={P.blueDeep} />
-          <path
-            d="M158 106 c14 -8 22 -20 26 -34"
-            fill="none"
-            stroke={P.blue}
-            strokeWidth="5"
-            strokeLinecap="round"
-          />
+        {/* two wings, the same drawing mirrored; each turns about its shoulder */}
+        <g transform="translate(46 116) scale(-1 1)">
+          <Wing side="l" />
+        </g>
+        <g transform="translate(154 116)">
+          <Wing side="r" />
         </g>
         <path
           className="tock-crest"
