@@ -199,8 +199,10 @@ does not undo the good ones`, `is decided by the session, never by which child i
 in-memory cache from `src/sync/cache.ts`) against a test server (`shows a tap at once, sends it once, and ends up agreeing
 with the server`; `keeps what was asked while there is no signal — through a reload — and sends it exactly once`;
 `says a refusal gently, forgets the request, and shows things as they really are`; `forgets everything the moment
-the server says this screen is a stranger`; `asks "anything new?" with what it has…`). The optimistic reducers
-are still not tested one by one. (`tests/client/` has `derive`, `photos`, `pictures` and `zcta` tests.) The Playwright browser tests in `e2e/` (11 spec files, 25
+the server says this screen is a stranger`; `asks "anything new?" with what it has…`). What a screen guesses
+before the server answers is checked against what the server then says, operation by operation, in
+`tests/server/optimistic.test.ts` (missions, rewards, the shopping list, settings, the plan); the reducers for
+routines, photos and a few others are not yet in it. (`tests/client/` has `derive`, `photos`, `pictures` and `zcta` tests.) The Playwright browser tests in `e2e/` (11 spec files, 25
 `test(...)` definitions run across four viewport projects: `wall-1080`, `wall-720`, `tablet-tall`, `phone`) drive
 the whole app, so they exercise the sync client end to end: pairing, a parent's approval reaching the wall,
 rewards, shopping, a non-reader's walk through the wall, the first-visit tour, accessibility (axe), reduced

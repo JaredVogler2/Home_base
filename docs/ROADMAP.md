@@ -75,7 +75,7 @@ In the order of how much it would matter to the family:
 | A read-only family calendar glance in HOMEBASE (iCloud, Google or Outlook) with parent-approved coarse labels | The brief calls it "optional later" and prefers the display's own Calendar Mode. Needs an account to build against; the tables for it exist and are unused | Large |
 | The helper's other four jobs: schedule-aware mission planner, learning bridge, family briefing, story scripts | The first four were the brief's minimum; the calendar and Academy categories send nothing until these exist | Medium each |
 | Text that follows the phone's own text-size setting | Sizes are fixed in pixels on the grown-ups' side | Small |
-| Tests for each optimistic reducer on its own | The store is tested end to end and against the real server; the reducers are not tested one by one | Small |
+| The rest of the screen's instant guesses checked against the server | Missions, rewards, the list, settings and the plan are (`tests/server/optimistic.test.ts`); routines, photos and a few others are not yet | Small |
 | A dependency audit step in CI | Not set up | Small |
 | Encrypting a device's cache with a key held by the server | A real gain only for a wall in a shared place, at the cost of starting with no signal ([`DECISIONS.md`](DECISIONS.md) §23) | Medium |
 | A licence for the repository | The owner's decision ([`ASSETS.md`](ASSETS.md)) | — |

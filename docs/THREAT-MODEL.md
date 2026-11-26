@@ -90,7 +90,9 @@ the wall display.
 - **No CSRF token**, no per-session device binding, no session list per user.
 - **Client sync store**: covered end to end by the Playwright tests and, at store level, by
   `tests/server/store.test.ts` (offline queue through a reload, a lost answer, a refusal, the cache wipe on a
-  `401`, demo re-entry). The optimistic reducers have no tests of their own.
+  `401`, demo re-entry). What a screen guesses before the server answers is checked against the server for
+  missions, rewards, the list, settings and the plan (`tests/server/optimistic.test.ts`), not yet for routines
+  and photos.
 - **No dependency auditing** (`npm audit`, update bot) in CI.
 - **Concurrency** is tested on PGlite by default and on PostgreSQL only in CI.
 - **Nothing has been checked on a real Vercel deployment, Supabase/Neon database, iPhone or the wall display.**

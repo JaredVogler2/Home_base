@@ -10,14 +10,14 @@ against a hosted database** — those are listed at the end.
 | What | Command | Result |
 | --- | --- | --- |
 | Formatting, lint, types | `npm run format:check`, `npm run lint`, `npm run typecheck` | Clean |
-| Unit and integration tests, built-in database | `npm test` | **456 passed**, 1 skipped (34 files) |
-| Server tests on real PostgreSQL 16 | `npm run test:pg` | **252 passed** (21 files), including backup and restore — on the long-lived local server and again on a brand-new one |
+| Unit and integration tests, built-in database | `npm test` | **463 passed**, 1 skipped (35 files) |
+| Server tests on real PostgreSQL 16 | `npm run test:pg` | **259 passed** (22 files), including backup and restore — and, before the last seven were added, on a brand-new server as well as the long-lived one |
 | Production build | `npm run build` | Built: 1.4 MB on disk, 43 files in the offline shell |
 | Browser tests, four screen sizes | `npm run test:e2e` | **30 passed**, 1 skipped (needs a built app) |
 | The skipped one, against the built app | `E2E_SERVER=production npx playwright test e2e/offline.spec.ts` | **2 passed** (and 6 of 6 when repeated three times) |
 | A deployment, checked from outside | `npm run verify:deployment -- http://127.0.0.1:4173` | 20 checks, "All as it should be" |
 | The wall, measured | `npm run measure` | Table below |
-| Continuous integration on GitHub | `.github/workflows/ci.yml` | See [`PROGRESS.md`](PROGRESS.md) for the latest run |
+| Continuous integration on GitHub | `.github/workflows/ci.yml` | **All three jobs pass** (first green at commit `45df124`, after the three fixes below) |
 
 The one skipped unit test is the backup-and-restore test, which needs a real PostgreSQL and runs under
 `npm run test:pg`.
@@ -45,6 +45,7 @@ holds, and a network that reaches nothing — and talks to it over HTTP as phone
 | `tests/server/ai.test.ts`, `ai-units.test.ts` | 52 | The planning helper: off by default, what is sent, spending limits, what can come of a reply, both providers' request shapes (faked) |
 | `tests/server/badges.test.ts` | 4 | Keepsakes: given once, kept for good |
 | `tests/server/store.test.ts` | 8 | The screen's own store against the real server: offline queue through a reload, a lost answer, a refusal, a revoked screen, the demo |
+| `tests/server/optimistic.test.ts` | 7 | What a screen shows the instant something is tapped agrees with what the server then says — and about stars is behind, never ahead |
 | `tests/server/demo.test.ts`, `cron.test.ts`, `log.test.ts` | 12 | The made-up family; the daily nudge; nothing a family typed in the server's log |
 | `tests/server/backup.test.ts` | 1 | `pg_dump` and restore into an empty database: the same household (PostgreSQL only) |
 | `tests/shared/*.test.ts` | 50 | Colour and sky, deployment configuration, Academy export format, safety words, badges, the plan's fairness sums, code boundaries, migrating beside another database |
@@ -153,7 +154,7 @@ And one that only a slower machine than this one shows:
 | A real request to Anthropic or OpenAI | No key; none was attempted | `docs/integrations/AI.md` |
 | A real child using it | Needs a child and a willing parent | Checklist section I |
 | Safari and Firefox | Only Chromium is installed here; the code uses nothing Chromium-only on purpose, but that is not proof | — |
-| Each optimistic reducer on its own | The store is tested end to end and against the real server instead | [`ROADMAP.md`](ROADMAP.md) |
+| The screen's instant guess for routines, photos and a few other requests | Missions, rewards, the list, settings and the plan are checked against the server (`tests/server/optimistic.test.ts`); these are not yet | [`ROADMAP.md`](ROADMAP.md) |
 | Truly simultaneous requests on the built-in database | It serves one connection; the PostgreSQL run is what contends real locks | `npm run test:pg` |
 | Long running: a wall left on for weeks | Not possible in a session | Checklist C7, H4 |
 | Load: many households at once | Out of scope for one family; isolation is tested, capacity is not | [`COSTS.md`](COSTS.md) |
