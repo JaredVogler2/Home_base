@@ -268,7 +268,7 @@ export class SyncStore {
       this.failures = 0;
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
-        if (await this.reenterDemo()) return;
+        if (error.extra.session === 'unknown' && (await this.reenterDemo())) return;
         await this.becomeStranger();
         return;
       }
@@ -336,8 +336,9 @@ export class SyncStore {
   /**
    * The demo with no database of its own lives in the server's memory, and a hosted server may be replaced by a
    * fresh one at any moment — which knows the same made-up family and nothing of this browser. Rather than drop
-   * a visitor back at the front door, walk in again the way they came. Only ever for the demo, and at most once
-   * a minute, so that a real "you are signed out" is never papered over.
+   * a visitor back at the front door, walk in again the way they came. Only ever for the demo, only when the
+   * server says it has never seen this browser's session (a screen that was switched off or signed out is
+   * remembered, and stays out), and at most once a minute.
    */
   private async reenterDemo(): Promise<boolean> {
     const had = this.state.snapshot;

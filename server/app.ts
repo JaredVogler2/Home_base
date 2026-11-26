@@ -1,5 +1,12 @@
 import { Hono } from 'hono';
-import { cookieName, findSession, readCookie, sessionCookie, touchSession } from './auth/sessions.js';
+import {
+  cookieName,
+  findSession,
+  knowsToken,
+  readCookie,
+  sessionCookie,
+  touchSession,
+} from './auth/sessions.js';
 import { asSystem } from './db/client.js';
 import { LATEST_MIGRATION } from './db/migrate.js';
 import type { Deps } from './deps.js';
@@ -44,8 +51,10 @@ export function createApp(deps: Deps): Hono<AppEnv> {
   app.onError((error, c) => {
     if (error instanceof HttpError) {
       if (typeof error.extra.retryAfter === 'number') c.header('Retry-After', String(error.extra.retryAfter));
+      // In the demo only: "I have never seen that session" (a fresh server), so the demo's screen can walk back in.
+      const fresh = error.code === 'unauthenticated' && c.get('strangerToken') ? { session: 'unknown' } : {};
       return c.json(
-        { error: { code: error.code, message: error.message, ...error.extra } },
+        { error: { code: error.code, message: error.message, ...error.extra, ...fresh } },
         error.status as 400,
       );
     }
@@ -70,6 +79,7 @@ export function createApp(deps: Deps): Hono<AppEnv> {
     const secure = (forwardedProto ?? new URL(c.req.url).protocol.replace(':', '')) === 'https';
     c.set('secure', secure);
     c.set('session', null);
+    c.set('strangerToken', false);
 
     // Nothing the API says is ever to be kept by a browser or a cache, or read by another site.
     c.header('Cache-Control', 'no-store');
@@ -134,7 +144,12 @@ export function createApp(deps: Deps): Hono<AppEnv> {
       const now = c.get('now');
       const session = await asSystem(database, async (tx) => {
         const found = await findSession(tx, token, now);
-        if (!found) return null;
+        if (!found) {
+          // The demo with no database forgets everything when its server is replaced. Tell that apart from a
+          // session that was signed out or switched off, which this server still remembers.
+          if (deps.config.demo && !(await knowsToken(tx, token))) c.set('strangerToken', true);
+          return null;
+        }
         const renewed = await touchSession(tx, found, now);
         return { found, renewed };
       });

@@ -250,6 +250,30 @@ describe('the demo on a server that keeps nothing', () => {
     }
   });
 
+  it('stays out when a parent switches a demo wall off: only a server that has forgotten it lets it back', async () => {
+    const demo = await startServer({ demo: true }, '2026-03-03T21:00:00Z');
+    try {
+      const wall = new Browser(demo);
+      await wall.post('/demo/enter', { as: 'wall' });
+      const parent = new Browser(demo);
+      await parent.post('/demo/enter', { as: 'guardian' });
+      connect(wall);
+      const store = new SyncStore({ cache: memoryCache(), now: () => demo.clock.now().getTime() });
+      stores.push(store);
+      await store.start();
+      expect(store.getState().phase).toBe('ready');
+
+      const mine = store.getState().snapshot!.viewer.deviceId!;
+      await parent.do('device.revoke', { deviceId: mine });
+      const network = connect(wall);
+      await store.sync();
+      expect(store.getState().phase).toBe('stranger');
+      expect(network.sent.map((request) => request.path)).not.toContain('/demo/enter');
+    } finally {
+      await demo.close();
+    }
+  });
+
   it('does not walk a real household back in: signed out means signed out', async () => {
     const { family, wall } = await household();
     connect(wall);
