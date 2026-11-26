@@ -56,7 +56,7 @@ Every requirement of the brief, one row each: [`TRACEABILITY.md`](TRACEABILITY.m
   written it down. All three are fixed and described in [`TEST_RESULTS.md`](TEST_RESULTS.md). With those
   fixes, **all three CI jobs pass on GitHub** (first green at commit `45df124`): lint, types, tests and build;
   the server tests on PostgreSQL 17; and the browser tests, including the offline pair against the built app.
-- **Pictures:** [`review/screens/`](review/screens) — 61 screenshots of the wall (day, evening, night, rain,
+- **Pictures:** [`review/screens/`](review/screens) — 62 screenshots of the wall (day, evening, night, rain,
   snow; 3840×2160, 1920×1080, 1280×720, an upright tablet, a phone) and of every page of the grown-ups' side.
   [`review/recordings/wall-journey.webm`](review/recordings/wall-journey.webm) is a half-minute film of a child's
   journey. All with the made-up family.

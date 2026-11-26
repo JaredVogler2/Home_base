@@ -220,7 +220,7 @@ the stale claims listed in the last section.
 | 02.29 | Parent-configurable voice, mute, theme, seasonal decor | built, not tested here | `shared/settings.ts` (`voice`, `sounds`, `contrast`, `decor`); `src/parent/pages/Settings.tsx` |
 | 02.30 | Parent-configurable quiet hours and calm mode | verified | `e2e/motion.spec.ts`: `calm mode, switched on by a parent, makes the wall still within a few seconds`; `in quiet hours the wall is dimmed and still` |
 | 02.31 | Do not send child voice to the cloud | verified | No microphone use anywhere in `src/` (searched); `Permissions-Policy: microphone=()` checked by `deploy-config.test.ts`: `sends every page with the same security headers the standalone server sends` |
-| 02.32 | Screenshots at 4K, scaled landscape, portrait, iPhone | verified | Inspected `docs/review/screens/` (61 images): `wall-home-4k.jpg` and `wall-quest-4k.jpg` (3840×2160), `wall-home-small.jpg` (1280×720), `wall-home-tall.jpg` (upright tablet), `wall-home-phone.jpg`, `parent-today.jpg` |
+| 02.32 | Screenshots at 4K, scaled landscape, portrait, iPhone | verified | Inspected `docs/review/screens/` (62 images): `wall-home-4k.jpg` and `wall-quest-4k.jpg` (3840×2160), `wall-home-small.jpg` (1280×720), `wall-home-tall.jpg` (upright tablet), `wall-home-phone.jpg`, `parent-today.jpg` |
 | 02.33 | Actual browser traces | not built | No traces exist: `trace: 'off'` in `playwright.config.ts` and `--trace off` in `npm run test:e2e`; CI uploads the HTML report only on failure (`ci.yml`), which with tracing off holds no traces |
 | 02.34 | Measure frame time and memory | simulated | `npm run measure` (`scripts/measure-wall.ts`), output in `docs/TEST_RESULTS.md` "The wall, measured": headless Chromium, no graphics card |
 | 02.35 | Fall back to static art | verified | `tests/client/derive.test.ts`: `gives up the ambient movement on a display that cannot manage thirty`; `motion.spec.ts` |
@@ -618,7 +618,7 @@ Looked for again when the refresh was finished (HEAD `ad4c5e4`):
 | `docs/ROADMAP.md`, `docs/TEST_RESULTS.md`, `docs/ART_DIRECTION.md`, `docs/ASSETS.md` | present, committed |
 | `docs/DEVICE-CHECKLIST.md` §I | present; says plainly no child has tried HOMEBASE |
 | `README.md` | rewritten to describe the app, committed in `ad4c5e4` |
-| `docs/review/screens/` | 61 images, committed |
+| `docs/review/screens/` | 62 images, committed |
 | `docs/review/recordings/wall-journey.webm` | present, committed |
 | Playwright traces | none committed; CI records them and keeps those of any failing test as an artifact (`.github/workflows/ci.yml`) |
 
